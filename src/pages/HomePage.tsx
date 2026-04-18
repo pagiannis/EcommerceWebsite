@@ -1,19 +1,31 @@
-import { Link } from 'react-router-dom';
-import { products } from '../data/products';
-import { testimonials } from '../data/testimonials';
-import { brands } from '../data/brands';
-import ProductCard from '../components/product/ProductCard';
-import StarRating from '../components/ui/StarRating';
-import heroImg from '../assets/hero.png';
+import { Link } from "react-router-dom";
+import { products } from "../data/products";
+import { testimonials } from "../data/testimonials";
+import ProductCard from "../components/product/ProductCard";
+import StarRating from "../components/ui/StarRating";
+import heroImg from "../assets/hero.png";
+import versaceLogo from "../assets/VersaceLogo.png";
+import zaraLogo from "../assets/ZaraLogo.png";
+import gucciLogo from "../assets/GucciLogo.png";
+import pradaLogo from "../assets/PradaLogo.png";
+import calvinKleinLogo from "../assets/CalvinKleinLogo.png";
 
-const newArrivals = products.filter(p => p.isNew).slice(0, 4);
-const topSelling = products.filter(p => p.isBestSeller).slice(0, 4);
+const brandLogos = [
+  { name: "Versace", src: versaceLogo },
+  { name: "Zara", src: zaraLogo },
+  { name: "Gucci", src: gucciLogo },
+  { name: "Prada", src: pradaLogo },
+  { name: "Calvin Klein", src: calvinKleinLogo },
+];
+
+const newArrivals = products.filter((p) => p.isNew).slice(0, 4);
+const topSelling = products.filter((p) => p.isBestSeller).slice(0, 4);
 
 const dressStyles = [
-  { label: 'Casual', bg: 'bg-white' },
-  { label: 'Formal', bg: 'bg-brand-gray' },
-  { label: 'Party', bg: 'bg-brand-gray' },
-  { label: 'Gym', bg: 'bg-white' },
+  { label: "Casual", bg: "bg-white" },
+  { label: "Formal", bg: "bg-brand-gray" },
+  { label: "Party", bg: "bg-brand-gray" },
+  { label: "Gym", bg: "bg-white" },
 ] as const;
 
 export default function HomePage() {
@@ -27,7 +39,9 @@ export default function HomePage() {
               Find Clothes That Matches Your Style
             </h1>
             <p className="mt-4 max-w-md text-gray-600 lg:mx-0 mx-auto">
-              Browse through our diverse range of meticulously crafted garments, designed to bring out your individuality and cater to your sense of style.
+              Browse through our diverse range of meticulously crafted garments,
+              designed to bring out your individuality and cater to your sense
+              of style.
             </p>
             <Link
               to="/shop"
@@ -37,12 +51,14 @@ export default function HomePage() {
             </Link>
             <div className="mt-10 flex justify-center gap-8 lg:justify-start">
               {[
-                { value: '200+', label: 'International Brands' },
-                { value: '2,000+', label: 'High-Quality Products' },
-                { value: '30,000+', label: 'Happy Customers' },
-              ].map(stat => (
+                { value: "200+", label: "International Brands" },
+                { value: "2,000+", label: "High-Quality Products" },
+                { value: "30,000+", label: "Happy Customers" },
+              ].map((stat) => (
                 <div key={stat.label} className="text-center lg:text-left">
-                  <div className="text-3xl font-extrabold text-brand-black">{stat.value}</div>
+                  <div className="text-3xl font-extrabold text-brand-black">
+                    {stat.value}
+                  </div>
                   <div className="text-xs text-gray-500">{stat.label}</div>
                 </div>
               ))}
@@ -59,12 +75,15 @@ export default function HomePage() {
       </section>
 
       {/* Brand logos */}
-      <section className="bg-brand-black py-6">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-around gap-6 px-4 lg:px-8">
-          {brands.map(brand => (
-            <span key={brand} className="text-xl font-extrabold italic text-white opacity-80">
-              {brand}
-            </span>
+      <section className="bg-brand-black py-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-around gap-16 px-4 lg:px-8">
+          {brandLogos.map((brand) => (
+            <img
+              key={brand.name}
+              src={brand.src}
+              alt={brand.name}
+              className="h-8 w-auto object-contain lg:h-8"
+            />
           ))}
         </div>
       </section>
@@ -75,7 +94,7 @@ export default function HomePage() {
           New Arrivals
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {newArrivals.map(p => (
+          {newArrivals.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
@@ -97,7 +116,7 @@ export default function HomePage() {
           Top Selling
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {topSelling.map(p => (
+          {topSelling.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
@@ -118,13 +137,15 @@ export default function HomePage() {
             Browse by Dress Style
           </h2>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {dressStyles.map(style => (
+            {dressStyles.map((style) => (
               <Link
                 key={style.label}
                 to={`/shop?category=${style.label.toLowerCase()}`}
                 className={`group relative flex h-48 items-end overflow-hidden rounded-2xl ${style.bg} p-4 shadow-sm transition hover:shadow-md`}
               >
-                <span className="text-xl font-bold text-brand-black">{style.label}</span>
+                <span className="text-xl font-bold text-brand-black">
+                  {style.label}
+                </span>
               </Link>
             ))}
           </div>
@@ -137,7 +158,7 @@ export default function HomePage() {
           Our Happy Customers
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {testimonials.map(t => (
+          {testimonials.map((t) => (
             <div
               key={t.id}
               className="min-w-[280px] flex-shrink-0 rounded-2xl border border-gray-200 p-6"
@@ -146,12 +167,22 @@ export default function HomePage() {
               <div className="mt-2 flex items-center gap-1">
                 <span className="font-semibold text-gray-900">{t.author}</span>
                 {t.verified && (
-                  <svg className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z" clipRule="evenodd" />
+                  <svg
+                    className="h-4 w-4 text-green-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
               </div>
-              <p className="mt-2 text-sm text-gray-600 line-clamp-4">{t.body}</p>
+              <p className="mt-2 text-sm text-gray-600 line-clamp-4">
+                {t.body}
+              </p>
             </div>
           ))}
         </div>
