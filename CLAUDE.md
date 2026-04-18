@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Stack
 
 - **Frontend**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` Vite plugin — no `tailwind.config.js`)
-- **Backend**: Spring Boot (separate service, not created yet)
+- **Routing**: React Router DOM v7 (`createBrowserRouter`)
+- **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` — no `tailwind.config.js`)
+- **Backend**: Spring Boot (separate service, not yet created)
 
 ## Commands
 
@@ -21,10 +22,25 @@ No test runner is configured yet.
 
 ## Architecture
 
-This is a client-side SPA. The frontend communicates with a Spring Boot backend API.
+Client-side SPA with 4 pages: Home, Shop, Product Detail, Cart.
 
-- Entry: `index.html` → `src/main.tsx` → `src/App.tsx`
-- Routing, state management, and HTTP client libraries are not yet installed
-- Tailwind is imported with a single `@import "tailwindcss"` in `src/index.css`
-- TypeScript strict mode is enabled (`noUnusedLocals`, `noUnusedParameters`)
-- ESLint uses flat config (`eslint.config.js`) with React Hooks and TypeScript rules
+**Entry point**: `index.html` → `src/main.tsx` → `src/routes.tsx`
+
+- `src/main.tsx` wraps `<App />` in `<CartProvider>` so cart state is available in the Navbar (which lives in the layout, outside `RouterProvider`)
+- `src/routes.tsx` defines the router; all pages share `RootLayout` as the shell
+- `src/layouts/RootLayout.tsx` renders AnnouncementBar + Navbar + `<Outlet>` + NewsletterBanner + Footer
+
+**State**: Cart state lives in `src/context/CartContext.tsx`. `totalItems` and `subtotal` are derived with `useMemo` — never stored as separate state. Item identity key = `productId__color__size`. Later the Context integration will be replaced with Zustand
+
+**Data**: All product/review/testimonial data is mocked in `src/data/`. Products use `placehold.co` placeholder images.
+
+**Tailwind tokens** (in `src/index.css` `@theme {}` block):
+- `bg-brand-black` / `text-brand-black` → `#000000`
+- `bg-brand-gray` → `#F2F0F1`
+- `text-brand-red` → `#FF3333`
+
+Range slider thumb styles must be in raw CSS (`::-webkit-slider-thumb`) — Tailwind utilities can't target pseudo-elements.
+
+**TypeScript**: Strict mode (`noUnusedLocals`, `noUnusedParameters`). Use union types, not enums. TypeScript cannot narrow captured variables inside inner function declarations even after a type guard — use non-null assertion (`product!`) in those cases.
+
+**ShopPage filtering**: `useMemo` over `src/data/products.ts` array; `useSearchParams` seeds the initial category filter from the URL query param `?category=`.
