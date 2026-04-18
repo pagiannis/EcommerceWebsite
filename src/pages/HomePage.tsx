@@ -4,6 +4,7 @@ import { testimonials } from '../data/testimonials';
 import { brands } from '../data/brands';
 import ProductCard from '../components/product/ProductCard';
 import StarRating from '../components/ui/StarRating';
+import heroImg from '../assets/hero.png';
 
 const newArrivals = products.filter(p => p.isNew).slice(0, 4);
 const topSelling = products.filter(p => p.isBestSeller).slice(0, 4);
@@ -48,9 +49,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex-1 flex justify-center">
-            <div className="h-72 w-72 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 lg:h-96 lg:w-96">
-              <span className="text-sm">Hero Image</span>
-            </div>
+            <img
+              src={heroImg}
+              alt="Fashion models"
+              className="h-72 w-auto object-contain lg:h-[480px]"
+            />
           </div>
         </div>
       </section>
