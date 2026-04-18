@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-black: #000000;
+  --color-brand-gray: #F2F0F1;
+  --color-brand-red: #FF3333;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #000;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+input[type='range']::-moz-range-thumb {
+  pointer-events: all;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #000;
+  cursor: pointer;
+  border: none;
+}

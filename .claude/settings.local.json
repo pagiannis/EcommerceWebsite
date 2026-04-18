@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__figma__get_metadata",
+      "mcp__figma__whoami",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "mcp__figma__get_screenshot",
+      "Bash(npm run *)"
+    ]
+  }
+}
