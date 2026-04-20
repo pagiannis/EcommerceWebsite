@@ -33,7 +33,7 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section className="bg-brand-gray">
-        <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-8 px-4 py-12 lg:flex-row lg:px-8 lg:py-20">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 py-12 lg:flex-row lg:px-8 lg:py-20">
           <div className="flex-1 text-center lg:text-left">
             <h1 className="text-5xl font-extrabold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
