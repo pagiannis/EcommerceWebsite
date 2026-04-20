@@ -76,13 +76,13 @@ export default function HomePage() {
 
       {/* Brand logos */}
       <section className="bg-brand-black py-8">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-around gap-16 px-4 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-around gap-8 lg:gap-16 px-4 lg:px-8">
           {brandLogos.map((brand) => (
             <img
               key={brand.name}
               src={brand.src}
               alt={brand.name}
-              className="h-8 w-auto object-contain lg:h-8"
+              className="h-5 w-auto object-contain lg:h-8"
             />
           ))}
         </div>
