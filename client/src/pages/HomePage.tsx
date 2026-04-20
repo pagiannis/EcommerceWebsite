@@ -32,9 +32,10 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-brand-gray">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 py-12 lg:flex-row lg:px-8 lg:py-20">
-          <div className="flex-1 text-center lg:text-left">
+      <section className="bg-brand-gray overflow-hidden">
+        <div className="relative mx-auto flex max-w-7xl flex-col lg:flex-row lg:items-end px-4 lg:px-8 lg:min-h-[530px]">
+          {/* Text content */}
+          <div className="flex-1 text-center lg:text-left pt-12 pb-8 lg:py-20 relative z-10">
             <h1 className="text-5xl font-extrabold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
             </h1>
@@ -54,8 +55,11 @@ export default function HomePage() {
                 { value: "200+", label: "International Brands" },
                 { value: "2,000+", label: "High-Quality Products" },
                 { value: "30,000+", label: "Happy Customers" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center lg:text-left">
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className={`text-center lg:text-left ${i > 0 ? "border-l border-gray-300 pl-8" : ""}`}
+                >
                   <div className="text-3xl font-extrabold text-brand-black">
                     {stat.value}
                   </div>
@@ -64,11 +68,12 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="flex-1 flex justify-center">
+
+          <div className="flex-1 -mx-14 lg:mx-0 flex items-end justify-center lg:justify-end">
             <img
               src={heroImg}
               alt="Fashion models"
-              className="h-72 w-auto object-contain lg:h-[480px]"
+              className="w-full object-cover object-top h-[110vw] lg:w-auto lg:h-[530px] lg:object-contain lg:object-bottom"
             />
           </div>
         </div>
