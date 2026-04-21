@@ -36,10 +36,10 @@ export default function HomePage() {
         <div className="relative mx-auto flex max-w-7xl flex-col lg:flex-row lg:items-end px-4 lg:px-8 lg:min-h-[530px]">
           {/* Text content */}
           <div className="flex-1 text-center lg:text-left pt-12 pb-8 lg:py-20 relative z-10">
-            <h1 className="font-display text-5xl font-bold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
+            <h1 className="font-display text-left text-5xl font-bold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
             </h1>
-            <p className="mt-4 max-w-lg text-gray-600 lg:mx-0 mx-auto">
+            <p className="mt-4 max-w-lg text-left text-gray-600 lg:mx-0 mx-auto">
               Browse through our diverse range of meticulously crafted garments,
               designed to bring out your individuality and cater to your sense
               of style.
@@ -50,7 +50,7 @@ export default function HomePage() {
             >
               Shop Now
             </Link>
-            <div className="mt-10 grid grid-cols-2 place-items-center gap-4 lg:flex lg:justify-start lg:gap-8">
+            <div className="mt-10 grid grid-cols-2 items-center gap-4 lg:flex lg:justify-start lg:gap-8">
               {[
                 { value: "200+", label: "International Brands" },
                 { value: "2,000+", label: "High-Quality Products" },
@@ -58,12 +58,14 @@ export default function HomePage() {
               ].map((stat, i) => (
                 <div
                   key={stat.label}
-                  className={`text-center lg:text-left ${i === 2 ? "col-span-2" : ""} ${i > 0 ? "lg:border-l lg:border-gray-300 lg:pl-8" : ""}`}
+                  className={`flex flex-col items-center justify-center lg:items-start lg:justify-start ${i === 2 ? "col-span-2" : ""} ${i === 1 ? "border-l border-gray-300 pl-4 lg:pl-8" : ""} ${i === 2 ? "lg:border-l lg:border-gray-300 lg:pl-8" : ""}`}
                 >
-                  <div className="text-2xl lg:text-3xl font-extrabold text-brand-black">
+                  <div className="text-2xl lg:text-3xl font-extrabold text-brand-black text-center lg:text-left">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-gray-500">{stat.label}</div>
+                  <div className="text-xs text-gray-500 text-center lg:text-left">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
