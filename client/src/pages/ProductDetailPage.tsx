@@ -87,7 +87,7 @@ export default function ProductDetailPage() {
 
         {/* Product info */}
         <div className="flex-1">
-          <h1 className="text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+          <h1 className="font-display text-3xl font-extrabold uppercase tracking-tight text-brand-black">
             {product.name}
           </h1>
           <div className="mt-2 flex items-center gap-2">
@@ -244,7 +244,7 @@ export default function ProductDetailPage() {
       {/* You Might Also Like */}
       {youMightLike.length > 0 && (
         <section className="mt-16">
-          <h2 className="mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+          <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
             You Might Also Like
           </h2>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
