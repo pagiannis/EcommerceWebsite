@@ -46,7 +46,7 @@ export default function HomePage() {
             </p>
             <Link
               to="/shop"
-              className="mt-6 inline-block rounded-full bg-brand-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              className="mt-6 inline-block rounded-full bg-brand-black w-full lg:w-auto lg:px-12 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
               Shop Now
             </Link>
