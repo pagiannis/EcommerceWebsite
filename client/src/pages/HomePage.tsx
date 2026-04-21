@@ -39,7 +39,7 @@ export default function HomePage() {
             <h1 className="font-display text-left text-5xl font-bold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
             </h1>
-            <p className="mt-4 max-w-lg text-left text-gray-600 lg:mx-0 mx-auto">
+            <p className="mt-4 max-w-lg text-left text-gray-600 lg:mx-0">
               Browse through our diverse range of meticulously crafted garments,
               designed to bring out your individuality and cater to your sense
               of style.
