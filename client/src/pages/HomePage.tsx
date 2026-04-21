@@ -36,7 +36,7 @@ export default function HomePage() {
         <div className="relative mx-auto flex max-w-7xl flex-col lg:flex-row lg:items-end px-4 lg:px-8 lg:min-h-[530px]">
           {/* Text content */}
           <div className="flex-1 text-center lg:text-left pt-12 pb-8 lg:py-20 relative z-10">
-            <h1 className="text-5xl font-extrabold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
+            <h1 className="font-display text-5xl font-bold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
             </h1>
             <p className="mt-4 max-w-md text-gray-600 lg:mx-0 mx-auto">
@@ -95,7 +95,7 @@ export default function HomePage() {
 
       {/* New Arrivals */}
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+        <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           New Arrivals
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -117,7 +117,7 @@ export default function HomePage() {
 
       {/* Top Selling */}
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+        <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Top Selling
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -138,7 +138,7 @@ export default function HomePage() {
       {/* Browse by dress style */}
       <section className="bg-brand-gray py-16">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <h2 className="mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+          <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
             Browse by Dress Style
           </h2>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -159,7 +159,7 @@ export default function HomePage() {
 
       {/* Testimonials */}
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+        <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Our Happy Customers
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-4">

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 
-const shopCategories = ['Casual', 'Formal', 'Party', 'Gym'];
+const shopCategories = ["Casual", "Formal", "Party", "Gym"];
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -13,12 +13,15 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-extrabold tracking-tight text-brand-black">
+        <Link
+          to="/"
+          className="text-2xl font-display font-extrabold tracking-tight text-brand-black"
+        >
           SHOP.CO
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center pl-4 gap-6 md:flex">
           <div className="relative" onMouseLeave={() => setShopOpen(false)}>
             <button
               type="button"
@@ -32,7 +35,7 @@ export default function Navbar() {
             </button>
             {shopOpen && (
               <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
-                {shopCategories.map(cat => (
+                {shopCategories.map((cat) => (
                   <Link
                     key={cat}
                     to={`/shop?category=${cat.toLowerCase()}`}
@@ -45,13 +48,22 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <NavLink to="/shop" className="text-sm font-medium text-gray-700 hover:text-black">
+          <NavLink
+            to="/shop"
+            className="text-sm font-medium text-gray-700 hover:text-black"
+          >
             On Sale
           </NavLink>
-          <NavLink to="/shop" className="text-sm font-medium text-gray-700 hover:text-black">
+          <NavLink
+            to="/shop"
+            className="text-sm font-medium text-gray-700 hover:text-black"
+          >
             New Arrivals
           </NavLink>
-          <NavLink to="/shop" className="text-sm font-medium text-gray-700 hover:text-black">
+          <NavLink
+            to="/shop"
+            className="text-sm font-medium text-gray-700 hover:text-black"
+          >
             Brands
           </NavLink>
         </nav>
@@ -83,7 +95,12 @@ export default function Navbar() {
         {/* Icons */}
         <div className="flex items-center gap-4">
           <Link to="/cart" className="relative">
-            <svg className="h-6 w-6 text-gray-700 hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-6 w-6 text-gray-700 hover:text-black"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -98,7 +115,12 @@ export default function Navbar() {
             )}
           </Link>
           <button type="button" className="hidden md:block">
-            <svg className="h-6 w-6 text-gray-700 hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-6 w-6 text-gray-700 hover:text-black"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -111,11 +133,21 @@ export default function Navbar() {
           <button
             type="button"
             className="md:hidden"
-            onClick={() => setMobileOpen(o => !o)}
+            onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
@@ -125,10 +157,34 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="border-t border-gray-100 bg-white px-4 pb-4 md:hidden">
           <nav className="flex flex-col gap-3 pt-3">
-            <Link to="/shop" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Shop</Link>
-            <Link to="/shop" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>On Sale</Link>
-            <Link to="/shop" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>New Arrivals</Link>
-            <Link to="/shop" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Brands</Link>
+            <Link
+              to="/shop"
+              className="text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              Shop
+            </Link>
+            <Link
+              to="/shop"
+              className="text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              On Sale
+            </Link>
+            <Link
+              to="/shop"
+              className="text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              New Arrivals
+            </Link>
+            <Link
+              to="/shop"
+              className="text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              Brands
+            </Link>
           </nav>
           <div className="mt-3">
             <input
