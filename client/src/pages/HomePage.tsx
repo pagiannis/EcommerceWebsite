@@ -39,14 +39,14 @@ export default function HomePage() {
             <h1 className="font-display text-5xl font-bold uppercase leading-tight tracking-tight text-brand-black lg:text-6xl">
               Find Clothes That Matches Your Style
             </h1>
-            <p className="mt-4 max-w-md text-gray-600 lg:mx-0 mx-auto">
+            <p className="mt-4 max-w-lg text-gray-600 lg:mx-0 mx-auto">
               Browse through our diverse range of meticulously crafted garments,
               designed to bring out your individuality and cater to your sense
               of style.
             </p>
             <Link
               to="/shop"
-              className="mt-6 inline-block rounded-full bg-brand-black w-full lg:w-auto lg:px-12 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              className="mt-6 inline-block rounded-full bg-brand-black w-full lg:w-auto lg:px-12 py-3 text-sm text-white transition hover:bg-gray-800"
             >
               Shop Now
             </Link>
