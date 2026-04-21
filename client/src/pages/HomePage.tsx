@@ -50,7 +50,7 @@ export default function HomePage() {
             >
               Shop Now
             </Link>
-            <div className="mt-10 flex justify-center gap-8 lg:justify-start">
+            <div className="mt-10 grid grid-cols-2 place-items-center gap-4 lg:flex lg:justify-start lg:gap-8">
               {[
                 { value: "200+", label: "International Brands" },
                 { value: "2,000+", label: "High-Quality Products" },
@@ -58,9 +58,9 @@ export default function HomePage() {
               ].map((stat, i) => (
                 <div
                   key={stat.label}
-                  className={`text-center lg:text-left ${i > 0 ? "border-l border-gray-300 pl-8" : ""}`}
+                  className={`text-center lg:text-left ${i === 2 ? "col-span-2" : ""} ${i > 0 ? "lg:border-l lg:border-gray-300 lg:pl-8" : ""}`}
                 >
-                  <div className="text-3xl font-extrabold text-brand-black">
+                  <div className="text-2xl lg:text-3xl font-extrabold text-brand-black">
                     {stat.value}
                   </div>
                   <div className="text-xs text-gray-500">{stat.label}</div>
