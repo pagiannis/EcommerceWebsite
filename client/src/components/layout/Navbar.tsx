@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { LuShoppingCart } from "react-icons/lu";
@@ -12,6 +12,16 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function openShop() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setShopOpen(true);
+  }
+
+  function scheduleClose() {
+    closeTimer.current = setTimeout(() => setShopOpen(false), 150);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white">
@@ -26,17 +36,16 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center pl-10 gap-6 md:flex">
-          <div className="relative" onMouseLeave={() => setShopOpen(false)}>
+          <div className="relative" onMouseEnter={openShop} onMouseLeave={scheduleClose}>
             <button
               type="button"
               className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black"
-              onMouseEnter={() => setShopOpen(true)}
             >
               Shop
               <FaChevronDown className="h-3 w-3" />
             </button>
             {shopOpen && (
-              <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
+              <div className="absolute left-0 top-full w-40 rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
                 {shopCategories.map((cat) => (
                   <Link
                     key={cat}
