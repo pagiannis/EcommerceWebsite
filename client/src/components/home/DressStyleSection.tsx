@@ -14,7 +14,7 @@ const dressStyles = [
 export default function DressStyleSection() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <div className=" rounded-3xl bg-brand-gray px-8 py-14 lg:px-12">
+      <div className="rounded-3xl bg-brand-gray px-8 py-14 lg:px-12">
         <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Browse by Dress Style
         </h2>

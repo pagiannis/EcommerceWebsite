@@ -18,7 +18,7 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="py-16">
+    <section className="py-12">
       <div className="mx-auto mb-8 max-w-7xl px-4 lg:px-8">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-3xl font-extrabold uppercase tracking-tight text-brand-black">
