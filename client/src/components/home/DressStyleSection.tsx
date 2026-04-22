@@ -1,29 +1,38 @@
 import { Link } from "react-router-dom";
+import casualImg from "../../assets/dressstyles/Casual.png";
+import formalImg from "../../assets/dressstyles/Formal.png";
+import partyImg from "../../assets/dressstyles/Party.png";
+import gymImg from "../../assets/dressstyles/Gym.png";
 
 const dressStyles = [
-  { label: "Casual", bg: "bg-white" },
-  { label: "Formal", bg: "bg-brand-gray" },
-  { label: "Party", bg: "bg-brand-gray" },
-  { label: "Gym", bg: "bg-white" },
+  { label: "Casual", img: casualImg, span: "col-span-1" },
+  { label: "Formal", img: formalImg, span: "col-span-2" },
+  { label: "Party", img: partyImg, span: "col-span-2" },
+  { label: "Gym", img: gymImg, span: "col-span-1" },
 ] as const;
 
 export default function DressStyleSection() {
   return (
-    <section className="bg-brand-gray max-w-7xl mx-auto py-16 rounded-3xl">
-      <div className="px-4 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
+      <div className=" rounded-3xl bg-brand-gray px-8 py-14 lg:px-12">
         <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Browse by Dress Style
         </h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-3 gap-4">
           {dressStyles.map((style) => (
             <Link
               key={style.label}
               to={`/shop?category=${style.label.toLowerCase()}`}
-              className={`group relative flex h-48 items-end overflow-hidden rounded-2xl ${style.bg} p-4 shadow-sm transition hover:shadow-md`}
+              className={`${style.span} group relative flex h-44 overflow-hidden rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md sm:h-52 lg:h-60`}
             >
-              <span className="text-xl font-bold text-brand-black">
+              <span className="relative z-10 text-lg font-bold text-brand-black lg:text-xl">
                 {style.label}
               </span>
+              <img
+                src={style.img}
+                alt={style.label}
+                className="scale-130 group-hover:scale-140 transition-transform duration-300 absolute -right-6 top-1 h-full w-3/4 object-cover"
+              />
             </Link>
           ))}
         </div>
