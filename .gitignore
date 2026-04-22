@@ -55,3 +55,4 @@ out/
 # Dependencies lock files (root level)
 pnpm-lock.yaml
 
+.claude
