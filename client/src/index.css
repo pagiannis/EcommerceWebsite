@@ -24,6 +24,15 @@
   }
 }
 
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 input[type='range']::-webkit-slider-thumb {
   pointer-events: all;
   width: 20px;

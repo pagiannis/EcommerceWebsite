@@ -10,9 +10,11 @@ export default function TopSellingSection() {
       <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
         Top Selling
       </h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
         {topSelling.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <div key={p.id} className="w-[calc((100%-16px)/1.5)] flex-shrink-0 lg:w-auto">
+            <ProductCard product={p} />
+          </div>
         ))}
       </div>
       <div className="mt-8 text-center">
