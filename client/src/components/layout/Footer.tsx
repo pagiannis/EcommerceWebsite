@@ -1,6 +1,24 @@
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaGithub, FaTwitter } from "react-icons/fa6";
+import { SiVisa, SiPaypal, SiApplepay, SiGooglepay } from "react-icons/si";
 import { Link } from "react-router-dom";
+
+function MastercardIcon() {
+  return (
+    <svg viewBox="0 0 38 24" className="h-4 w-7" aria-label="Mastercard">
+      <circle cx="14" cy="12" r="9" fill="#EB001B" />
+      <circle cx="24" cy="12" r="9" fill="#F79E1B" />
+    </svg>
+  );
+}
+
+const paymentIcons = [
+  { name: "Visa", el: <SiVisa className="h-4 w-8 text-[#1A1F71]" /> },
+  { name: "Mastercard", el: <MastercardIcon /> },
+  { name: "PayPal", el: <SiPaypal className="h-4 w-8 text-[#003087]" /> },
+  { name: "Apple Pay", el: <SiApplepay className="h-4 w-8 text-black" /> },
+  { name: "G Pay", el: <SiGooglepay className="h-4 w-8 text-[#4285F4]" /> },
+];
 
 const links = {
   Company: ["About", "Features", "Works", "Career"],
@@ -99,16 +117,15 @@ export default function Footer() {
             Shop.co © 2000-2023, All Rights Reserved
           </p>
           <div className="flex items-center gap-2">
-            {["Visa", "Mastercard", "PayPal", "Apple Pay", "G Pay"].map(
-              (pay) => (
-                <span
-                  key={pay}
-                  className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600"
-                >
-                  {pay}
-                </span>
-              ),
-            )}
+            {paymentIcons.map(({ name, el }) => (
+              <span
+                key={name}
+                className="flex items-center justify-center rounded border border-gray-200 bg-white px-2 py-1"
+                aria-label={name}
+              >
+                {el}
+              </span>
+            ))}
           </div>
         </div>
       </div>
