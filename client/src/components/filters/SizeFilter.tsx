@@ -1,4 +1,4 @@
-import type { Size } from '../../types';
+import type { Size } from '../../types/size';
 
 interface SizeFilterProps {
   selected: Size[];

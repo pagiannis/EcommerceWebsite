@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { products } from '../data/products';
-import type { DressStyle, FilterState } from '../types';
+import type { DressStyle } from '../types/dressStyle';
+import type { FilterState } from '../types/filterState';
 import FilterSidebar from '../components/filters/FilterSidebar';
 import ProductCard from '../components/product/ProductCard';
 

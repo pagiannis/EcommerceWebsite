@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { products } from '../data/products';
 import { reviews } from '../data/reviews';
-import type { Size } from '../types';
+import type { Size } from '../types/size';
 import { useCart } from '../context/CartContext';
 import StarRating from '../components/ui/StarRating';
 import Badge from '../components/ui/Badge';

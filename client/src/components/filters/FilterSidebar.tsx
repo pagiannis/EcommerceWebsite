@@ -1,4 +1,6 @@
-import type { DressStyle, FilterState, Size } from '../../types';
+import type { DressStyle } from '../../types/dressStyle';
+import type { FilterState } from '../../types/filterState';
+import type { Size } from '../../types/size';
 import ColorFilter from './ColorFilter';
 import SizeFilter from './SizeFilter';
 import PriceRangeSlider from './PriceRangeSlider';
