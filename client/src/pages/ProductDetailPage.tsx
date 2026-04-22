@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { products, reviews } from '../data/products';
+import { products } from '../data/products';
+import { reviews } from '../data/reviews';
 import type { Size } from '../types';
 import { useCart } from '../context/CartContext';
 import StarRating from '../components/ui/StarRating';
