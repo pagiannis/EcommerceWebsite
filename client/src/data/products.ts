@@ -1,6 +1,74 @@
 import type { Product } from '../types/product';
 
+import tapeDetailsImg from '../assets/products/T-shirt_with_Tape_Details.png';
+import skinnyJeansImg from '../assets/products/Skinny_Fit_Jeans.png';
+import checkeredShirtImg from '../assets/products/Checkered_Shirt.png';
+import sleeveStripedImg from '../assets/products/Sleeve_Striped_T-shirt.png';
+import verticalStripedImg from '../assets/products/Vertical_Striped_Shirt.png';
+import courageGrafImg from '../assets/products/Courage_Graphic_T-shirt.png';
+import bermudaImg from '../assets/products/Loose_Fit_Bermouda_Shorts.png';
+import fadedJeansImg from '../assets/products/Faded_Skinny_Jeans.png';
+
 export const products: Product[] = [
+  // ── New Arrivals ─────────────────────────────────────────────────────────
+  {
+    id: 't-shirt-tape-details',
+    name: 'T-shirt with Tape Details',
+    category: 'casual',
+    price: 120,
+    rating: 4.5,
+    reviewCount: 88,
+    images: [tapeDetailsImg],
+    colors: ['#FFFFFF', '#000000', '#314F79'],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A clean everyday tee elevated with contrast tape detailing along the shoulders and sleeves.',
+    isNew: true,
+  },
+  {
+    id: 'skinny-fit-jeans',
+    name: 'Skinny Fit Jeans',
+    category: 'casual',
+    price: 240,
+    originalPrice: 260,
+    discountPercent: 20,
+    rating: 3.5,
+    reviewCount: 91,
+    images: [skinnyJeansImg],
+    colors: ['#1E3A5F', '#000000'],
+    sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
+    description: 'Slim-cut jeans with a comfortable stretch fabric for all-day wear.',
+    isNew: true,
+  },
+  {
+    id: 'checkered-shirt',
+    name: 'Checkered Shirt',
+    category: 'casual',
+    price: 180,
+    rating: 4.5,
+    reviewCount: 89,
+    images: [checkeredShirtImg],
+    colors: ['#8B3A3A', '#2C5F2E', '#1B4F72'],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A timeless checkered shirt crafted from soft flannel for a relaxed, stylish look.',
+    isNew: true,
+  },
+  {
+    id: 'sleeve-striped-tee',
+    name: 'Sleeve Striped T-shirt',
+    category: 'casual',
+    price: 130,
+    originalPrice: 160,
+    discountPercent: 30,
+    rating: 4.5,
+    reviewCount: 55,
+    images: [sleeveStripedImg],
+    colors: ['#E05C1A', '#000000', '#FFFFFF'],
+    sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A sporty striped t-shirt with color-blocked sleeves for a dynamic casual look.',
+    isNew: true,
+  },
+
+  // ── Other products ────────────────────────────────────────────────────────
   {
     id: 'gradient-graphic-tee',
     name: 'Gradient Graphic T-shirt',
@@ -12,7 +80,6 @@ export const products: Product[] = [
     colors: ['#314F79', '#02441E', '#F8C32C'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description: 'A vibrant gradient graphic t-shirt perfect for casual outings. Crafted from soft, breathable cotton.',
-    isNew: true,
   },
   {
     id: 'polo-contrast-trims',
@@ -27,7 +94,6 @@ export const products: Product[] = [
     colors: ['#1B4D8E', '#FFFFFF'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description: 'A classic polo shirt with stylish contrast trims on the collar and cuffs.',
-    isNew: true,
   },
   {
     id: 'black-striped-tee',
@@ -42,23 +108,9 @@ export const products: Product[] = [
     colors: ['#000000', '#FFFFFF'],
     sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large'],
     description: 'A bold black striped t-shirt that adds a modern edge to any casual look.',
-    isNew: true,
   },
-  {
-    id: 'skinny-fit-jeans',
-    name: 'Skinny Fit Jeans',
-    category: 'casual',
-    price: 240,
-    originalPrice: 260,
-    discountPercent: 20,
-    rating: 3.5,
-    reviewCount: 91,
-    images: ['https://placehold.co/295x370/3B5998/FFF?text=Skinny+Jeans'],
-    colors: ['#1E3A5F', '#000000'],
-    sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
-    description: 'Slim-cut jeans with a comfortable stretch fabric for all-day wear.',
-    isNew: true,
-  },
+
+  // ── Best Sellers ──────────────────────────────────────────────────────────
   {
     id: 'vertical-striped-shirt',
     name: 'Vertical Striped Shirt',
@@ -68,7 +120,7 @@ export const products: Product[] = [
     discountPercent: 20,
     rating: 5.0,
     reviewCount: 78,
-    images: ['https://placehold.co/295x370/6B7F5E/FFF?text=Striped+Shirt'],
+    images: [verticalStripedImg],
     colors: ['#6B7F5E', '#FFFFFF', '#000000'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'],
     description: 'An elegant vertical striped shirt ideal for business casual and formal settings.',
@@ -81,7 +133,7 @@ export const products: Product[] = [
     price: 145,
     rating: 4.0,
     reviewCount: 42,
-    images: ['https://placehold.co/295x370/D4691E/FFF?text=Courage+Tee'],
+    images: [courageGrafImg],
     colors: ['#D4691E', '#000000'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description: 'A statement graphic t-shirt with bold typography and premium cotton construction.',
@@ -94,7 +146,7 @@ export const products: Product[] = [
     price: 80,
     rating: 3.0,
     reviewCount: 23,
-    images: ['https://placehold.co/295x370/4A7FB5/FFF?text=Bermuda+Shorts'],
+    images: [bermudaImg],
     colors: ['#4A7FB5', '#C8A870', '#333333'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'],
     description: 'Relaxed fit bermuda shorts perfect for beach days and casual summer outings.',
@@ -107,38 +159,14 @@ export const products: Product[] = [
     price: 210,
     rating: 4.5,
     reviewCount: 115,
-    images: ['https://placehold.co/295x370/1A1A2E/FFF?text=Faded+Jeans'],
+    images: [fadedJeansImg],
     colors: ['#1A1A2E', '#4A5568'],
     sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
     description: 'Classic faded skinny jeans with a vintage wash for an effortlessly cool look.',
     isBestSeller: true,
   },
-  {
-    id: 'checkered-shirt',
-    name: 'Checkered Shirt',
-    category: 'casual',
-    price: 180,
-    rating: 4.5,
-    reviewCount: 89,
-    images: ['https://placehold.co/295x370/8B3A3A/FFF?text=Checkered+Shirt'],
-    colors: ['#8B3A3A', '#2C5F2E', '#1B4F72'],
-    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
-    description: 'A timeless checkered shirt crafted from soft flannel for a relaxed, stylish look.',
-  },
-  {
-    id: 'sleeve-striped-tee',
-    name: 'Sleeve Striped T-shirt',
-    category: 'casual',
-    price: 130,
-    originalPrice: 160,
-    discountPercent: 30,
-    rating: 4.5,
-    reviewCount: 55,
-    images: ['https://placehold.co/295x370/E05C1A/FFF?text=Sleeve+Stripe+Tee'],
-    colors: ['#E05C1A', '#000000', '#FFFFFF'],
-    sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
-    description: 'A sporty striped t-shirt with color-blocked sleeves for a dynamic casual look.',
-  },
+
+  // ── Other ─────────────────────────────────────────────────────────────────
   {
     id: 'one-life-graphic-tee',
     name: 'One Life Graphic T-shirt',
