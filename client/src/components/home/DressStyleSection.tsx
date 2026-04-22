@@ -9,8 +9,8 @@ const dressStyles = [
 
 export default function DressStyleSection() {
   return (
-    <section className="bg-brand-gray py-16">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+    <section className="bg-brand-gray max-w-7xl mx-auto py-16 rounded-3xl">
+      <div className="px-4 lg:px-8">
         <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Browse by Dress Style
         </h2>
