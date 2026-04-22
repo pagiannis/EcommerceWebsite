@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { LuShoppingCart } from "react-icons/lu";
+import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
+import { IoIosSearch } from "react-icons/io";
+import { IoMenu } from "react-icons/io5";
 
 const shopCategories = ["Casual", "Formal", "Party", "Gym"];
 
@@ -21,7 +25,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center pl-4 gap-6 md:flex">
+        <nav className="hidden items-center pl-10 gap-6 md:flex">
           <div className="relative" onMouseLeave={() => setShopOpen(false)}>
             <button
               type="button"
@@ -29,9 +33,7 @@ export default function Navbar() {
               onMouseEnter={() => setShopOpen(true)}
             >
               Shop
-              <svg className="h-3 w-3" viewBox="0 0 10 6" fill="currentColor">
-                <path d="M0 0l5 6 5-6H0z" />
-              </svg>
+              <FaChevronDown className="h-3 w-3" />
             </button>
             {shopOpen && (
               <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
@@ -71,19 +73,8 @@ export default function Navbar() {
         {/* Search */}
         <div className="hidden flex-1 items-center justify-center px-8 md:flex">
           <div className="relative w-full max-w-sm">
-            <svg
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-              />
-            </svg>
+            <IoIosSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+
             <input
               type="search"
               placeholder="Search for products..."
@@ -95,19 +86,7 @@ export default function Navbar() {
         {/* Icons */}
         <div className="flex items-center gap-4">
           <Link to="/cart" className="relative">
-            <svg
-              className="h-6 w-6 text-gray-700 hover:text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-10 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"
-              />
-            </svg>
+            <LuShoppingCart className="h-5 w-5" />
             {totalItems > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-black text-[10px] font-bold text-white">
                 {totalItems}
@@ -115,19 +94,7 @@ export default function Navbar() {
             )}
           </Link>
           <button type="button" className="hidden md:block">
-            <svg
-              className="h-6 w-6 text-gray-700 hover:text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"
-              />
-            </svg>
+            <FaRegUserCircle className="h-5 w-5" />
           </button>
           {/* Mobile menu toggle */}
           <button
@@ -136,19 +103,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <IoMenu className="h-6 w-6" />
           </button>
         </div>
       </div>
