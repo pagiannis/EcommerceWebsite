@@ -5,10 +5,10 @@ import partyImg from "../../assets/dressstyles/Party.png";
 import gymImg from "../../assets/dressstyles/Gym.png";
 
 const dressStyles = [
-  { label: "Casual", img: casualImg, span: "col-span-1" },
-  { label: "Formal", img: formalImg, span: "col-span-2" },
-  { label: "Party", img: partyImg, span: "col-span-2" },
-  { label: "Gym", img: gymImg, span: "col-span-1" },
+  { label: "Casual", img: casualImg, span: "lg:col-span-1" },
+  { label: "Formal", img: formalImg, span: "lg:col-span-2" },
+  { label: "Party", img: partyImg, span: "lg:col-span-2" },
+  { label: "Gym", img: gymImg, span: "lg:col-span-1" },
 ] as const;
 
 export default function DressStyleSection() {
@@ -18,7 +18,7 @@ export default function DressStyleSection() {
         <h2 className="font-display mb-8 text-center text-3xl font-extrabold uppercase tracking-tight text-brand-black">
           Browse by Dress Style
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {dressStyles.map((style) => (
             <Link
               key={style.label}
