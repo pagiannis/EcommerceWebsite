@@ -35,8 +35,8 @@ export default function TestimonialsSection() {
         </div>
       </div>
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-24 bg-gradient-to-r from-white to-transparent lg:block" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-24 bg-gradient-to-l from-white to-transparent lg:block" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-34 bg-gradient-to-r from-white to-transparent lg:block" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-34 bg-gradient-to-l from-white to-transparent lg:block" />
         <div
           ref={scrollRef}
           className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 px-4 lg:px-8"
