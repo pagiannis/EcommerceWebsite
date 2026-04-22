@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { testimonials } from "../../data/testimonials";
 import StarRating from "../ui/StarRating";
 import { FaCheckCircle } from "react-icons/fa";
+import { IoArrowBack, IoArrowForward } from "react-icons/io5";
 
 export default function TestimonialsSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -17,31 +18,25 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h2 className="font-display text-3xl font-extrabold uppercase tracking-tight text-brand-black">
-          Our Happy Customers
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => scroll("left")}
-            aria-label="Previous"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 transition hover:bg-brand-gray"
-          >
-            ←
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            aria-label="Next"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 transition hover:bg-brand-gray"
-          >
-            →
-          </button>
+    <section className="py-16">
+      <div className="mx-auto mb-8 max-w-7xl px-4 lg:px-8">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-3xl font-extrabold uppercase tracking-tight text-brand-black">
+            Our Happy Customers
+          </h2>
+          <div className="flex gap-2">
+            <button onClick={() => scroll("left")} aria-label="Previous">
+              <IoArrowBack className="flex h-4 w-4 items-center justify-center" />
+            </button>
+            <button onClick={() => scroll("right")} aria-label="Next">
+              <IoArrowForward className="flex h-4 w-4 items-center justify-center" />
+            </button>
+          </div>
         </div>
       </div>
       <div
         ref={scrollRef}
-        className="scrollbar-hide flex gap-4 overflow-x-auto pb-4"
+        className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 px-4 lg:px-8"
       >
         {testimonials.map((t) => (
           <div
