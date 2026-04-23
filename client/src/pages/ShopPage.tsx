@@ -34,6 +34,7 @@ export default function ShopPage() {
   );
   const [sort, setSort] = useState(SORT_OPTIONS[0]);
   const [page, setPage] = useState(1);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let result = products.slice();
@@ -76,6 +77,11 @@ export default function ShopPage() {
     setPage(1);
   }
 
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
       <ShopBreadcrumb category={filters.category} />
@@ -85,6 +91,8 @@ export default function ShopPage() {
           filters={filters}
           onChange={handleFilterChange}
           allColors={allColors}
+          open={filterOpen}
+          onClose={() => setFilterOpen(false)}
         />
 
         <div className="flex-1">
@@ -95,6 +103,7 @@ export default function ShopPage() {
             currentEnd={currentEnd}
             sort={sort}
             onSortChange={setSort}
+            onFilterOpen={() => setFilterOpen(true)}
           />
 
           <ProductGrid products={paginated} />
@@ -102,7 +111,7 @@ export default function ShopPage() {
           <ShopPagination
             page={page}
             totalPages={totalPages}
-            onPageChange={setPage}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>

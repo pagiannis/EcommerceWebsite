@@ -14,6 +14,7 @@ interface ShopHeaderProps {
   currentEnd: number;
   sort: string;
   onSortChange: (sort: string) => void;
+  onFilterOpen: () => void;
 }
 
 export { SORT_OPTIONS };
@@ -25,6 +26,7 @@ export default function ShopHeader({
   currentEnd,
   sort,
   onSortChange,
+  onFilterOpen,
 }: ShopHeaderProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -41,10 +43,45 @@ export default function ShopHeader({
 
   return (
     <div className="mb-6 flex items-center justify-between">
-      <h1 className="text-2xl font-extrabold capitalize text-brand-black">
+      {/* Mobile layout */}
+      <div className="flex items-center gap-2 lg:hidden">
+        <h1 className="text-xl font-extrabold capitalize text-brand-black">
+          {category === "all" ? "All Products" : category}
+        </h1>
+        <span className="text-sm text-gray-500">
+          Showing {currentStart}-{currentEnd} of {totalCount} Products
+        </span>
+      </div>
+
+      {/* Desktop layout */}
+      <h1 className="hidden lg:block text-2xl font-extrabold capitalize text-brand-black">
         {category === "all" ? "All Products" : category}
       </h1>
-      <div className="flex items-center gap-3 text-sm text-gray-500">
+
+      {/* Mobile: filter icon button */}
+      <button
+        type="button"
+        onClick={onFilterOpen}
+        className="flex items-center justify-center rounded-full bg-brand-gray p-2.5 lg:hidden"
+        aria-label="Open filters"
+      >
+        <svg
+          className="h-5 w-5 text-brand-black"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6V4m0 2a2 2 0 1 0 0 4m0-4a2 2 0 1 1 0 4m-6 8a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4"
+          />
+        </svg>
+      </button>
+
+      {/* Desktop: count + sort */}
+      <div className="hidden lg:flex items-center gap-3 text-sm text-gray-500">
         <span>
           Showing {currentStart}-{currentEnd} of {totalCount} Products
         </span>
@@ -82,7 +119,9 @@ export default function ShopHeader({
                       setOpen(false);
                     }}
                     className={`block w-full px-4 py-2 text-left text-sm hover:bg-brand-gray ${
-                      o === sort ? "font-semibold text-brand-black" : "text-gray-600"
+                      o === sort
+                        ? "font-semibold text-brand-black"
+                        : "text-gray-600"
                     }`}
                   >
                     {o}

@@ -9,6 +9,8 @@ interface FilterSidebarProps {
   filters: FilterState;
   onChange: (f: FilterState) => void;
   allColors: string[];
+  open: boolean;
+  onClose: () => void;
 }
 
 const categories: { value: DressStyle | 'all'; label: string }[] = [
@@ -19,17 +21,36 @@ const categories: { value: DressStyle | 'all'; label: string }[] = [
   { value: 'gym', label: 'Gym' },
 ];
 
-export default function FilterSidebar({ filters, onChange, allColors }: FilterSidebarProps) {
+function FilterContent({
+  filters,
+  onChange,
+  allColors,
+  onClose,
+  showCloseButton,
+}: {
+  filters: FilterState;
+  onChange: (f: FilterState) => void;
+  allColors: string[];
+  onClose: () => void;
+  showCloseButton: boolean;
+}) {
   return (
-    <aside className="w-full rounded-2xl border border-gray-200 p-5 lg:w-64 lg:flex-shrink-0">
+    <>
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <h3 className="font-semibold text-gray-900">Filters</h3>
-        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 1 0 0 4m0-4a2 2 0 1 1 0 4m-6 8a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4" />
-        </svg>
+        {showCloseButton ? (
+          <button type="button" onClick={onClose} aria-label="Close filters" className="text-gray-400 hover:text-black">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        ) : (
+          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 1 0 0 4m0-4a2 2 0 1 1 0 4m-6 8a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4" />
+          </svg>
+        )}
       </div>
 
-      {/* Category */}
       <div className="border-b border-gray-200 py-4">
         <ul className="space-y-2">
           {categories.map(cat => (
@@ -51,7 +72,6 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
         </ul>
       </div>
 
-      {/* Price */}
       <div className="border-b border-gray-200 py-4">
         <h4 className="mb-4 text-sm font-semibold text-gray-900">Price</h4>
         <PriceRangeSlider
@@ -62,7 +82,6 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
         />
       </div>
 
-      {/* Colors */}
       <div className="border-b border-gray-200 py-4">
         <h4 className="mb-4 text-sm font-semibold text-gray-900">Colors</h4>
         <ColorFilter
@@ -72,7 +91,6 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
         />
       </div>
 
-      {/* Sizes */}
       <div className="border-b border-gray-200 py-4">
         <h4 className="mb-4 text-sm font-semibold text-gray-900">Size</h4>
         <SizeFilter
@@ -83,19 +101,50 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
 
       <button
         type="button"
-        onClick={() =>
-          onChange({
-            ...filters,
-            colors: [],
-            sizes: [],
-            priceRange: [0, 650],
-            category: 'all',
-          })
-        }
+        onClick={onClose}
         className="mt-4 w-full rounded-full bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
       >
         Apply Filter
       </button>
-    </aside>
+    </>
+  );
+}
+
+export default function FilterSidebar({ filters, onChange, allColors, open, onClose }: FilterSidebarProps) {
+  return (
+    <>
+      {/* Mobile drawer */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+        <div
+          className={`absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-5 transition-transform duration-300 ${
+            open ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
+          <FilterContent
+            filters={filters}
+            onChange={onChange}
+            allColors={allColors}
+            onClose={onClose}
+            showCloseButton
+          />
+        </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:block w-64 flex-shrink-0 self-start rounded-2xl border border-gray-200 p-5">
+        <FilterContent
+          filters={filters}
+          onChange={onChange}
+          allColors={allColors}
+          onClose={onClose}
+          showCloseButton={false}
+        />
+      </aside>
+    </>
   );
 }
