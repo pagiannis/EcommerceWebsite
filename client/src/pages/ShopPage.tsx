@@ -64,6 +64,8 @@ export default function ShopPage() {
   }, [filters, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const currentStart = filtered.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
+  const currentEnd = Math.min(page * ITEMS_PER_PAGE, filtered.length);
   const paginated = filtered.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
@@ -89,6 +91,8 @@ export default function ShopPage() {
           <ShopHeader
             category={filters.category}
             totalCount={filtered.length}
+            currentStart={currentStart}
+            currentEnd={currentEnd}
             sort={sort}
             onSortChange={setSort}
           />

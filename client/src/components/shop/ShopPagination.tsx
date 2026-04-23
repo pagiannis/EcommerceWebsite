@@ -27,7 +27,7 @@ export default function ShopPagination({
             onClick={() => onPageChange(n)}
             className={`h-9 w-9 rounded-md text-sm font-medium transition ${
               n === page
-                ? "bg-brand-black text-white"
+                ? "bg-brand-gray text-black"
                 : "hover:bg-brand-gray text-gray-700"
             }`}
           >

@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 const SORT_OPTIONS = [
   "Most Popular",
   "Price: Low to High",
@@ -8,6 +10,8 @@ const SORT_OPTIONS = [
 interface ShopHeaderProps {
   category: string;
   totalCount: number;
+  currentStart: number;
+  currentEnd: number;
   sort: string;
   onSortChange: (sort: string) => void;
 }
@@ -17,29 +21,76 @@ export { SORT_OPTIONS };
 export default function ShopHeader({
   category,
   totalCount,
+  currentStart,
+  currentEnd,
   sort,
   onSortChange,
 }: ShopHeaderProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="mb-6 flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-extrabold capitalize text-brand-black">
-          {category === "all" ? "All Products" : category}
-        </h1>
-      </div>
-      <div className="flex items-center gap-4 text-sm text-gray-600">
-        <p className="text-sm text-gray-500">Showing {totalCount} Products</p>
-        <div>
-          Sort by:
-          <select
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="py-1.5 text-sm font-medium outline-none"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o}>{o}</option>
-            ))}
-          </select>
+      <h1 className="text-2xl font-extrabold capitalize text-brand-black">
+        {category === "all" ? "All Products" : category}
+      </h1>
+      <div className="flex items-center gap-3 text-sm text-gray-500">
+        <span>
+          Showing {currentStart}-{currentEnd} of {totalCount} Products
+        </span>
+        <div className="flex items-center gap-1">
+          <span>Sort by:</span>
+          <div ref={ref} className="relative">
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              className="inline-flex items-center gap-1 py-1 text-sm font-semibold text-brand-black"
+            >
+              {sort}
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {open && (
+              <div className="absolute right-0 top-full z-10 mt-1 min-w-max rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+                {SORT_OPTIONS.map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    onClick={() => {
+                      onSortChange(o);
+                      setOpen(false);
+                    }}
+                    className={`block w-full px-4 py-2 text-left text-sm hover:bg-brand-gray ${
+                      o === sort ? "font-semibold text-brand-black" : "text-gray-600"
+                    }`}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
