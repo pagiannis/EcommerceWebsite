@@ -8,6 +8,15 @@ import verticalStripedImg from '../assets/products/Vertical_Striped_Shirt.png';
 import courageGrafImg from '../assets/products/Courage_Graphic_T-shirt.png';
 import bermudaImg from '../assets/products/Loose_Fit_Bermouda_Shorts.png';
 import fadedJeansImg from '../assets/products/Faded_Skinny_Jeans.png';
+import gradientGrafImg from '../assets/products/Gradient_Graphic_T-shirt.png';
+import poloContrastImg from '../assets/products/Polo_with_Contrast_Trims.png';
+import blackStripedImg from '../assets/products/Black_Striped_T-shirt.png';
+import oneLifeImg from '../assets/products/One_Life_Graphic_T-shirt.png';
+import poloTippingImg from '../assets/products/Polo_with_Tipping_Details.png';
+import earthToneHoodieImg from '../assets/products/Earth-Tone_Cloud_Wash_Hoodie.png';
+import nauticalPoloImg from '../assets/products/Nautical_Explorer_Anchor_Polo_T-shirt.png';
+import quantumTeeImg from '../assets/products/Quantum_Series_New_Dimensions_T-shirt.png';
+import signatureBlazerImg from '../assets/products/Signature_Anchor_Tailored_Wool_Blazer.png';
 
 export const products: Product[] = [
   // ── New Arrivals ─────────────────────────────────────────────────────────
@@ -76,7 +85,7 @@ export const products: Product[] = [
     price: 145,
     rating: 3.5,
     reviewCount: 54,
-    images: ['https://placehold.co/295x370/E8D5C4/333?text=Gradient+Tee'],
+    images: [gradientGrafImg],
     colors: ['#314F79', '#02441E', '#F8C32C'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description: 'A vibrant gradient graphic t-shirt perfect for casual outings. Crafted from soft, breathable cotton.',
@@ -90,7 +99,7 @@ export const products: Product[] = [
     discountPercent: 20,
     rating: 4.0,
     reviewCount: 63,
-    images: ['https://placehold.co/295x370/C9D8E8/333?text=Polo+Shirt'],
+    images: [poloContrastImg],
     colors: ['#1B4D8E', '#FFFFFF'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description: 'A classic polo shirt with stylish contrast trims on the collar and cuffs.',
@@ -104,7 +113,7 @@ export const products: Product[] = [
     discountPercent: 30,
     rating: 5.0,
     reviewCount: 34,
-    images: ['https://placehold.co/295x370/222222/FFF?text=Striped+Tee'],
+    images: [blackStripedImg],
     colors: ['#000000', '#FFFFFF'],
     sizes: ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large'],
     description: 'A bold black striped t-shirt that adds a modern edge to any casual look.',
@@ -176,11 +185,7 @@ export const products: Product[] = [
     discountPercent: 40,
     rating: 4.5,
     reviewCount: 45,
-    images: [
-      'https://placehold.co/444x530/5C4A1E/FFF?text=One+Life+Tee+Front',
-      'https://placehold.co/444x530/4A3B18/FFF?text=One+Life+Tee+Side',
-      'https://placehold.co/444x530/3B2E10/FFF?text=One+Life+Tee+Back',
-    ],
+    images: [oneLifeImg],
     colors: ['#4A3B18', '#1B2A4A', '#1A3A1A'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large'],
     description:
@@ -193,9 +198,63 @@ export const products: Product[] = [
     price: 180,
     rating: 4.5,
     reviewCount: 72,
-    images: ['https://placehold.co/295x370/C0392B/FFF?text=Polo+Tipping'],
+    images: [poloTippingImg],
     colors: ['#C0392B', '#2C3E50', '#FFFFFF'],
     sizes: ['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'],
     description: 'A sophisticated polo shirt with contrasting tipping details for a polished look.',
+  },
+  {
+    id: 'earth-tone-cloud-wash-hoodie',
+    name: 'Earth-Tone Cloud Wash Hoodie',
+    category: 'casual',
+    price: 195,
+    rating: 4.5,
+    reviewCount: 61,
+    images: [earthToneHoodieImg],
+    colors: ['#8B7355', '#6B5B45', '#A0907A'],
+    sizes: ['X-Small', 'Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A cozy cloud-wash hoodie in warm earth tones, perfect for layering on cool days.',
+    isNew: true,
+  },
+  {
+    id: 'nautical-explorer-anchor-polo',
+    name: 'Nautical Explorer Anchor Polo',
+    category: 'casual',
+    price: 160,
+    originalPrice: 200,
+    discountPercent: 20,
+    rating: 4.0,
+    reviewCount: 38,
+    images: [nauticalPoloImg],
+    colors: ['#1B3A6B', '#FFFFFF', '#8B1A1A'],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A nautical-inspired polo shirt featuring an embroidered anchor motif and crisp contrast accents.',
+  },
+  {
+    id: 'quantum-series-new-dimensions-tee',
+    name: 'Quantum Series New Dimensions T-shirt',
+    category: 'casual',
+    price: 155,
+    rating: 4.5,
+    reviewCount: 29,
+    images: [quantumTeeImg],
+    colors: ['#0A0A1A', '#1A1A3A', '#2A1A4A'],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'],
+    description: 'A futuristic graphic tee from the Quantum Series, featuring bold dimensional artwork on premium cotton.',
+    isNew: true,
+  },
+  {
+    id: 'signature-anchor-tailored-wool-blazer',
+    name: 'Signature Anchor Tailored Wool Blazer',
+    category: 'formal',
+    price: 565,
+    originalPrice: 650,
+    discountPercent: 13,
+    rating: 5.0,
+    reviewCount: 19,
+    images: [signatureBlazerImg],
+    colors: ['#1C2526', '#2C3E50', '#4A3728'],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    description: 'A tailored wool blazer with a signature anchor lining — crafted for those who dress with intent.',
   },
 ];

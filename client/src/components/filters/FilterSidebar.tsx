@@ -56,7 +56,7 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
         <h4 className="mb-4 text-sm font-semibold text-gray-900">Price</h4>
         <PriceRangeSlider
           min={0}
-          max={500}
+          max={650}
           value={filters.priceRange}
           onChange={range => onChange({ ...filters, priceRange: range })}
         />
@@ -88,7 +88,7 @@ export default function FilterSidebar({ filters, onChange, allColors }: FilterSi
             ...filters,
             colors: [],
             sizes: [],
-            priceRange: [0, 500],
+            priceRange: [0, 650],
             category: 'all',
           })
         }

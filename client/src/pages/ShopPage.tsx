@@ -15,7 +15,7 @@ function initialFilters(category: string): FilterState {
   const validCategories: DressStyle[] = ['casual', 'formal', 'party', 'gym'];
   return {
     category: validCategories.includes(category as DressStyle) ? (category as DressStyle) : 'all',
-    priceRange: [0, 500],
+    priceRange: [0, 650],
     colors: [],
     sizes: [],
   };
