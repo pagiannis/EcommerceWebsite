@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
 import type { DressStyle } from "../types/dressStyle";
@@ -77,9 +77,12 @@ export default function ShopPage() {
     setPage(1);
   }
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
   function handlePageChange(newPage: number) {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
