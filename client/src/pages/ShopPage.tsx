@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
 import type { DressStyle } from "../types/dressStyle";
 import type { FilterState } from "../types/filterState";
+import type { Size } from "../types/size";
 import FilterSidebar from "../components/home/FilterSidebar";
 import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopHeader, { SORT_OPTIONS } from "../components/shop/ShopHeader";
@@ -12,29 +13,28 @@ import ShopPagination from "../components/shop/ShopPagination";
 const ITEMS_PER_PAGE = 9;
 
 const allColors = [...new Set(products.flatMap((p) => p.colors))];
-
-function initialFilters(category: string): FilterState {
-  const validCategories: DressStyle[] = ["casual", "formal", "party", "gym"];
-  return {
-    category: validCategories.includes(category as DressStyle)
-      ? (category as DressStyle)
-      : "all",
-    priceRange: [0, 650],
-    colors: [],
-    sizes: [],
-  };
-}
+const VALID_CATEGORIES: DressStyle[] = ["casual", "formal", "party", "gym"];
 
 export default function ShopPage() {
-  const [searchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category") ?? "all";
-
-  const [filters, setFilters] = useState<FilterState>(() =>
-    initialFilters(categoryParam),
-  );
-  const [sort, setSort] = useState(SORT_OPTIONS[0]);
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const filters: FilterState = useMemo(() => {
+    const cat = searchParams.get("category") ?? "all";
+    const minP = Number(searchParams.get("minPrice") ?? "0");
+    const maxP = Number(searchParams.get("maxPrice") ?? "650");
+    const colors = searchParams.get("colors")?.split(",").filter(Boolean) ?? [];
+    const sizes = (searchParams.get("sizes")?.split(",").filter(Boolean) ?? []) as Size[];
+    return {
+      category: VALID_CATEGORIES.includes(cat as DressStyle) ? (cat as DressStyle) : "all",
+      priceRange: [minP, maxP],
+      colors,
+      sizes,
+    };
+  }, [searchParams]);
+
+  const sort = searchParams.get("sort") ?? SORT_OPTIONS[0];
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
 
   const filtered = useMemo(() => {
     let result = products.slice();
@@ -74,17 +74,45 @@ export default function ShopPage() {
   );
 
   function handleFilterChange(f: FilterState) {
-    setFilters(f);
-    setPage(1);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (f.category === "all") next.delete("category");
+      else next.set("category", f.category);
+      if (f.priceRange[0] === 0) next.delete("minPrice");
+      else next.set("minPrice", String(f.priceRange[0]));
+      if (f.priceRange[1] === 650) next.delete("maxPrice");
+      else next.set("maxPrice", String(f.priceRange[1]));
+      if (f.colors.length) next.set("colors", f.colors.join(","));
+      else next.delete("colors");
+      if (f.sizes.length) next.set("sizes", f.sizes.join(","));
+      else next.delete("sizes");
+      next.delete("page");
+      return next;
+    });
+  }
+
+  function handleSortChange(s: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (s === SORT_OPTIONS[0]) next.delete("sort");
+      else next.set("sort", s);
+      next.delete("page");
+      return next;
+    });
+  }
+
+  function handlePageChange(newPage: number) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newPage === 1) next.delete("page");
+      else next.set("page", String(newPage));
+      return next;
+    });
   }
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
-
-  function handlePageChange(newPage: number) {
-    setPage(newPage);
-  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
@@ -106,7 +134,7 @@ export default function ShopPage() {
             currentStart={currentStart}
             currentEnd={currentEnd}
             sort={sort}
-            onSortChange={setSort}
+            onSortChange={handleSortChange}
             onFilterOpen={() => setFilterOpen(true)}
           />
 
