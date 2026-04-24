@@ -1,14 +1,24 @@
-import type { CartItem as CartItemType } from '../../types/cartItem';
-import type { Size } from '../../types/size';
-import QuantityStepper from '../ui/QuantityStepper';
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import type { CartItem as CartItemType } from "../../types/cartItem";
+import type { Size } from "../../types/size";
+import QuantityStepper from "../ui/QuantityStepper";
 
 interface CartItemProps {
   item: CartItemType;
   onRemove: (productId: string, color: string, size: Size) => void;
-  onQuantityChange: (productId: string, color: string, size: Size, qty: number) => void;
+  onQuantityChange: (
+    productId: string,
+    color: string,
+    size: Size,
+    qty: number,
+  ) => void;
 }
 
-export default function CartItem({ item, onRemove, onQuantityChange }: CartItemProps) {
+export default function CartItem({
+  item,
+  onRemove,
+  onQuantityChange,
+}: CartItemProps) {
   return (
     <div className="flex gap-4 rounded-2xl border border-gray-200 p-4">
       <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-gray">
@@ -33,18 +43,13 @@ export default function CartItem({ item, onRemove, onQuantityChange }: CartItemP
           </div>
           <button
             type="button"
-            onClick={() => onRemove(item.product.id, item.selectedColor, item.selectedSize)}
+            onClick={() =>
+              onRemove(item.product.id, item.selectedColor, item.selectedSize)
+            }
             className="text-brand-red hover:opacity-70"
             aria-label="Remove item"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"
-              />
-            </svg>
+            <RiDeleteBin5Fill className="h-5 w-5" />
           </button>
         </div>
         <div className="flex items-center justify-between">
@@ -52,7 +57,12 @@ export default function CartItem({ item, onRemove, onQuantityChange }: CartItemP
           <QuantityStepper
             value={item.quantity}
             onChange={(qty) =>
-              onQuantityChange(item.product.id, item.selectedColor, item.selectedSize, qty)
+              onQuantityChange(
+                item.product.id,
+                item.selectedColor,
+                item.selectedSize,
+                qty,
+              )
             }
             min={0}
           />
