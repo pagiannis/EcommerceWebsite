@@ -9,14 +9,14 @@ export default function ProductImageGallery({ images, name }: ProductImageGaller
   const [activeImage, setActiveImage] = useState(0);
 
   return (
-    <div className="flex gap-4 lg:w-1/2">
-      <div className="flex flex-col gap-3">
+    <div className="flex flex-col-reverse gap-3 lg:flex-row lg:gap-4 lg:w-1/2">
+      <div className="flex flex-row gap-3 lg:flex-col">
         {images.map((img, i) => (
           <button
             key={i}
             type="button"
             onClick={() => setActiveImage(i)}
-            className={`h-20 w-16 overflow-hidden rounded-xl border-2 transition ${
+            className={`h-20 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
               i === activeImage ? 'border-brand-black' : 'border-transparent'
             }`}
           >
