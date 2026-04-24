@@ -93,11 +93,11 @@ export default function ProductTabs({
                   </svg>
                 </button>
                 {/* Sort dropdown */}
-                <div className="relative inline-flex items-center rounded-full border border-gray-200 px-4 py-2">
+                <div className="relative inline-flex items-center rounded-full bg-brand-gray px-4 py-2">
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value)}
-                    className="appearance-none cursor-pointer bg-transparent pr-5 text-sm font-medium text-brand-black outline-none"
+                    className="appearance-none cursor-pointer pr-5 text-sm font-medium text-brand-black outline-none"
                   >
                     {SORT_OPTIONS.map((o) => (
                       <option key={o}>{o}</option>
