@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from "react";
+import PromoCodeIcon from "../ui/PromoCodeIcon";
 
 const DELIVERY_FEE = 15;
 const PROMO_CODES: Record<string, number> = { SHOP20: 20, SAVE10: 10 };
@@ -8,7 +9,7 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ subtotal }: OrderSummaryProps) {
-  const [promoInput, setPromoInput] = useState('');
+  const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoError, setPromoError] = useState(false);
 
@@ -53,19 +54,7 @@ export default function OrderSummary({ subtotal }: OrderSummaryProps) {
 
       <div className="mt-5 flex gap-2">
         <div className="relative flex-1">
-          <svg
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z"
-            />
-          </svg>
+          <PromoCodeIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={promoInput}
@@ -89,7 +78,9 @@ export default function OrderSummary({ subtotal }: OrderSummaryProps) {
         <p className="mt-1 text-xs text-brand-red">Invalid promo code.</p>
       )}
       {appliedPromo && (
-        <p className="mt-1 text-xs text-green-600">Code "{appliedPromo}" applied!</p>
+        <p className="mt-1 text-xs text-green-600">
+          Code "{appliedPromo}" applied!
+        </p>
       )}
 
       <button
