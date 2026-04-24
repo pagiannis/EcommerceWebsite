@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
 import type { DressStyle } from "../types/dressStyle";
 import type { FilterState } from "../types/filterState";
-import FilterSidebar from "../components/filters/FilterSidebar";
+import FilterSidebar from "../components/home/FilterSidebar";
 import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopHeader, { SORT_OPTIONS } from "../components/shop/ShopHeader";
 import ProductGrid from "../components/shop/ProductGrid";
@@ -65,7 +65,8 @@ export default function ShopPage() {
   }, [filters, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const currentStart = filtered.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
+  const currentStart =
+    filtered.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
   const currentEnd = Math.min(page * ITEMS_PER_PAGE, filtered.length);
   const paginated = filtered.slice(
     (page - 1) * ITEMS_PER_PAGE,
