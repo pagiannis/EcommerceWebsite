@@ -59,7 +59,7 @@ export default function ProductTabs({
 
       <div className="mt-8">
         {tab === "details" && (
-          <p className="max-w-2xl text-gray-600">{description}</p>
+          <p className="text-gray-600">{description}</p>
         )}
 
         {tab === "reviews" && (
@@ -92,8 +92,8 @@ export default function ProductTabs({
                     />
                   </svg>
                 </button>
-                {/* Sort dropdown */}
-                <div className="relative inline-flex items-center rounded-full bg-brand-gray px-4 py-2">
+                {/* Sort dropdown — desktop only */}
+                <div className="relative hidden sm:inline-flex items-center rounded-full bg-brand-gray px-4 py-2">
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value)}
@@ -120,7 +120,7 @@ export default function ProductTabs({
                 {/* Write a Review */}
                 <button
                   type="button"
-                  className="rounded-full bg-brand-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+                  className="rounded-full bg-brand-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 whitespace-nowrap"
                 >
                   Write a Review
                 </button>
@@ -163,7 +163,7 @@ export default function ProductTabs({
         )}
 
         {tab === "faqs" && (
-          <div className="max-w-2xl space-y-4">
+          <div className="space-y-4">
             {FAQS.map((faq) => (
               <div
                 key={faq.q}
