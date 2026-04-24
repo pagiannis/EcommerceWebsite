@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Review } from "../../types/review";
 import StarRating from "../ui/StarRating";
 import FilterIcon from "../ui/FilterIcon";
 
 type Tab = "details" | "reviews" | "faqs";
+const VALID_TABS: Tab[] = ["details", "reviews", "faqs"];
 
 const FAQS = [
   {
@@ -32,11 +34,51 @@ export default function ProductTabs({
   description,
   reviews,
 }: ProductTabsProps) {
-  const [tab, setTab] = useState<Tab>("reviews");
-  const [sort, setSort] = useState(SORT_OPTIONS[0]);
-  const [minRating, setMinRating] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  const rawTab = searchParams.get("tab") ?? "reviews";
+  const tab: Tab = VALID_TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "reviews";
+  const sort = searchParams.get("sort") ?? SORT_OPTIONS[0];
+  const minRating = Math.max(0, Number(searchParams.get("minRating") ?? "0"));
+
+  function handleTabChange(t: Tab) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (t === "reviews") {
+        next.delete("tab");
+      } else {
+        next.set("tab", t);
+      }
+      return next;
+    }, { preventScrollReset: true });
+  }
+
+  function handleSortChange(s: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (s === SORT_OPTIONS[0]) {
+        next.delete("sort");
+      } else {
+        next.set("sort", s);
+      }
+      return next;
+    }, { preventScrollReset: true });
+  }
+
+  function handleMinRatingChange(r: number) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (r === 0) {
+        next.delete("minRating");
+      } else {
+        next.set("minRating", String(r));
+      }
+      return next;
+    }, { preventScrollReset: true });
+    setFilterOpen(false);
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -75,7 +117,7 @@ export default function ProductTabs({
           <button
             key={t}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => handleTabChange(t)}
             className={`flex-1 -mb-px py-4 text-base capitalize transition text-center ${
               tab === t
                 ? "border-b-2 border-brand-black font-bold text-brand-black"
@@ -128,10 +170,7 @@ export default function ProductTabs({
                           <button
                             key={r}
                             type="button"
-                            onClick={() => {
-                              setMinRating(r);
-                              setFilterOpen(false);
-                            }}
+                            onClick={() => handleMinRatingChange(r)}
                             className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition hover:bg-brand-gray ${
                               minRating === r
                                 ? "bg-brand-gray font-semibold text-brand-black"
@@ -157,7 +196,7 @@ export default function ProductTabs({
                 <div className="relative hidden sm:inline-flex items-center rounded-full bg-brand-gray px-4 py-2">
                   <select
                     value={sort}
-                    onChange={(e) => setSort(e.target.value)}
+                    onChange={(e) => handleSortChange(e.target.value)}
                     className="appearance-none cursor-pointer pr-5 text-sm font-medium text-brand-black outline-none bg-transparent"
                   >
                     {SORT_OPTIONS.map((o) => (
