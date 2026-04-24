@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Review } from "../../types/review";
 import StarRating from "../ui/StarRating";
+import FilterIcon from "../ui/FilterIcon";
 
 type Tab = "details" | "reviews" | "faqs";
 
@@ -115,19 +116,7 @@ export default function ProductTabs({
                     }`}
                     aria-label="Filter reviews"
                   >
-                    <svg
-                      className={`h-5 w-5 ${minRating > 0 ? "text-white" : "text-brand-black"}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6V4m0 2a2 2 0 1 0 0 4m0-4a2 2 0 1 1 0 4m-6 8a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 1 0 0-4m0 4a2 2 0 1 1 0-4m0 4v2m0-6V4"
-                      />
-                    </svg>
+                    <FilterIcon className={`h-5 w-5 ${minRating > 0 ? "text-white" : "text-brand-black"}`} />
                   </button>
                   {filterOpen && (
                     <div className="absolute left-0 top-full z-10 mt-2 min-w-max rounded-2xl border border-gray-200 bg-white p-4 shadow-lg">
