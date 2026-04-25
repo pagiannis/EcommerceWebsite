@@ -142,6 +142,28 @@ export default function ShopPage() {
             onFilterOpen={() => setFilterOpen(true)}
           />
 
+          {filters.onSale && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
+                On Sale
+                <button
+                  type="button"
+                  aria-label="Remove On Sale filter"
+                  onClick={() =>
+                    setSearchParams((prev) => {
+                      const next = new URLSearchParams(prev);
+                      next.delete("onSale");
+                      return next;
+                    })
+                  }
+                  className="ml-1 leading-none hover:opacity-70"
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+          )}
+
           <ProductGrid products={paginated} />
 
           <ShopPagination
