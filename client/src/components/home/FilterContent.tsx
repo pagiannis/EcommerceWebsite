@@ -1,4 +1,6 @@
 import { useState } from "react";
+import type { Gender } from "../../types/gender";
+import type { ProductType } from "../../types/productType";
 import type { DressStyle } from "../../types/dressStyle";
 import type { FilterState } from "../../types/filterState";
 import type { Size } from "../../types/size";
@@ -17,12 +19,30 @@ interface FilterContentProps {
   showCloseButton: boolean;
 }
 
-const categories: { value: DressStyle | "all"; label: string }[] = [
+const genders: { value: Gender | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "men", label: "Men" },
+  { value: "women", label: "Women" },
+  { value: "kids", label: "Kids" },
+];
+
+const dressStyles: { value: DressStyle | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "casual", label: "Casual" },
   { value: "formal", label: "Formal" },
   { value: "party", label: "Party" },
   { value: "gym", label: "Gym" },
+];
+
+const productTypes: { value: ProductType | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "t-shirt", label: "T-Shirts" },
+  { value: "jeans", label: "Jeans" },
+  { value: "shirt", label: "Shirts" },
+  { value: "polo", label: "Polo" },
+  { value: "hoodie", label: "Hoodies" },
+  { value: "shorts", label: "Shorts" },
+  { value: "blazer", label: "Blazers" },
 ];
 
 export default function FilterContent({
@@ -58,19 +78,42 @@ export default function FilterContent({
       </div>
 
       <div className="border-b border-gray-200 py-4">
+        <h4 className="mb-3 text-sm font-semibold text-gray-900">Gender</h4>
         <ul className="space-y-2">
-          {categories.map((cat) => (
-            <li key={cat.value}>
+          {genders.map((g) => (
+            <li key={g.value}>
               <button
                 type="button"
-                onClick={() => setDraft({ ...draft, category: cat.value })}
+                onClick={() => setDraft({ ...draft, gender: g.value })}
                 className={`flex w-full items-center justify-between text-sm ${
-                  draft.category === cat.value
+                  draft.gender === g.value
                     ? "font-semibold text-brand-black"
                     : "text-gray-600 hover:text-black"
                 }`}
               >
-                {cat.label}
+                {g.label}
+                <IoIosArrowForward className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="border-b border-gray-200 py-4">
+        <h4 className="mb-3 text-sm font-semibold text-gray-900">Type</h4>
+        <ul className="space-y-2">
+          {productTypes.map((t) => (
+            <li key={t.value}>
+              <button
+                type="button"
+                onClick={() => setDraft({ ...draft, productType: t.value })}
+                className={`flex w-full items-center justify-between text-sm ${
+                  draft.productType === t.value
+                    ? "font-semibold text-brand-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                {t.label}
                 <IoIosArrowForward className="h-4 w-4" />
               </button>
             </li>
@@ -103,6 +146,28 @@ export default function FilterContent({
           selected={draft.sizes}
           onChange={(sizes: Size[]) => setDraft({ ...draft, sizes })}
         />
+      </div>
+
+      <div className="border-b border-gray-200 py-4">
+        <h4 className="mb-3 text-sm font-semibold text-gray-900">Dress Style</h4>
+        <ul className="space-y-2">
+          {dressStyles.map((s) => (
+            <li key={s.value}>
+              <button
+                type="button"
+                onClick={() => setDraft({ ...draft, dressStyle: s.value })}
+                className={`flex w-full items-center justify-between text-sm ${
+                  draft.dressStyle === s.value
+                    ? "font-semibold text-brand-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                {s.label}
+                <IoIosArrowForward className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <button

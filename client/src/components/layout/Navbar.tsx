@@ -6,7 +6,33 @@ import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { IoMenu, IoClose } from "react-icons/io5";
 
-const shopCategories = ["Casual", "Formal", "Party", "Gym"];
+const megaMenu = [
+  {
+    gender: "men",
+    label: "Men",
+    types: ["T-Shirts", "Jeans", "Shirts", "Polo", "Hoodies", "Shorts", "Blazers"],
+  },
+  {
+    gender: "women",
+    label: "Women",
+    types: ["T-Shirts", "Jeans", "Hoodies"],
+  },
+  {
+    gender: "kids",
+    label: "Kids",
+    types: [],
+  },
+] as const;
+
+const typeParam: Record<string, string> = {
+  "T-Shirts": "t-shirt",
+  Jeans: "jeans",
+  Shirts: "shirt",
+  Polo: "polo",
+  Hoodies: "hoodie",
+  Shorts: "shorts",
+  Blazers: "blazer",
+};
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -83,6 +109,7 @@ export default function Navbar() {
 
         {/* Desktop: nav */}
         <nav className="hidden items-center gap-6 md:flex">
+          {/* Shop mega menu */}
           <div
             className="relative"
             onMouseEnter={openShop}
@@ -95,21 +122,49 @@ export default function Navbar() {
               Shop
               <FaChevronDown className="h-3 w-3" />
             </button>
+
             {shopOpen && (
-              <div className="absolute left-0 top-full w-40 rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
-                {shopCategories.map((cat) => (
-                  <Link
-                    key={cat}
-                    to={`/shop?category=${cat.toLowerCase()}`}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-gray"
-                    onClick={() => setShopOpen(false)}
-                  >
-                    {cat}
-                  </Link>
+              <div className="absolute left-0 top-full mt-1 grid grid-cols-3 gap-8 rounded-xl border border-gray-100 bg-white px-8 py-6 shadow-lg w-[420px]">
+                {megaMenu.map((col) => (
+                  <div key={col.gender}>
+                    <Link
+                      to={`/shop?gender=${col.gender}`}
+                      className="mb-2 block text-sm font-bold text-brand-black hover:underline"
+                      onClick={() => setShopOpen(false)}
+                    >
+                      {col.label}
+                    </Link>
+                    <ul className="space-y-1.5">
+                      {col.types.length === 0 ? (
+                        <li>
+                          <Link
+                            to={`/shop?gender=${col.gender}`}
+                            className="text-sm text-gray-600 hover:text-black"
+                            onClick={() => setShopOpen(false)}
+                          >
+                            All
+                          </Link>
+                        </li>
+                      ) : (
+                        col.types.map((type) => (
+                          <li key={type}>
+                            <Link
+                              to={`/shop?gender=${col.gender}&type=${typeParam[type]}`}
+                              className="text-sm text-gray-600 hover:text-black"
+                              onClick={() => setShopOpen(false)}
+                            >
+                              {type}
+                            </Link>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
                 ))}
               </div>
             )}
           </div>
+
           <NavLink
             to="/shop?onSale=true"
             className="text-sm font-medium text-gray-700 hover:text-black"
@@ -180,6 +235,16 @@ export default function Navbar() {
             >
               Shop
             </Link>
+            {megaMenu.map((col) => (
+              <Link
+                key={col.gender}
+                to={`/shop?gender=${col.gender}`}
+                className="text-sm font-medium"
+                onClick={() => setMobileOpen(false)}
+              >
+                {col.label}
+              </Link>
+            ))}
             <Link
               to="/shop?onSale=true"
               className="text-sm font-medium"

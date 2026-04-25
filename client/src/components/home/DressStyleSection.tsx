@@ -5,10 +5,10 @@ import partyImg from "../../assets/dressstyles/Party.png";
 import gymImg from "../../assets/dressstyles/Gym.png";
 
 const dressStyles = [
-  { label: "Casual", img: casualImg, span: "lg:col-span-1" },
-  { label: "Formal", img: formalImg, span: "lg:col-span-2" },
-  { label: "Party", img: partyImg, span: "lg:col-span-2" },
-  { label: "Gym", img: gymImg, span: "lg:col-span-1" },
+  { label: "Casual", img: casualImg, to: "/shop?style=casual", span: "lg:col-span-1" },
+  { label: "Formal", img: formalImg, to: "/shop?style=formal", span: "lg:col-span-2" },
+  { label: "Party", img: partyImg, to: "/shop?style=party", span: "lg:col-span-2" },
+  { label: "Gym", img: gymImg, to: "/shop?style=gym", span: "lg:col-span-1" },
 ] as const;
 
 export default function DressStyleSection() {
@@ -22,7 +22,7 @@ export default function DressStyleSection() {
           {dressStyles.map((style) => (
             <Link
               key={style.label}
-              to={`/shop?category=${style.label.toLowerCase()}`}
+              to={style.to}
               className={`${style.span} group relative flex h-44 overflow-hidden rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md sm:h-52 lg:h-60`}
             >
               <span className="relative z-10 text-lg font-bold text-brand-black lg:text-xl">

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import type { Gender } from "../../types/gender";
+import type { ProductType } from "../../types/productType";
 import FilterIcon from "../ui/FilterIcon";
 
 const SORT_OPTIONS = [
@@ -8,8 +10,27 @@ const SORT_OPTIONS = [
   "Newest",
 ];
 
+const TYPE_LABELS: Record<ProductType, string> = {
+  't-shirt': 'T-Shirts',
+  jeans: 'Jeans',
+  shirt: 'Shirts',
+  polo: 'Polo',
+  hoodie: 'Hoodies',
+  shorts: 'Shorts',
+  blazer: 'Blazers',
+};
+
+function buildTitle(gender: Gender | 'all', productType: ProductType | 'all'): string {
+  if (gender === 'all' && productType === 'all') return 'All Products';
+  const genderLabel = gender !== 'all' ? gender.charAt(0).toUpperCase() + gender.slice(1) : '';
+  const typeLabel = productType !== 'all' ? TYPE_LABELS[productType] : '';
+  if (genderLabel && typeLabel) return `${genderLabel}'s ${typeLabel}`;
+  return genderLabel || typeLabel;
+}
+
 interface ShopHeaderProps {
-  category: string;
+  gender: Gender | 'all';
+  productType: ProductType | 'all';
   totalCount: number;
   currentStart: number;
   currentEnd: number;
@@ -21,7 +42,8 @@ interface ShopHeaderProps {
 export { SORT_OPTIONS };
 
 export default function ShopHeader({
-  category,
+  gender,
+  productType,
   totalCount,
   currentStart,
   currentEnd,
@@ -31,6 +53,7 @@ export default function ShopHeader({
 }: ShopHeaderProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const title = buildTitle(gender, productType);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -46,8 +69,8 @@ export default function ShopHeader({
     <div className="mb-6 flex items-center justify-between">
       {/* Mobile layout */}
       <div className="flex items-center gap-2 lg:hidden">
-        <h1 className="text-xl font-extrabold capitalize text-brand-black">
-          {category === "all" ? "All Products" : category}
+        <h1 className="text-xl font-extrabold text-brand-black">
+          {title}
         </h1>
         <span className="text-sm text-gray-500">
           Showing {currentStart}-{currentEnd} of {totalCount} Products
@@ -55,8 +78,8 @@ export default function ShopHeader({
       </div>
 
       {/* Desktop layout */}
-      <h1 className="hidden lg:block text-2xl font-extrabold capitalize text-brand-black">
-        {category === "all" ? "All Products" : category}
+      <h1 className="hidden lg:block text-2xl font-extrabold text-brand-black">
+        {title}
       </h1>
 
       {/* Mobile: filter icon button */}

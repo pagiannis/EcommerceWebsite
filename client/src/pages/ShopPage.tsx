@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
+import type { Gender } from "../types/gender";
+import type { ProductType } from "../types/productType";
 import type { DressStyle } from "../types/dressStyle";
 import type { FilterState } from "../types/filterState";
 import type { Size } from "../types/size";
@@ -14,20 +16,25 @@ import ActiveFilterChips from "../components/shop/ActiveFilterChips";
 const ITEMS_PER_PAGE = 9;
 
 const allColors = [...new Set(products.flatMap((p) => p.colors))];
-const VALID_CATEGORIES: DressStyle[] = ["casual", "formal", "party", "gym"];
+const VALID_GENDERS: Gender[] = ["men", "women", "kids"];
+const VALID_TYPES: ProductType[] = ["t-shirt", "jeans", "shirt", "polo", "hoodie", "shorts", "blazer"];
+const VALID_STYLES: DressStyle[] = ["casual", "formal", "party", "gym"];
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
 
   const filters: FilterState = useMemo(() => {
-    const cat = searchParams.get("category") ?? "all";
+    const g = searchParams.get("gender") ?? "all";
+    const t = searchParams.get("type") ?? "all";
     const minP = Number(searchParams.get("minPrice") ?? "0");
     const maxP = Number(searchParams.get("maxPrice") ?? "650");
     const colors = searchParams.get("colors")?.split(",").filter(Boolean) ?? [];
     const sizes = (searchParams.get("sizes")?.split(",").filter(Boolean) ?? []) as Size[];
     return {
-      category: VALID_CATEGORIES.includes(cat as DressStyle) ? (cat as DressStyle) : "all",
+      gender: VALID_GENDERS.includes(g as Gender) ? (g as Gender) : "all",
+      productType: VALID_TYPES.includes(t as ProductType) ? (t as ProductType) : "all",
+      dressStyle: VALID_STYLES.includes(searchParams.get("style") as DressStyle) ? (searchParams.get("style") as DressStyle) : "all",
       priceRange: [minP, maxP],
       colors,
       sizes,
@@ -43,8 +50,14 @@ export default function ShopPage() {
   const filtered = useMemo(() => {
     let result = products.slice();
 
-    if (filters.category !== "all") {
-      result = result.filter((p) => p.category === filters.category);
+    if (filters.gender !== "all") {
+      result = result.filter((p) => p.gender === filters.gender);
+    }
+    if (filters.productType !== "all") {
+      result = result.filter((p) => p.productType === filters.productType);
+    }
+    if (filters.dressStyle !== "all") {
+      result = result.filter((p) => p.dressStyle === filters.dressStyle);
     }
     result = result.filter(
       (p) =>
@@ -89,8 +102,12 @@ export default function ShopPage() {
   function handleFilterChange(f: FilterState) {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (f.category === "all") next.delete("category");
-      else next.set("category", f.category);
+      if (f.gender === "all") next.delete("gender");
+      else next.set("gender", f.gender);
+      if (f.productType === "all") next.delete("type");
+      else next.set("type", f.productType);
+      if (f.dressStyle === "all") next.delete("style");
+      else next.set("style", f.dressStyle);
       if (f.priceRange[0] === 0) next.delete("minPrice");
       else next.set("minPrice", String(f.priceRange[0]));
       if (f.priceRange[1] === 650) next.delete("maxPrice");
@@ -129,7 +146,7 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb category={filters.category} />
+      <ShopBreadcrumb gender={filters.gender} productType={filters.productType} dressStyle={filters.dressStyle} />
 
       <div className="flex gap-6 flex-col lg:flex-row">
         <FilterSidebar
@@ -142,7 +159,8 @@ export default function ShopPage() {
 
         <div className="flex-1">
           <ShopHeader
-            category={filters.category}
+            gender={filters.gender}
+            productType={filters.productType}
             totalCount={filtered.length}
             currentStart={currentStart}
             currentEnd={currentEnd}
