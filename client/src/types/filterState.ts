@@ -6,4 +6,5 @@ export interface FilterState {
   priceRange: [number, number];
   colors: string[];
   sizes: Size[];
+  onSale: boolean;
 }

@@ -30,6 +30,7 @@ export default function ShopPage() {
       priceRange: [minP, maxP],
       colors,
       sizes,
+      onSale: searchParams.get("onSale") === "true",
     };
   }, [searchParams]);
 
@@ -55,6 +56,9 @@ export default function ShopPage() {
       result = result.filter((p) =>
         p.sizes.some((s) => filters.sizes.includes(s)),
       );
+    }
+    if (filters.onSale) {
+      result = result.filter((p) => p.discountPercent != null);
     }
 
     if (sort === "Price: Low to High") result.sort((a, b) => a.price - b.price);
