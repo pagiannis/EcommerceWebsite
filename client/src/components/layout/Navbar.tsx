@@ -6,6 +6,16 @@ import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { IoMenu, IoClose } from "react-icons/io5";
 
+const brandsList = [
+  { slug: "nike", label: "Nike" },
+  { slug: "levis", label: "Levi's" },
+  { slug: "tommy-hilfiger", label: "Tommy Hilfiger" },
+  { slug: "ralph-lauren", label: "Ralph Lauren" },
+  { slug: "hm", label: "H&M" },
+  { slug: "zara", label: "Zara" },
+  { slug: "calvin-klein", label: "Calvin Klein" },
+] as const;
+
 const megaMenu = [
   {
     gender: "men",
@@ -37,9 +47,11 @@ const typeParam: Record<string, string> = {
 export default function Navbar() {
   const { totalItems } = useCart();
   const [shopOpen, setShopOpen] = useState(false);
+  const [brandsOpen, setBrandsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const brandsCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   function openShop() {
@@ -49,6 +61,15 @@ export default function Navbar() {
 
   function scheduleClose() {
     closeTimer.current = setTimeout(() => setShopOpen(false), 150);
+  }
+
+  function openBrands() {
+    if (brandsCloseTimer.current) clearTimeout(brandsCloseTimer.current);
+    setBrandsOpen(true);
+  }
+
+  function scheduleBrandsClose() {
+    brandsCloseTimer.current = setTimeout(() => setBrandsOpen(false), 150);
   }
 
   function openMobileSearch() {
@@ -177,12 +198,44 @@ export default function Navbar() {
           >
             New Arrivals
           </NavLink>
-          <NavLink
-            to="/shop"
-            className="text-sm font-medium text-gray-700 hover:text-black"
+          <div
+            className="relative"
+            onMouseEnter={openBrands}
+            onMouseLeave={scheduleBrandsClose}
           >
-            Brands
-          </NavLink>
+            <button
+              type="button"
+              className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black"
+            >
+              Brands
+              <FaChevronDown className="h-3 w-3" />
+            </button>
+
+            {brandsOpen && (
+              <div className="absolute left-0 top-full mt-1 min-w-[160px] rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-lg">
+                <Link
+                  to="/shop"
+                  className="mb-2 block text-sm font-bold text-brand-black hover:underline"
+                  onClick={() => setBrandsOpen(false)}
+                >
+                  All Brands
+                </Link>
+                <ul className="space-y-1.5">
+                  {brandsList.map((b) => (
+                    <li key={b.slug}>
+                      <Link
+                        to={`/shop?brand=${b.slug}`}
+                        className="text-sm text-gray-600 hover:text-black"
+                        onClick={() => setBrandsOpen(false)}
+                      >
+                        {b.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Desktop: search bar */}
@@ -259,13 +312,17 @@ export default function Navbar() {
             >
               New Arrivals
             </Link>
-            <Link
-              to="/shop"
-              className="text-sm font-medium"
-              onClick={() => setMobileOpen(false)}
-            >
-              Brands
-            </Link>
+            <span className="text-sm font-semibold text-gray-400">Brands</span>
+            {brandsList.map((b) => (
+              <Link
+                key={b.slug}
+                to={`/shop?brand=${b.slug}`}
+                className="pl-3 text-sm font-medium"
+                onClick={() => setMobileOpen(false)}
+              >
+                {b.label}
+              </Link>
+            ))}
           </nav>
         </div>
       )}

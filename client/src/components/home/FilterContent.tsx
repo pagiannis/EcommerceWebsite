@@ -1,7 +1,8 @@
 import { useState } from "react";
-import type { Gender } from "../../types/gender";
+
 import type { ProductType } from "../../types/productType";
 import type { DressStyle } from "../../types/dressStyle";
+
 import type { FilterState } from "../../types/filterState";
 import type { Size } from "../../types/size";
 import ColorFilter from "./ColorFilter";
@@ -18,13 +19,6 @@ interface FilterContentProps {
   onClose: () => void;
   showCloseButton: boolean;
 }
-
-const genders: { value: Gender | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "men", label: "Men" },
-  { value: "women", label: "Women" },
-  { value: "kids", label: "Kids" },
-];
 
 const dressStyles: { value: DressStyle | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -78,29 +72,6 @@ export default function FilterContent({
       </div>
 
       <div className="border-b border-gray-200 py-4">
-        <h4 className="mb-3 text-sm font-semibold text-gray-900">Gender</h4>
-        <ul className="space-y-2">
-          {genders.map((g) => (
-            <li key={g.value}>
-              <button
-                type="button"
-                onClick={() => setDraft({ ...draft, gender: g.value })}
-                className={`flex w-full items-center justify-between text-sm ${
-                  draft.gender === g.value
-                    ? "font-semibold text-brand-black"
-                    : "text-gray-600 hover:text-black"
-                }`}
-              >
-                {g.label}
-                <IoIosArrowForward className="h-4 w-4" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="border-b border-gray-200 py-4">
-        <h4 className="mb-3 text-sm font-semibold text-gray-900">Type</h4>
         <ul className="space-y-2">
           {productTypes.map((t) => (
             <li key={t.value}>
@@ -149,7 +120,9 @@ export default function FilterContent({
       </div>
 
       <div className="border-b border-gray-200 py-4">
-        <h4 className="mb-3 text-sm font-semibold text-gray-900">Dress Style</h4>
+        <h4 className="mb-3 text-sm font-semibold text-gray-900">
+          Dress Style
+        </h4>
         <ul className="space-y-2">
           {dressStyles.map((s) => (
             <li key={s.value}>

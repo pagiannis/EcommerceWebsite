@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Gender } from "../../types/gender";
 import type { ProductType } from "../../types/productType";
+import type { Brand } from "../../types/brand";
 import FilterIcon from "../ui/FilterIcon";
 
 const SORT_OPTIONS = [
@@ -20,7 +21,18 @@ const TYPE_LABELS: Record<ProductType, string> = {
   blazer: 'Blazers',
 };
 
-function buildTitle(gender: Gender | 'all', productType: ProductType | 'all'): string {
+const BRAND_LABELS: Record<Brand, string> = {
+  nike: 'Nike',
+  levis: "Levi's",
+  'tommy-hilfiger': 'Tommy Hilfiger',
+  'ralph-lauren': 'Ralph Lauren',
+  hm: 'H&M',
+  zara: 'Zara',
+  'calvin-klein': 'Calvin Klein',
+};
+
+function buildTitle(gender: Gender | 'all', productType: ProductType | 'all', brand: Brand | 'all'): string {
+  if (brand !== 'all' && gender === 'all' && productType === 'all') return BRAND_LABELS[brand];
   if (gender === 'all' && productType === 'all') return 'All Products';
   const genderLabel = gender !== 'all' ? gender.charAt(0).toUpperCase() + gender.slice(1) : '';
   const typeLabel = productType !== 'all' ? TYPE_LABELS[productType] : '';
@@ -31,6 +43,7 @@ function buildTitle(gender: Gender | 'all', productType: ProductType | 'all'): s
 interface ShopHeaderProps {
   gender: Gender | 'all';
   productType: ProductType | 'all';
+  brand: Brand | 'all';
   totalCount: number;
   currentStart: number;
   currentEnd: number;
@@ -44,6 +57,7 @@ export { SORT_OPTIONS };
 export default function ShopHeader({
   gender,
   productType,
+  brand,
   totalCount,
   currentStart,
   currentEnd,
@@ -53,7 +67,7 @@ export default function ShopHeader({
 }: ShopHeaderProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const title = buildTitle(gender, productType);
+  const title = buildTitle(gender, productType, brand);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

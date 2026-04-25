@@ -4,6 +4,7 @@ import { products } from "../data/products";
 import type { Gender } from "../types/gender";
 import type { ProductType } from "../types/productType";
 import type { DressStyle } from "../types/dressStyle";
+import type { Brand } from "../types/brand";
 import type { FilterState } from "../types/filterState";
 import type { Size } from "../types/size";
 import FilterSidebar from "../components/home/FilterSidebar";
@@ -19,6 +20,7 @@ const allColors = [...new Set(products.flatMap((p) => p.colors))];
 const VALID_GENDERS: Gender[] = ["men", "women", "kids"];
 const VALID_TYPES: ProductType[] = ["t-shirt", "jeans", "shirt", "polo", "hoodie", "shorts", "blazer"];
 const VALID_STYLES: DressStyle[] = ["casual", "formal", "party", "gym"];
+const VALID_BRANDS: Brand[] = ["nike", "levis", "tommy-hilfiger", "ralph-lauren", "hm", "zara", "calvin-klein"];
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -35,6 +37,7 @@ export default function ShopPage() {
       gender: VALID_GENDERS.includes(g as Gender) ? (g as Gender) : "all",
       productType: VALID_TYPES.includes(t as ProductType) ? (t as ProductType) : "all",
       dressStyle: VALID_STYLES.includes(searchParams.get("style") as DressStyle) ? (searchParams.get("style") as DressStyle) : "all",
+      brand: VALID_BRANDS.includes(searchParams.get("brand") as Brand) ? (searchParams.get("brand") as Brand) : "all",
       priceRange: [minP, maxP],
       colors,
       sizes,
@@ -58,6 +61,9 @@ export default function ShopPage() {
     }
     if (filters.dressStyle !== "all") {
       result = result.filter((p) => p.dressStyle === filters.dressStyle);
+    }
+    if (filters.brand !== "all") {
+      result = result.filter((p) => p.brand === filters.brand);
     }
     result = result.filter(
       (p) =>
@@ -108,6 +114,8 @@ export default function ShopPage() {
       else next.set("type", f.productType);
       if (f.dressStyle === "all") next.delete("style");
       else next.set("style", f.dressStyle);
+      if (f.brand === "all") next.delete("brand");
+      else next.set("brand", f.brand);
       if (f.priceRange[0] === 0) next.delete("minPrice");
       else next.set("minPrice", String(f.priceRange[0]));
       if (f.priceRange[1] === 650) next.delete("maxPrice");
@@ -146,7 +154,7 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb gender={filters.gender} productType={filters.productType} dressStyle={filters.dressStyle} />
+      <ShopBreadcrumb gender={filters.gender} productType={filters.productType} dressStyle={filters.dressStyle} brand={filters.brand} />
 
       <div className="flex gap-6 flex-col lg:flex-row">
         <FilterSidebar
@@ -161,6 +169,7 @@ export default function ShopPage() {
           <ShopHeader
             gender={filters.gender}
             productType={filters.productType}
+            brand={filters.brand}
             totalCount={filtered.length}
             currentStart={currentStart}
             currentEnd={currentEnd}
