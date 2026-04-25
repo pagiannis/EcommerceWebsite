@@ -7,4 +7,6 @@ export interface FilterState {
   colors: string[];
   sizes: Size[];
   onSale: boolean;
+  newArrivals: boolean;
+  topSelling: boolean;
 }

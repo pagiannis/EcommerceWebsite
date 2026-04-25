@@ -117,7 +117,7 @@ export default function Navbar() {
             On Sale
           </NavLink>
           <NavLink
-            to="/shop"
+            to="/shop?newArrivals=true"
             className="text-sm font-medium text-gray-700 hover:text-black"
           >
             New Arrivals
@@ -188,7 +188,7 @@ export default function Navbar() {
               On Sale
             </Link>
             <Link
-              to="/shop"
+              to="/shop?newArrivals=true"
               className="text-sm font-medium"
               onClick={() => setMobileOpen(false)}
             >

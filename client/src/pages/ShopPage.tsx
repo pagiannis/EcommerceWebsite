@@ -31,6 +31,8 @@ export default function ShopPage() {
       colors,
       sizes,
       onSale: searchParams.get("onSale") === "true",
+      newArrivals: searchParams.get("newArrivals") === "true",
+      topSelling: searchParams.get("topSelling") === "true",
     };
   }, [searchParams]);
 
@@ -59,6 +61,12 @@ export default function ShopPage() {
     }
     if (filters.onSale) {
       result = result.filter((p) => p.discountPercent != null);
+    }
+    if (filters.newArrivals) {
+      result = result.filter((p) => p.isNew);
+    }
+    if (filters.topSelling) {
+      result = result.filter((p) => p.isBestSeller);
     }
 
     if (sort === "Price: Low to High") result.sort((a, b) => a.price - b.price);
@@ -142,25 +150,65 @@ export default function ShopPage() {
             onFilterOpen={() => setFilterOpen(true)}
           />
 
-          {filters.onSale && (
+          {(filters.onSale || filters.newArrivals || filters.topSelling) && (
             <div className="mb-4 flex flex-wrap gap-2">
-              <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
-                On Sale
-                <button
-                  type="button"
-                  aria-label="Remove On Sale filter"
-                  onClick={() =>
-                    setSearchParams((prev) => {
-                      const next = new URLSearchParams(prev);
-                      next.delete("onSale");
-                      return next;
-                    })
-                  }
-                  className="ml-1 leading-none hover:opacity-70"
-                >
-                  ×
-                </button>
-              </span>
+              {filters.onSale && (
+                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
+                  On Sale
+                  <button
+                    type="button"
+                    aria-label="Remove On Sale filter"
+                    onClick={() =>
+                      setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev);
+                        next.delete("onSale");
+                        return next;
+                      })
+                    }
+                    className="ml-1 leading-none hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.newArrivals && (
+                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
+                  New Arrivals
+                  <button
+                    type="button"
+                    aria-label="Remove New Arrivals filter"
+                    onClick={() =>
+                      setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev);
+                        next.delete("newArrivals");
+                        return next;
+                      })
+                    }
+                    className="ml-1 leading-none hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.topSelling && (
+                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
+                  Top Selling
+                  <button
+                    type="button"
+                    aria-label="Remove Top Selling filter"
+                    onClick={() =>
+                      setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev);
+                        next.delete("topSelling");
+                        return next;
+                      })
+                    }
+                    className="ml-1 leading-none hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
             </div>
           )}
 

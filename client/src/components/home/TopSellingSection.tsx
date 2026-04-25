@@ -19,7 +19,7 @@ export default function TopSellingSection() {
       </div>
       <div className="mt-8 text-center">
         <Link
-          to="/shop"
+          to="/shop?topSelling=true"
           className="inline-block rounded-full border border-gray-300 px-10 py-3 text-sm font-medium text-brand-black transition hover:bg-brand-gray"
         >
           View All
