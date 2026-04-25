@@ -9,6 +9,7 @@ import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopHeader, { SORT_OPTIONS } from "../components/shop/ShopHeader";
 import ProductGrid from "../components/shop/ProductGrid";
 import ShopPagination from "../components/shop/ShopPagination";
+import ActiveFilterChips from "../components/shop/ActiveFilterChips";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -150,67 +151,13 @@ export default function ShopPage() {
             onFilterOpen={() => setFilterOpen(true)}
           />
 
-          {(filters.onSale || filters.newArrivals || filters.topSelling) && (
-            <div className="mb-4 flex flex-wrap gap-2">
-              {filters.onSale && (
-                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
-                  On Sale
-                  <button
-                    type="button"
-                    aria-label="Remove On Sale filter"
-                    onClick={() =>
-                      setSearchParams((prev) => {
-                        const next = new URLSearchParams(prev);
-                        next.delete("onSale");
-                        return next;
-                      })
-                    }
-                    className="ml-1 leading-none hover:opacity-70"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {filters.newArrivals && (
-                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
-                  New Arrivals
-                  <button
-                    type="button"
-                    aria-label="Remove New Arrivals filter"
-                    onClick={() =>
-                      setSearchParams((prev) => {
-                        const next = new URLSearchParams(prev);
-                        next.delete("newArrivals");
-                        return next;
-                      })
-                    }
-                    className="ml-1 leading-none hover:opacity-70"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {filters.topSelling && (
-                <span className="flex items-center gap-1 rounded-full bg-brand-black px-3 py-1 text-sm font-medium text-white">
-                  Top Selling
-                  <button
-                    type="button"
-                    aria-label="Remove Top Selling filter"
-                    onClick={() =>
-                      setSearchParams((prev) => {
-                        const next = new URLSearchParams(prev);
-                        next.delete("topSelling");
-                        return next;
-                      })
-                    }
-                    className="ml-1 leading-none hover:opacity-70"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
+          <ActiveFilterChips
+            active={{
+              onSale: filters.onSale,
+              newArrivals: filters.newArrivals,
+              topSelling: filters.topSelling,
+            }}
+          />
 
           <ProductGrid products={paginated} />
 
