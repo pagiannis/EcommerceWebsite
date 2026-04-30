@@ -1,19 +1,21 @@
-package com.ecommerce.server.model;
+package com.ecommerce.server.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cart_items",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"}))
-@Data
+@Table(name = "wishlist_items",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"user_id", "product_id"}
+        ))
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+@Builder
+public class WishlistItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +29,6 @@ public class CartItem {
     private Product product;
 
     @Column(nullable = false)
-    private Integer quantity = 1;
-
+    @Builder.Default
     private LocalDateTime addedAt = LocalDateTime.now();
 }

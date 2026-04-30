@@ -1,18 +1,18 @@
-package com.ecommerce.server.model;
+package com.ecommerce.server.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,15 +25,26 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    // Snapshot fields — παραμένουν ακόμα κι αν διαγραφεί/αλλάξει το προϊόν
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id")
+    private ProductVariant variant;
+
+    // === SNAPSHOT FIELDS ===
     @Column(nullable = false)
     private String productName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal priceAtPurchase;
+
+    @Column(nullable = false)
+    private String selectedColor;
+
+    @Column(nullable = false)
+    private String selectedSize;
 
     @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 }

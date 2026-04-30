@@ -1,6 +1,6 @@
 package com.ecommerce.server.repository;
 
-import com.ecommerce.server.model.Product;
+import com.ecommerce.server.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,14 +12,13 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findBySlug(String slug);
 
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
     // Για search με autocomplete
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    // Για φίλτρα (παράδειγμα)
+    // Για φίλτρα
     Page<Product> findByPriceBetween(BigDecimal min, BigDecimal max, Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId " +

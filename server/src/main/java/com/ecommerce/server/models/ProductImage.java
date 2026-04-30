@@ -1,16 +1,17 @@
-package com.ecommerce.server.model;
+package com.ecommerce.server.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "product_images")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductImage {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,6 +23,9 @@ public class ProductImage {
     @Column(nullable = false)
     private String imageUrl;
 
+    @Builder.Default
     private Integer displayOrder = 0;
+
+    @Builder.Default
     private boolean isPrimary = false;
 }

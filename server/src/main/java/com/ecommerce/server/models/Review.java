@@ -1,18 +1,18 @@
-package com.ecommerce.server.model;
+package com.ecommerce.server.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reviews")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,10 +26,12 @@ public class Review {
     private User user;
 
     @Column(nullable = false)
-    private Integer rating; // 1-5
+    private Integer rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;
 
+    @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
