@@ -38,6 +38,8 @@ Client-side SPA with 4 pages: Home, Shop, Product Detail, Cart.
 - `bg-brand-black` / `text-brand-black` → `#000000`
 - `bg-brand-gray` → `#F2F0F1`
 - `text-brand-red` → `#FF3333`
+- `font-display` → Integral CF (headings, brand text) — self-hosted in `public/fonts/`
+- `font-sans` → Satoshi (body text, default on `<body>`) — loaded via Fontshare CDN
 
 Range slider thumb styles must be in raw CSS (`::-webkit-slider-thumb`) — Tailwind utilities can't target pseudo-elements.
 

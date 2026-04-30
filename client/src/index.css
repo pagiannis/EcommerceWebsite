@@ -1,9 +1,36 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Integral CF";
+  src: url("/fonts/IntegralCF-Regular.woff2") format("woff2"),
+       url("/fonts/IntegralCF-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-brand-black: #000000;
   --color-brand-gray: #F2F0F1;
   --color-brand-red: #FF3333;
+
+  --font-display: "Integral CF", sans-serif;
+  --font-sans: "Satoshi", sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 input[type='range']::-webkit-slider-thumb {
