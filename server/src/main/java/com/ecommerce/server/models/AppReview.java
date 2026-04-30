@@ -32,13 +32,13 @@ public class AppReview {
      * (π.χ. στο homepage testimonials section)
      */
     @Builder.Default
-    private boolean isFeatured = false;
+    private boolean featured = false;
 
     /**
      * Approval flow - δεν δείχνουμε reviews που δεν έχουν εγκριθεί
      */
     @Builder.Default
-    private boolean isApproved = false;
+    private boolean approved = false;
 
     @Column(nullable = false)
     @Builder.Default

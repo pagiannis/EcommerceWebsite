@@ -1,0 +1,143 @@
+package com.ecommerce.server.service;
+
+import com.ecommerce.server.dto.AppReviewRequest;
+import com.ecommerce.server.dto.AppReviewResponse;
+import com.ecommerce.server.models.AppReview;
+import com.ecommerce.server.models.User;
+import com.ecommerce.server.repository.AppReviewRepository;
+import com.ecommerce.server.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class AppReviewService {
+
+    private final AppReviewRepository appReviewRepository;
+    private final UserRepository userRepository;
+
+    public AppReviewService(AppReviewRepository appReviewRepository,
+                          UserRepository userRepository) {
+        this.appReviewRepository = appReviewRepository;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * Λήψη featured reviews για homepage
+     */
+    public List<AppReviewResponse> getFeaturedReviews() {
+        return appReviewRepository.findByApprovedAndFeaturedOrderByCreatedAtDesc(true, true)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Λήψη όλων των εγκεκριμένων reviews
+     */
+    public List<AppReviewResponse> getApprovedReviews() {
+        return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Λήψη reviews χρήστη
+     */
+    public List<AppReviewResponse> getUserReviews(Long userId) {
+        return appReviewRepository.findByUserId(userId)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Δημιουργία νέας κριτικής εφαρμογής
+     */
+    @Transactional
+    public AppReviewResponse submitReview(Long userId, AppReviewRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        AppReview appReview = AppReview.builder()
+                .user(user)
+                .rating(request.rating())
+                .comment(request.comment())
+                .approved(false)  // Pending approval
+                .featured(false)
+                .build();
+
+        return convertToResponse(appReviewRepository.save(appReview));
+    }
+
+    /**
+     * Admin: Έγκριση κριτικής
+     */
+    @Transactional
+    public AppReviewResponse approveReview(Long reviewId) {
+        AppReview appReview = appReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        appReview.setApproved(true);
+        return convertToResponse(appReviewRepository.save(appReview));
+    }
+
+    /**
+     * Admin: Κάνει κριτική featured (εμφάνιση στο homepage)
+     */
+    @Transactional
+    public AppReviewResponse featureReview(Long reviewId) {
+        AppReview appReview = appReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!appReview.isApproved()) {
+            throw new RuntimeException("Can only feature approved reviews");
+        }
+
+        appReview.setFeatured(true);
+        return convertToResponse(appReviewRepository.save(appReview));
+    }
+
+    /**
+     * Admin: Αφαίρεση featured status
+     */
+    @Transactional
+    public AppReviewResponse unfeatureReview(Long reviewId) {
+        AppReview appReview = appReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        appReview.setFeatured(false);
+        return convertToResponse(appReviewRepository.save(appReview));
+    }
+
+    /**
+     * Διαγραφή κριτικής
+     */
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        AppReview appReview = appReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        appReviewRepository.delete(appReview);
+    }
+
+    // Μετατροπή AppReview Entity σε AppReviewResponse DTO
+    private AppReviewResponse convertToResponse(AppReview appReview) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String createdAt = appReview.getCreatedAt().format(formatter);
+
+        return new AppReviewResponse(
+                appReview.getId(),
+                appReview.getUser().getFirstName() + " " + appReview.getUser().getLastName(),
+                appReview.getRating(),
+                appReview.getComment(),
+                createdAt,
+                appReview.isApproved(),
+                appReview.isFeatured()
+        );
+    }
+}
+

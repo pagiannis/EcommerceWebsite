@@ -1,0 +1,125 @@
+package com.ecommerce.server.service;
+
+import com.ecommerce.server.dto.CartItemRequest;
+import com.ecommerce.server.dto.CartItemResponse;
+import com.ecommerce.server.models.CartItem;
+import com.ecommerce.server.models.ProductVariant;
+import com.ecommerce.server.models.User;
+import com.ecommerce.server.repository.CartItemRepository;
+import com.ecommerce.server.repository.ProductVariantRepository;
+import com.ecommerce.server.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class CartService {
+
+    private final CartItemRepository cartItemRepository;
+    private final ProductVariantRepository productVariantRepository;
+    private final UserRepository userRepository;
+
+    public CartService(CartItemRepository cartItemRepository, 
+                      ProductVariantRepository productVariantRepository,
+                      UserRepository userRepository) {
+        this.cartItemRepository = cartItemRepository;
+        this.productVariantRepository = productVariantRepository;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * Λήψη καλαθιού χρήστη
+     */
+    public List<CartItemResponse> getUserCart(Long userId) {
+        return cartItemRepository.findByUserId(userId)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Προσθήκη προϊόντος στο καλάθι
+     */
+    @Transactional
+    public CartItemResponse addToCart(Long userId, CartItemRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        ProductVariant variant = productVariantRepository.findById(request.variantId())
+                .orElseThrow(() -> new RuntimeException("Variant not found"));
+
+        // Έλεγχος αν υπάρχει ήδη στο καλάθι
+        CartItem existingItem = cartItemRepository.findByUserIdAndVariantId(userId, request.variantId())
+                .orElse(null);
+
+        if (existingItem != null) {
+            // Αν υπάρχει ήδη, αυξάνουμε την ποσότητα
+            existingItem.setQuantity(existingItem.getQuantity() + request.quantity());
+            return convertToResponse(cartItemRepository.save(existingItem));
+        }
+
+        // Δημιουργία νέου cart item
+        CartItem cartItem = CartItem.builder()
+                .user(user)
+                .variant(variant)
+                .quantity(request.quantity())
+                .build();
+
+        return convertToResponse(cartItemRepository.save(cartItem));
+    }
+
+    /**
+     * Ενημέρωση ποσότητας
+     */
+    @Transactional
+    public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (quantity <= 0) {
+            cartItemRepository.delete(cartItem);
+            throw new RuntimeException("Quantity must be > 0");
+        }
+
+        cartItem.setQuantity(quantity);
+        return convertToResponse(cartItemRepository.save(cartItem));
+    }
+
+    /**
+     * Αφαίρεση προϊόντος από καλάθι
+     */
+    @Transactional
+    public void removeFromCart(Long cartItemId) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        cartItemRepository.delete(cartItem);
+    }
+
+    /**
+     * Αποκαθάρισή καλαθιού χρήστη
+     */
+    @Transactional
+    public void clearCart(Long userId) {
+        cartItemRepository.deleteByUserId(userId);
+    }
+
+    // Μετατροπή CartItem Entity σε CartItemResponse DTO
+    private CartItemResponse convertToResponse(CartItem item) {
+        ProductVariant variant = item.getVariant();
+        return new CartItemResponse(
+                item.getId(),
+                variant.getId(),
+                variant.getProduct().getName(),
+                variant.getColor().toString(),
+                variant.getSize().toString(),
+                item.getQuantity(),
+                variant.getProduct().getPrice().doubleValue(),
+                variant.getProduct().getPrice()
+                        .multiply(java.math.BigDecimal.valueOf(item.getQuantity()))
+                        .doubleValue()
+        );
+    }
+}
+
