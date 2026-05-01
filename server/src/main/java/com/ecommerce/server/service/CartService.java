@@ -1,7 +1,7 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.CartItemRequest;
-import com.ecommerce.server.dto.CartItemResponse;
+import com.ecommerce.server.dto.request.CartItemRequest;
+import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.models.CartItem;
 import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.User;
@@ -115,10 +115,9 @@ public class CartService {
                 variant.getColor().toString(),
                 variant.getSize().toString(),
                 item.getQuantity(),
-                variant.getProduct().getPrice().doubleValue(),
+                variant.getProduct().getPrice(),
                 variant.getProduct().getPrice()
                         .multiply(java.math.BigDecimal.valueOf(item.getQuantity()))
-                        .doubleValue()
         );
     }
 }

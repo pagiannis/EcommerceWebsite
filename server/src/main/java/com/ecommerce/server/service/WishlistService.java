@@ -1,6 +1,6 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.WishlistItemResponse;
+import com.ecommerce.server.dto.response.WishlistItemResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.models.WishlistItem;
@@ -96,7 +96,7 @@ public class WishlistService {
                 product.getName(),
                 imageUrl,
                 product.getBrand().getName(),
-                product.getPrice().doubleValue(),
+                product.getPrice(),
                 addedAt
         );
     }

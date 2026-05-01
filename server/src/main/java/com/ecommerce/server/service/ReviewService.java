@@ -1,7 +1,7 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.ReviewRequest;
-import com.ecommerce.server.dto.ReviewResponse;
+import com.ecommerce.server.dto.request.ReviewRequest;
+import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.Review;
 import com.ecommerce.server.models.User;

@@ -1,7 +1,7 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.OrderResponse;
-import com.ecommerce.server.dto.OrderItemResponse;
+import com.ecommerce.server.dto.response.OrderResponse;
+import com.ecommerce.server.dto.response.OrderItemResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.repository.*;

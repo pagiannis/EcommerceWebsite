@@ -1,8 +1,8 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.CategoryResponse;
-import com.ecommerce.server.dto.ProductResponse;
-import com.ecommerce.server.dto.ProductVariantResponse;
+import com.ecommerce.server.dto.response.CategoryResponse;
+import com.ecommerce.server.dto.response.ProductResponse;
+import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
