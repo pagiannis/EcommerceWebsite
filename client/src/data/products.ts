@@ -23,7 +23,7 @@ export const products: Product[] = [
   {
     id: 't-shirt-tape-details',
     name: 'T-shirt with Tape Details',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'tommy-hilfiger',
@@ -39,7 +39,7 @@ export const products: Product[] = [
   {
     id: 'skinny-fit-jeans',
     name: 'Skinny Fit Jeans',
-    gender: 'women',
+    category: 'women',
     productType: 'jeans',
     dressStyle: 'casual',
     brand: 'levis',
@@ -57,7 +57,7 @@ export const products: Product[] = [
   {
     id: 'checkered-shirt',
     name: 'Checkered Shirt',
-    gender: 'men',
+    category: 'men',
     productType: 'shirt',
     dressStyle: 'casual',
     brand: 'ralph-lauren',
@@ -73,7 +73,7 @@ export const products: Product[] = [
   {
     id: 'sleeve-striped-tee',
     name: 'Sleeve Striped T-shirt',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'nike',
@@ -93,7 +93,7 @@ export const products: Product[] = [
   {
     id: 'gradient-graphic-tee',
     name: 'Gradient Graphic T-shirt',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'hm',
@@ -108,7 +108,7 @@ export const products: Product[] = [
   {
     id: 'polo-contrast-trims',
     name: 'Polo with Contrast Trims',
-    gender: 'men',
+    category: 'men',
     productType: 'polo',
     dressStyle: 'casual',
     brand: 'tommy-hilfiger',
@@ -125,7 +125,7 @@ export const products: Product[] = [
   {
     id: 'black-striped-tee',
     name: 'Black Striped T-shirt',
-    gender: 'women',
+    category: 'women',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'zara',
@@ -144,7 +144,7 @@ export const products: Product[] = [
   {
     id: 'vertical-striped-shirt',
     name: 'Vertical Striped Shirt',
-    gender: 'men',
+    category: 'men',
     productType: 'shirt',
     dressStyle: 'formal',
     brand: 'calvin-klein',
@@ -162,7 +162,7 @@ export const products: Product[] = [
   {
     id: 'courage-graphic-tee',
     name: 'Courage Graphic T-shirt',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'nike',
@@ -178,7 +178,7 @@ export const products: Product[] = [
   {
     id: 'loose-bermuda-shorts',
     name: 'Loose Fit Bermuda Shorts',
-    gender: 'men',
+    category: 'men',
     productType: 'shorts',
     dressStyle: 'casual',
     brand: 'nike',
@@ -194,7 +194,7 @@ export const products: Product[] = [
   {
     id: 'faded-skinny-jeans',
     name: 'Faded Skinny Jeans',
-    gender: 'women',
+    category: 'women',
     productType: 'jeans',
     dressStyle: 'casual',
     brand: 'levis',
@@ -212,7 +212,7 @@ export const products: Product[] = [
   {
     id: 'one-life-graphic-tee',
     name: 'One Life Graphic T-shirt',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'hm',
@@ -230,7 +230,7 @@ export const products: Product[] = [
   {
     id: 'polo-tipping-details',
     name: 'Polo with Tipping Details',
-    gender: 'men',
+    category: 'men',
     productType: 'polo',
     dressStyle: 'formal',
     brand: 'tommy-hilfiger',
@@ -245,7 +245,7 @@ export const products: Product[] = [
   {
     id: 'earth-tone-cloud-wash-hoodie',
     name: 'Earth-Tone Cloud Wash Hoodie',
-    gender: 'women',
+    category: 'women',
     productType: 'hoodie',
     dressStyle: 'casual',
     brand: 'zara',
@@ -261,7 +261,7 @@ export const products: Product[] = [
   {
     id: 'nautical-explorer-anchor-polo',
     name: 'Nautical Explorer Anchor Polo',
-    gender: 'men',
+    category: 'men',
     productType: 'polo',
     dressStyle: 'casual',
     brand: 'ralph-lauren',
@@ -278,7 +278,7 @@ export const products: Product[] = [
   {
     id: 'quantum-series-new-dimensions-tee',
     name: 'Quantum Series New Dimensions T-shirt',
-    gender: 'men',
+    category: 'men',
     productType: 't-shirt',
     dressStyle: 'casual',
     brand: 'hm',
@@ -294,7 +294,7 @@ export const products: Product[] = [
   {
     id: 'signature-anchor-tailored-wool-blazer',
     name: 'Signature Anchor Tailored Wool Blazer',
-    gender: 'men',
+    category: 'men',
     productType: 'blazer',
     dressStyle: 'formal',
     brand: 'calvin-klein',

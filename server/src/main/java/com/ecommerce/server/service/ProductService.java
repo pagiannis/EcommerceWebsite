@@ -113,7 +113,6 @@ public class ProductService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getGender().toString(),
                 product.getCategory().getName(),
                 product.getBrand().getName(),
                 product.getProductType().toString(),

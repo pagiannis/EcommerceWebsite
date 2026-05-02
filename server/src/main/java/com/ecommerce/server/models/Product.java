@@ -1,7 +1,6 @@
 package com.ecommerce.server.models;
 
 import com.ecommerce.server.models.enums.DressStyle;
-import com.ecommerce.server.models.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -28,9 +27,6 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Gender gender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)

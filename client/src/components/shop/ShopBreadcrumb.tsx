@@ -1,4 +1,4 @@
-import type { Gender } from '../../types/gender';
+import type { Category } from '../../types/category';
 import type { ProductType } from '../../types/productType';
 import type { DressStyle } from '../../types/dressStyle';
 import type { Brand } from '../../types/brand';
@@ -25,19 +25,19 @@ const BRAND_LABELS: Record<Brand, string> = {
 };
 
 interface ShopBreadcrumbProps {
-  gender: Gender | 'all';
+  category: Category | 'all';
   productType: ProductType | 'all';
   dressStyle: DressStyle | 'all';
   brand: Brand | 'all';
 }
 
-export default function ShopBreadcrumb({ gender, productType, dressStyle, brand }: ShopBreadcrumbProps) {
-  const onlyBrand = brand !== 'all' && gender === 'all' && productType === 'all' && dressStyle === 'all';
-  const onlyStyle = dressStyle !== 'all' && gender === 'all' && productType === 'all' && brand === 'all';
+export default function ShopBreadcrumb({ category, productType, dressStyle, brand }: ShopBreadcrumbProps) {
+  const onlyBrand = brand !== 'all' && category === 'all' && productType === 'all' && dressStyle === 'all';
+  const onlyStyle = dressStyle !== 'all' && category === 'all' && productType === 'all' && brand === 'all';
 
   const items: { label: string; to?: string }[] = [
     { label: 'Home', to: '/' },
-    { label: 'Shop', to: gender !== 'all' || productType !== 'all' || dressStyle !== 'all' || brand !== 'all' ? '/shop' : undefined },
+    { label: 'Shop', to: category !== 'all' || productType !== 'all' || dressStyle !== 'all' || brand !== 'all' ? '/shop' : undefined },
   ];
 
   if (onlyBrand) {
@@ -45,10 +45,10 @@ export default function ShopBreadcrumb({ gender, productType, dressStyle, brand 
   } else if (onlyStyle) {
     items.push({ label: dressStyle.charAt(0).toUpperCase() + dressStyle.slice(1) });
   } else {
-    if (gender !== 'all') {
+    if (category !== 'all') {
       items.push({
-        label: gender.charAt(0).toUpperCase() + gender.slice(1),
-        to: productType !== 'all' || dressStyle !== 'all' || brand !== 'all' ? `/shop?gender=${gender}` : undefined,
+        label: category.charAt(0).toUpperCase() + category.slice(1),
+        to: productType !== 'all' || dressStyle !== 'all' || brand !== 'all' ? `/shop?category=${category}` : undefined,
       });
     }
     if (productType !== 'all') {

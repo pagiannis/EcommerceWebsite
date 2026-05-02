@@ -1,11 +1,11 @@
-import type { Gender } from './gender';
+import type { Category } from './category';
 import type { ProductType } from './productType';
 import type { DressStyle } from './dressStyle';
 import type { Brand } from './brand';
 import type { Size } from './size';
 
 export interface FilterState {
-  gender: Gender | 'all';
+  category: Category | 'all';
   productType: ProductType | 'all';
   dressStyle: DressStyle | 'all';
   brand: Brand | 'all';
