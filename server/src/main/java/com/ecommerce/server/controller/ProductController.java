@@ -34,4 +34,25 @@ public class ProductController {
     public ProductResponse getProductById(@PathVariable Long id) {
         return productService.getProductDetail(id);
     }
+
+    @GetMapping("/category/{categoryId}")
+    public Page<ProductResponse> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return productService.getProductsByCategory(categoryId, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/search")
+    public Page<ProductResponse> searchProducts(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return productService.searchProducts(query, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/{id}/variants")
+    public List<ProductVariantResponse> getProductVariants(@PathVariable Long id) {
+        return productService.getProductVariants(id);
+    }
 }
