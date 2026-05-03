@@ -251,7 +251,9 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private String generateSKU(Long productId, Color color, Size size) {
-        return String.format("SKU-%d-%s-%s", productId, color.name().substring(0, 3), size.name());
+        // Δημιουργούμε unique SKU με random component για να αποφύγουμε duplicates
+        String randomPart = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        return String.format("SKU-%d-%s-%s-%s", productId, color.name().substring(0, 3), size.name(), randomPart);
     }
 }
 
