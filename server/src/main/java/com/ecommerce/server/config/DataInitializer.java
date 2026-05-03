@@ -37,7 +37,12 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         // Αν υπάρχουν ήδη data, μην κάνουμε τίποτα
         if (productRepository.count() > 0) {
-            System.out.println("✅ Database already has data. Skipping initialization.");
+            System.out.println("✅ Database already has products. Skipping initialization.");
+            return;
+        }
+
+        if (categoryRepository.count() > 0) {
+            System.out.println("✅ Database already has categories. Skipping initialization.");
             return;
         }
 
@@ -113,7 +118,7 @@ public class DataInitializer implements CommandLineRunner {
         createProductWithVariants("Women's Skinny Jeans", "Classic skinny denim", womenCategory, calvin, BigDecimal.valueOf(115), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
         createProductWithVariants("Women's Flare Jeans", "Trendy flare silhouette", womenCategory, zara, BigDecimal.valueOf(105), BigDecimal.valueOf(145), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
         createProductWithVariants("Women's Bootcut Jeans", "Classic bootcut fit", womenCategory, gucci, BigDecimal.valueOf(130), BigDecimal.valueOf(180), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Women's High Waist Jeans", "High waist design", womenCategory, prada, BigDecimal.valueOf(120), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLUE});
+        createProductWithVariants("Women's High Waist Jeans", "High waist design", womenCategory, prada, BigDecimal.valueOf(120), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.GRAY});
         createProductWithVariants("Women's Ripped Jeans", "Edgy ripped style", womenCategory, versace, BigDecimal.valueOf(125), BigDecimal.valueOf(170), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
 
         // WOMEN - DRESS
