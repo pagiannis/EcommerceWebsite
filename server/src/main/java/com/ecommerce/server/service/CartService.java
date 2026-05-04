@@ -8,40 +8,30 @@ import com.ecommerce.server.models.User;
 import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
 
-    public CartService(CartItemRepository cartItemRepository, 
-                      ProductVariantRepository productVariantRepository,
-                      UserRepository userRepository) {
-        this.cartItemRepository = cartItemRepository;
-        this.productVariantRepository = productVariantRepository;
-        this.userRepository = userRepository;
-    }
 
-    /**
-     * Λήψη καλαθιού χρήστη
-     */
+    // Λήψη καλαθιού χρήστη
     public List<CartItemResponse> getUserCart(Long userId) {
         return cartItemRepository.findByUserId(userId)
                 .stream()
                 .map(this::convertToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    /**
-     * Προσθήκη προϊόντος στο καλάθι
-     */
+    // Προσθήκη προϊόντος στο καλάθι
     @Transactional
     public CartItemResponse addToCart(Long userId, CartItemRequest request) {
         User user = userRepository.findById(userId)
@@ -70,9 +60,7 @@ public class CartService {
         return convertToResponse(cartItemRepository.save(cartItem));
     }
 
-    /**
-     * Ενημέρωση ποσότητας
-     */
+    // Ενημέρωση ποσότητας
     @Transactional
     public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
@@ -87,9 +75,7 @@ public class CartService {
         return convertToResponse(cartItemRepository.save(cartItem));
     }
 
-    /**
-     * Αφαίρεση προϊόντος από καλάθι
-     */
+    // Αφαίρεση προϊόντος από καλάθι
     @Transactional
     public void removeFromCart(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
@@ -97,9 +83,7 @@ public class CartService {
         cartItemRepository.delete(cartItem);
     }
 
-    /**
-     * Αποκαθάρισή καλαθιού χρήστη
-     */
+    // Αποκαθάρισή καλαθιού χρήστη
     @Transactional
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);
