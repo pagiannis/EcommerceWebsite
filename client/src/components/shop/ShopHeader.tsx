@@ -11,15 +11,6 @@ const SORT_OPTIONS = [
   "Newest",
 ];
 
-const TYPE_LABELS: Record<ProductType, string> = {
-  't-shirt': 'T-Shirts',
-  jeans: 'Jeans',
-  shirt: 'Shirts',
-  polo: 'Polo',
-  hoodie: 'Hoodies',
-  shorts: 'Shorts',
-  blazer: 'Blazers',
-};
 
 const BRAND_LABELS: Record<Brand, string> = {
   nike: 'Nike',
@@ -31,13 +22,10 @@ const BRAND_LABELS: Record<Brand, string> = {
   'calvin-klein': 'Calvin Klein',
 };
 
-function buildTitle(category: Category | 'all', productType: ProductType | 'all', brand: Brand | 'all'): string {
-  if (brand !== 'all' && category === 'all' && productType === 'all') return BRAND_LABELS[brand];
-  if (category === 'all' && productType === 'all') return 'All Products';
-  const categoryLabel = category !== 'all' ? category.charAt(0).toUpperCase() + category.slice(1) : '';
-  const typeLabel = productType !== 'all' ? TYPE_LABELS[productType] : '';
-  if (categoryLabel && typeLabel) return `${categoryLabel}'s ${typeLabel}`;
-  return categoryLabel || typeLabel;
+function buildTitle(category: Category | 'all', _productType: ProductType | 'all', brand: Brand | 'all'): string {
+  if (brand !== 'all') return BRAND_LABELS[brand];
+  if (category === 'all') return 'All Products';
+  return category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 interface ShopHeaderProps {
