@@ -31,49 +31,68 @@ public class CartService {
                 .toList();
     }
 
-    // Προσθήκη προϊόντος στο καλάθι
-    @Transactional
-    public CartItemResponse addToCart(Long userId, CartItemRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+     // Προσθήκη προϊόντος στο καλάθι
+     @Transactional
+     public CartItemResponse addToCart(Long userId, CartItemRequest request) {
+         User user = userRepository.findById(userId)
+                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ProductVariant variant = productVariantRepository.findById(request.variantId())
-                .orElseThrow(() -> new RuntimeException("Variant not found"));
+         ProductVariant variant = productVariantRepository.findById(request.variantId())
+                 .orElseThrow(() -> new RuntimeException("Variant not found"));
 
-        // Έλεγχος αν υπάρχει ήδη στο καλάθι
-        CartItem existingItem = cartItemRepository.findByUserIdAndVariantId(userId, request.variantId())
-                .orElse(null);
+         // Έλεγχος αν η ζητούμενη ποσότητα είναι διαθέσιμη
+         if (request.quantity() <= 0) {
+             throw new RuntimeException("Quantity must be greater than 0");
+         }
 
-        if (existingItem != null) {
-            // Αν υπάρχει ήδη, αυξάνουμε την ποσότητα
-            existingItem.setQuantity(existingItem.getQuantity() + request.quantity());
-            return convertToResponse(cartItemRepository.save(existingItem));
-        }
+         if (request.quantity() > variant.getStockQuantity()) {
+             throw new RuntimeException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
+         }
 
-        // Δημιουργία νέου cart item
-        CartItem cartItem = CartItem.builder()
-                .user(user)
-                .variant(variant)
-                .quantity(request.quantity())
-                .build();
+         // Έλεγχος αν υπάρχει ήδη στο καλάθι
+         CartItem existingItem = cartItemRepository.findByUserIdAndVariantId(userId, request.variantId())
+                 .orElse(null);
 
-        return convertToResponse(cartItemRepository.save(cartItem));
-    }
+         if (existingItem != null) {
+             // Αν υπάρχει ήδη, ελέγχουμε αν η νέα συνολική ποσότητα δεν υπερβαίνει το stock
+             int newQuantity = existingItem.getQuantity() + request.quantity();
+             if (newQuantity > variant.getStockQuantity()) {
+                 throw new RuntimeException("Total quantity exceeds available stock. Available: " + variant.getStockQuantity());
+             }
+             existingItem.setQuantity(newQuantity);
+             return convertToResponse(cartItemRepository.save(existingItem));
+         }
 
-    // Ενημέρωση ποσότητας
-    @Transactional
-    public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+         // Δημιουργία νέου cart item
+         CartItem cartItem = CartItem.builder()
+                 .user(user)
+                 .variant(variant)
+                 .quantity(request.quantity())
+                 .build();
 
-        if (quantity <= 0) {
-            cartItemRepository.delete(cartItem);
-            throw new RuntimeException("Quantity must be > 0");
-        }
+         return convertToResponse(cartItemRepository.save(cartItem));
+     }
 
-        cartItem.setQuantity(quantity);
-        return convertToResponse(cartItemRepository.save(cartItem));
-    }
+     // Ενημέρωση ποσότητας
+     @Transactional
+     public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
+         CartItem cartItem = cartItemRepository.findById(cartItemId)
+                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+         if (quantity <= 0) {
+             cartItemRepository.delete(cartItem);
+             throw new RuntimeException("Quantity must be greater than 0");
+         }
+
+         // Έλεγχος αν η νέα ποσότητα υπερβαίνει το stock
+         ProductVariant variant = cartItem.getVariant();
+         if (quantity > variant.getStockQuantity()) {
+             throw new RuntimeException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
+         }
+
+         cartItem.setQuantity(quantity);
+         return convertToResponse(cartItemRepository.save(cartItem));
+     }
 
     // Αφαίρεση προϊόντος από καλάθι
     @Transactional
