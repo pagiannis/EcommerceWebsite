@@ -7,6 +7,9 @@ import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.Category;
+import com.ecommerce.server.models.enums.Color;
+import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import org.springframework.data.domain.Page;
@@ -59,12 +62,24 @@ public class ProductService {
                 .map(this::convertToResponse);
     }
 
-    // Φίλτραρίσμα προϊόντων κατά κατηγορία ΚΑΙ τιμή
-    public Page<ProductResponse> filterByCategoryAndPrice(Long categoryId, BigDecimal minPrice,
-                                                         BigDecimal maxPrice, Pageable pageable) {
-        return productRepository.findByCategoryAndPriceRange(categoryId, minPrice, maxPrice, pageable)
-                .map(this::convertToResponse);
-    }
+     // Φίλτραρίσμα προϊόντων κατά κατηγορία ΚΑΙ τιμή
+     public Page<ProductResponse> filterByCategoryAndPrice(Long categoryId, BigDecimal minPrice,
+                                                          BigDecimal maxPrice, Pageable pageable) {
+         return productRepository.findByCategoryAndPriceRange(categoryId, minPrice, maxPrice, pageable)
+                 .map(this::convertToResponse);
+     }
+
+     // Φίλτραρίσμα με πολλαπλά κριτήρια (τιμή, χρώμα, size, dress style)
+     public Page<ProductResponse> getFilteredProducts(
+             BigDecimal minPrice,
+             BigDecimal maxPrice,
+             Color color,
+             Size size,
+             DressStyle dressStyle,
+             Pageable pageable) {
+         return productRepository.findByFilters(minPrice, maxPrice, color, size, dressStyle, pageable)
+                 .map(this::convertToResponse);
+     }
 
     // Λήψη λεπτομερειών ενός προϊόντος
     public ProductResponse getProductDetail(Long productId) {
