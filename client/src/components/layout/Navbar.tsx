@@ -18,17 +18,17 @@ const brandsList = [
 
 const megaMenu = [
   {
-    gender: "men",
+    category: "men",
     label: "Men",
     types: ["T-Shirts", "Jeans", "Shirts", "Polo", "Hoodies", "Shorts", "Blazers"],
   },
   {
-    gender: "women",
+    category: "women",
     label: "Women",
     types: ["T-Shirts", "Jeans", "Hoodies"],
   },
   {
-    gender: "kids",
+    category: "kids",
     label: "Kids",
     types: [],
   },
@@ -147,9 +147,9 @@ export default function Navbar() {
             {shopOpen && (
               <div className="absolute left-0 top-full mt-1 grid grid-cols-3 gap-8 rounded-xl border border-gray-100 bg-white px-8 py-6 shadow-lg w-[420px]">
                 {megaMenu.map((col) => (
-                  <div key={col.gender}>
+                  <div key={col.category}>
                     <Link
-                      to={`/shop?gender=${col.gender}`}
+                      to={`/shop?category=${col.category}`}
                       className="mb-2 block text-sm font-bold text-brand-black hover:underline"
                       onClick={() => setShopOpen(false)}
                     >
@@ -159,7 +159,7 @@ export default function Navbar() {
                       {col.types.length === 0 ? (
                         <li>
                           <Link
-                            to={`/shop?gender=${col.gender}`}
+                            to={`/shop?category=${col.category}`}
                             className="text-sm text-gray-600 hover:text-black"
                             onClick={() => setShopOpen(false)}
                           >
@@ -170,7 +170,7 @@ export default function Navbar() {
                         col.types.map((type) => (
                           <li key={type}>
                             <Link
-                              to={`/shop?gender=${col.gender}&type=${typeParam[type]}`}
+                              to={`/shop?category=${col.category}&type=${typeParam[type]}`}
                               className="text-sm text-gray-600 hover:text-black"
                               onClick={() => setShopOpen(false)}
                             >
@@ -290,8 +290,8 @@ export default function Navbar() {
             </Link>
             {megaMenu.map((col) => (
               <Link
-                key={col.gender}
-                to={`/shop?gender=${col.gender}`}
+                key={col.category}
+                to={`/shop?category=${col.category}`}
                 className="text-sm font-medium"
                 onClick={() => setMobileOpen(false)}
               >

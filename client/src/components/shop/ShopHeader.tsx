@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Gender } from "../../types/gender";
+import type { Category } from "../../types/category";
 import type { ProductType } from "../../types/productType";
 import type { Brand } from "../../types/brand";
 import FilterIcon from "../ui/FilterIcon";
@@ -31,17 +31,17 @@ const BRAND_LABELS: Record<Brand, string> = {
   'calvin-klein': 'Calvin Klein',
 };
 
-function buildTitle(gender: Gender | 'all', productType: ProductType | 'all', brand: Brand | 'all'): string {
-  if (brand !== 'all' && gender === 'all' && productType === 'all') return BRAND_LABELS[brand];
-  if (gender === 'all' && productType === 'all') return 'All Products';
-  const genderLabel = gender !== 'all' ? gender.charAt(0).toUpperCase() + gender.slice(1) : '';
+function buildTitle(category: Category | 'all', productType: ProductType | 'all', brand: Brand | 'all'): string {
+  if (brand !== 'all' && category === 'all' && productType === 'all') return BRAND_LABELS[brand];
+  if (category === 'all' && productType === 'all') return 'All Products';
+  const categoryLabel = category !== 'all' ? category.charAt(0).toUpperCase() + category.slice(1) : '';
   const typeLabel = productType !== 'all' ? TYPE_LABELS[productType] : '';
-  if (genderLabel && typeLabel) return `${genderLabel}'s ${typeLabel}`;
-  return genderLabel || typeLabel;
+  if (categoryLabel && typeLabel) return `${categoryLabel}'s ${typeLabel}`;
+  return categoryLabel || typeLabel;
 }
 
 interface ShopHeaderProps {
-  gender: Gender | 'all';
+  category: Category | 'all';
   productType: ProductType | 'all';
   brand: Brand | 'all';
   totalCount: number;
@@ -55,7 +55,7 @@ interface ShopHeaderProps {
 export { SORT_OPTIONS };
 
 export default function ShopHeader({
-  gender,
+  category,
   productType,
   brand,
   totalCount,
@@ -67,7 +67,7 @@ export default function ShopHeader({
 }: ShopHeaderProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const title = buildTitle(gender, productType, brand);
+  const title = buildTitle(category, productType, brand);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

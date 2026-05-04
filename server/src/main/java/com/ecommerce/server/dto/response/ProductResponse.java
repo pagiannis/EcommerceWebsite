@@ -7,7 +7,6 @@ public record ProductResponse(
         Long id,
         String name,
         String description,
-        String gender,
         String category,
         String brand,
         String productType,

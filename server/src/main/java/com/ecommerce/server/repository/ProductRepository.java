@@ -15,6 +15,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
+    long countByCategoryId(Long categoryId);
+
     // Για search με autocomplete
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 

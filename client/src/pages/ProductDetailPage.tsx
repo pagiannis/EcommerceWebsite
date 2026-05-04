@@ -15,7 +15,7 @@ export default function ProductDetailPage() {
 
   const productReviews = reviews.filter(r => r.productId === product.id);
   const related = products
-    .filter(p => p.id !== product.id && p.gender === product.gender && p.productType === product.productType)
+    .filter(p => p.id !== product.id && p.category === product.category && p.productType === product.productType)
     .slice(0, 4);
 
   return (
@@ -25,7 +25,7 @@ export default function ProductDetailPage() {
         items={[
           { label: 'Home', to: '/' },
           { label: 'Shop', to: '/shop' },
-          { label: product.gender, to: `/shop?gender=${product.gender}` },
+          { label: product.category, to: `/shop?category=${product.category}` },
           { label: product.productType },
           { label: product.name },
         ]}

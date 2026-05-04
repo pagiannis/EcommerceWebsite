@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
-import type { Gender } from "../types/gender";
+import type { Category } from "../types/category";
 import type { ProductType } from "../types/productType";
 import type { DressStyle } from "../types/dressStyle";
 import type { Brand } from "../types/brand";
@@ -17,7 +17,7 @@ import ActiveFilterChips from "../components/shop/ActiveFilterChips";
 const ITEMS_PER_PAGE = 9;
 
 const allColors = [...new Set(products.flatMap((p) => p.colors))];
-const VALID_GENDERS: Gender[] = ["men", "women", "kids"];
+const VALID_CATEGORIES: Category[] = ["men", "women", "kids", "accessories"];
 const VALID_TYPES: ProductType[] = ["t-shirt", "jeans", "shirt", "polo", "hoodie", "shorts", "blazer"];
 const VALID_STYLES: DressStyle[] = ["casual", "formal", "party", "gym"];
 const VALID_BRANDS: Brand[] = ["nike", "levis", "tommy-hilfiger", "ralph-lauren", "hm", "zara", "calvin-klein"];
@@ -27,14 +27,14 @@ export default function ShopPage() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   const filters: FilterState = useMemo(() => {
-    const g = searchParams.get("gender") ?? "all";
+    const c = searchParams.get("category") ?? "all";
     const t = searchParams.get("type") ?? "all";
     const minP = Number(searchParams.get("minPrice") ?? "0");
     const maxP = Number(searchParams.get("maxPrice") ?? "650");
     const colors = searchParams.get("colors")?.split(",").filter(Boolean) ?? [];
     const sizes = (searchParams.get("sizes")?.split(",").filter(Boolean) ?? []) as Size[];
     return {
-      gender: VALID_GENDERS.includes(g as Gender) ? (g as Gender) : "all",
+      category: VALID_CATEGORIES.includes(c as Category) ? (c as Category) : "all",
       productType: VALID_TYPES.includes(t as ProductType) ? (t as ProductType) : "all",
       dressStyle: VALID_STYLES.includes(searchParams.get("style") as DressStyle) ? (searchParams.get("style") as DressStyle) : "all",
       brand: VALID_BRANDS.includes(searchParams.get("brand") as Brand) ? (searchParams.get("brand") as Brand) : "all",
@@ -53,8 +53,8 @@ export default function ShopPage() {
   const filtered = useMemo(() => {
     let result = products.slice();
 
-    if (filters.gender !== "all") {
-      result = result.filter((p) => p.gender === filters.gender);
+    if (filters.category !== "all") {
+      result = result.filter((p) => p.category === filters.category);
     }
     if (filters.productType !== "all") {
       result = result.filter((p) => p.productType === filters.productType);
@@ -108,8 +108,8 @@ export default function ShopPage() {
   function handleFilterChange(f: FilterState) {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (f.gender === "all") next.delete("gender");
-      else next.set("gender", f.gender);
+      if (f.category === "all") next.delete("category");
+      else next.set("category", f.category);
       if (f.productType === "all") next.delete("type");
       else next.set("type", f.productType);
       if (f.dressStyle === "all") next.delete("style");
@@ -154,7 +154,7 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb gender={filters.gender} productType={filters.productType} dressStyle={filters.dressStyle} brand={filters.brand} />
+      <ShopBreadcrumb category={filters.category} productType={filters.productType} dressStyle={filters.dressStyle} brand={filters.brand} />
 
       <div className="flex gap-6 flex-col lg:flex-row">
         <FilterSidebar
@@ -167,7 +167,7 @@ export default function ShopPage() {
 
         <div className="flex-1">
           <ShopHeader
-            gender={filters.gender}
+            category={filters.category}
             productType={filters.productType}
             brand={filters.brand}
             totalCount={filtered.length}
