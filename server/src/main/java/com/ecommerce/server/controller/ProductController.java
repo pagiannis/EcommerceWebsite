@@ -1,15 +1,13 @@
 package com.ecommerce.server.controller;
 
-import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController                              // ← Αυτό είναι ένα REST endpoint
@@ -24,35 +22,27 @@ public class ProductController {
     }
 
     @GetMapping
-    public Page<ProductResponse> getAllProducts(
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size){
-     return productService.getAllProducts(PageRequest.of(page, size));
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(productService.getAllProducts(PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
-    public ProductResponse getProductById(@PathVariable Long id) {
-        return productService.getProductDetail(id);
-    }
-
-    @GetMapping("/category/{categoryId}")
-    public Page<ProductResponse> getProductsByCategory(
-            @PathVariable Long categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return productService.getProductsByCategory(categoryId, PageRequest.of(page, size));
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductDetail(id));
     }
 
     @GetMapping("/search")
-    public Page<ProductResponse> searchProducts(
+    public ResponseEntity<Page<ProductResponse>> searchProducts(
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return productService.searchProducts(query, PageRequest.of(page, size));
+        return ResponseEntity.ok(productService.searchProducts(query, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}/variants")
-    public List<ProductVariantResponse> getProductVariants(@PathVariable Long id) {
-        return productService.getProductVariants(id);
+    public ResponseEntity<List<ProductVariantResponse>> getProductVariants(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductVariants(id));
     }
 }
