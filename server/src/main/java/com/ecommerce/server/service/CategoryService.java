@@ -3,6 +3,9 @@ package com.ecommerce.server.service;
 import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.models.Category;
+import com.ecommerce.server.models.enums.Color;
+import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -34,16 +38,35 @@ public class CategoryService {
         return convertToResponse(category);
     }
 
-    // Φέρνει προϊόντα μιας κατηγορίας με pagination
-    public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
-        // Έλεγχος αν η κατηγορία υπάρχει
-        categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+     // Φέρνει προϊόντα μιας κατηγορίας με pagination
+     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
+         // Έλεγχος αν η κατηγορία υπάρχει
+         categoryRepository.findById(categoryId)
+                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
 
-        // Φέρνει προϊόντα της κατηγορίας
-        return productRepository.findByCategoryId(categoryId, pageable)
-                .map(this::convertProductToResponse);
-    }
+         // Φέρνει προϊόντα της κατηγορίας
+         return productRepository.findByCategoryId(categoryId, pageable)
+                 .map(this::convertProductToResponse);
+     }
+
+     // Φέρνει προϊόντα μιας κατηγορίας με φίλτρα και pagination
+     public Page<ProductResponse> getProductsByCategoryWithFilters(
+             Long categoryId,
+             BigDecimal minPrice,
+             BigDecimal maxPrice,
+             Color color,
+             Size size,
+             DressStyle dressStyle,
+             Pageable pageable) {
+         // Έλεγχος αν η κατηγορία υπάρχει
+         categoryRepository.findById(categoryId)
+                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+
+         // Φέρνει προϊόντα της κατηγορίας με φίλτρα
+         return productRepository.findByCategoryAndFilters(
+                 categoryId, minPrice, maxPrice, color, size, dressStyle, pageable
+         ).map(this::convertProductToResponse);
+     }
 
     // Μετατρέπει Category entity σε DTO (με product count)
     private CategoryResponse convertToResponse(Category category) {
