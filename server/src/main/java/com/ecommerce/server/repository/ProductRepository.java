@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -23,16 +23,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         JOIN p.variants v
         WHERE (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (:color IS NULL OR v.color = :color)
-          AND (:size IS NULL OR v.size = :size)
+          AND (size(:colors) = 0 OR v.color IN (:colors))
+          AND (size(:sizes) = 0 OR v.size IN (:sizes))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
+          AND (:onSale = false OR p.discountPercent > 0)
+          AND (:bestSelling = false OR p.reviewCount >= 50)
+          AND (:brandId IS NULL OR p.brand.id = :brandId)
+          AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
     """)
     Page<Product> findByFilters(
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
-            @Param("color") Color color,
-            @Param("size") Size size,
+            @Param("colors") List<Color> colors,
+            @Param("sizes") List<Size> sizes,
             @Param("dressStyle") DressStyle dressStyle,
+            @Param("onSale") Boolean onSale,
+            @Param("bestSelling") Boolean bestSelling,
+            @Param("brandId") Long brandId,
+            @Param("productTypeId") Long productTypeId,
             Pageable pageable
     );
 
@@ -42,19 +50,29 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         WHERE p.category.id = :categoryId
           AND (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (:color IS NULL OR v.color = :color)
-          AND (:size IS NULL OR v.size = :size)
+          AND (size(:colors) = 0 OR v.color IN (:colors))
+          AND (size(:sizes) = 0 OR v.size IN (:sizes))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
+          AND (:onSale = false OR p.discountPercent > 0)
+          AND (:bestSelling = false OR p.reviewCount >= 50)
+          AND (:brandId IS NULL OR p.brand.id = :brandId)
+          AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
     """)
     Page<Product> findByCategoryAndFilters(
             @Param("categoryId") Long categoryId,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
-            @Param("color") Color color,
-            @Param("size") Size size,
+            @Param("colors") List<Color> colors,
+            @Param("sizes") List<Size> sizes,
             @Param("dressStyle") DressStyle dressStyle,
+            @Param("onSale") Boolean onSale,
+            @Param("bestSelling") Boolean bestSelling,
+            @Param("brandId") Long brandId,
+            @Param("productTypeId") Long productTypeId,
             Pageable pageable
     );
+
+    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 }
 
 

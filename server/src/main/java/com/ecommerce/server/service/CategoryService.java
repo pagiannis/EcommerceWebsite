@@ -54,9 +54,13 @@ public class CategoryService {
              Long categoryId,
              BigDecimal minPrice,
              BigDecimal maxPrice,
-             Color color,
-             Size size,
+             List<Color> colors,
+             List<Size> sizes,
              DressStyle dressStyle,
+             Boolean onSale,
+             Boolean bestSelling,
+             Long brandId,
+             Long productTypeId,
              Pageable pageable) {
          // Έλεγχος αν η κατηγορία υπάρχει
          categoryRepository.findById(categoryId)
@@ -64,7 +68,10 @@ public class CategoryService {
 
          // Φέρνει προϊόντα της κατηγορίας με φίλτρα
          return productRepository.findByCategoryAndFilters(
-                 categoryId, minPrice, maxPrice, color, size, dressStyle, pageable
+                 categoryId, minPrice, maxPrice, colors, sizes, dressStyle,
+                 onSale != null ? onSale : false,
+                 bestSelling != null ? bestSelling : false,
+                 brandId, productTypeId, pageable
          ).map(this::convertProductToResponse);
      }
 

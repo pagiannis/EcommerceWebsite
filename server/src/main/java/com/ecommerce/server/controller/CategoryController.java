@@ -40,11 +40,16 @@ public class CategoryController {
              @RequestParam(defaultValue = "20") int size,
              @RequestParam(required = false) BigDecimal minPrice,
              @RequestParam(required = false) BigDecimal maxPrice,
-             @RequestParam(required = false) Color color,
-             @RequestParam(required = false) Size filterSize,
-             @RequestParam(required = false) DressStyle dressStyle) {
+             @RequestParam(required = false) List<Color> colors,
+             @RequestParam(required = false) List<Size> filterSizes,
+             @RequestParam(required = false) DressStyle dressStyle,
+             @RequestParam(required = false) Boolean onSale,
+             @RequestParam(required = false) Boolean bestSelling,
+             @RequestParam(required = false) Long brandId,
+             @RequestParam(required = false) Long productTypeId) {
          return ResponseEntity.ok(categoryService.getProductsByCategoryWithFilters(
-                 categoryId, minPrice, maxPrice, color, filterSize, dressStyle,
+                 categoryId, minPrice, maxPrice, colors, filterSizes, dressStyle,
+                 onSale, bestSelling, brandId, productTypeId,
                  PageRequest.of(page, size)
          ));
      }

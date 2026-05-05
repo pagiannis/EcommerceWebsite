@@ -69,16 +69,24 @@ public class ProductService {
                  .map(this::convertToResponse);
      }
 
-     // Φίλτραρίσμα με πολλαπλά κριτήρια (τιμή, χρώμα, size, dress style)
+     // Φίλτραρίσμα με πολλαπλά κριτήρια (τιμή, χρώματα, μεγέθη, dress style)
      public Page<ProductResponse> getFilteredProducts(
              BigDecimal minPrice,
              BigDecimal maxPrice,
-             Color color,
-             Size size,
+             List<Color> colors,
+             List<Size> sizes,
              DressStyle dressStyle,
+             Boolean onSale,
+             Boolean bestSelling,
+             Long brandId,
+             Long productTypeId,
              Pageable pageable) {
-         return productRepository.findByFilters(minPrice, maxPrice, color, size, dressStyle, pageable)
-                 .map(this::convertToResponse);
+         return productRepository.findByFilters(
+                 minPrice, maxPrice, colors, sizes, dressStyle,
+                 onSale != null ? onSale : false,
+                 bestSelling != null ? bestSelling : false,
+                 brandId, productTypeId, pageable
+         ).map(this::convertToResponse);
      }
 
     // Λήψη λεπτομερειών ενός προϊόντος
