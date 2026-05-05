@@ -4,6 +4,7 @@ import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.models.enums.Role;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class AdminUserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
-                                                   @RequestBody UserRequest request) {
+                                                   @Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(userService.adminUpdateUser(id, request));
     }
 

@@ -8,9 +8,12 @@ import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.service.ProductService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -19,6 +22,7 @@ import java.util.List;
 @RestController                              // ← Αυτό είναι ένα REST endpoint
 @RequestMapping("/api/products")             // ← Base URL: /api/products
 @CrossOrigin(origins = "http://localhost:5173")  // ← Επίτρεπε requests από το frontend (Vite)
+@Validated
 public class ProductController {
 
     private final ProductService productService;
@@ -29,10 +33,10 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) @Min(0) BigDecimal minPrice,
+            @RequestParam(required = false) @Min(0) BigDecimal maxPrice,
             @RequestParam(required = false) List<Color> colors,
             @RequestParam(required = false) List<Size> filterSizes,
             @RequestParam(required = false) DressStyle dressStyle,
@@ -41,7 +45,7 @@ public class ProductController {
             @RequestParam(required = false) String brandName,
             @RequestParam(required = false) String productTypeName,
             @RequestParam(required = false) ProductSort sort,
-            @RequestParam(required = false) Double minRating) {
+            @RequestParam(required = false) @Min(1) @Max(5) Double minRating) {
 
         return ResponseEntity.ok(productService.getFilteredProducts(
                 minPrice, maxPrice, colors, filterSizes, dressStyle,
@@ -63,8 +67,8 @@ public class ProductController {
     @GetMapping("/search")
     public ResponseEntity<Page<ProductResponse>> searchProducts(
             @RequestParam String query,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(productService.searchProducts(query, PageRequest.of(page, size)));
     }
 

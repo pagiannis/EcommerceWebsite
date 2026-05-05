@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.dto.request.AddressRequest;
 import com.ecommerce.server.dto.response.AddressResponse;
 import com.ecommerce.server.service.AddressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +26,14 @@ public class AddressController {
 
     @PostMapping
     public ResponseEntity<AddressResponse> addAddress(@PathVariable Long userId,
-                                                      @RequestBody AddressRequest request) {
+                                                      @Valid @RequestBody AddressRequest request) {
         return new ResponseEntity<>(addressService.addAddress(userId, request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{addressId}")
     public ResponseEntity<AddressResponse> updateAddress(@PathVariable Long userId,
                                                          @PathVariable Long addressId,
-                                                         @RequestBody AddressRequest request) {
+                                                         @Valid @RequestBody AddressRequest request) {
         return ResponseEntity.ok(addressService.updateAddress(addressId, request));
     }
 

@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.dto.request.BrandRequest;
 import com.ecommerce.server.models.Brand;
 import com.ecommerce.server.service.AdminBrandService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +25,12 @@ public class AdminBrandController {
     }
 
     @PostMapping
-    public ResponseEntity<Brand> createBrand(@RequestBody BrandRequest request) {
+    public ResponseEntity<Brand> createBrand(@Valid @RequestBody BrandRequest request) {
         return new ResponseEntity<>(adminBrandService.createBrand(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Brand> updateBrand(@PathVariable Long id, @RequestBody BrandRequest request) {
+    public ResponseEntity<Brand> updateBrand(@PathVariable Long id, @Valid @RequestBody BrandRequest request) {
         return ResponseEntity.ok(adminBrandService.updateBrand(id, request));
     }
 

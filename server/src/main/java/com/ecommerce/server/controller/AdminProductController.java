@@ -5,6 +5,7 @@ import com.ecommerce.server.dto.request.ProductVariantRequest;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.service.AdminProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,13 @@ public class AdminProductController {
     private final AdminProductService adminProductService;
 
     @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         return new ResponseEntity<>(adminProductService.createProduct(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
-                                                         @RequestBody ProductRequest request) {
+                                                         @Valid @RequestBody ProductRequest request) {
         return ResponseEntity.ok(adminProductService.updateProduct(id, request));
     }
 
@@ -37,13 +38,13 @@ public class AdminProductController {
 
     @PostMapping("/{productId}/variants")
     public ResponseEntity<ProductVariantResponse> addVariant(@PathVariable Long productId,
-                                                             @RequestBody ProductVariantRequest request) {
+                                                             @Valid @RequestBody ProductVariantRequest request) {
         return new ResponseEntity<>(adminProductService.addVariant(productId, request), HttpStatus.CREATED);
     }
 
     @PutMapping("/variants/{variantId}")
     public ResponseEntity<ProductVariantResponse> updateVariant(@PathVariable Long variantId,
-                                                                @RequestBody ProductVariantRequest request) {
+                                                                @Valid @RequestBody ProductVariantRequest request) {
         return ResponseEntity.ok(adminProductService.updateVariant(variantId, request));
     }
 

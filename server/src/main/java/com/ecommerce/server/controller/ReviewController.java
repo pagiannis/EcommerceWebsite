@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.dto.request.ReviewRequest;
 import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.service.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class ReviewController {
 
     @PostMapping("/user/{userId}")
     public ResponseEntity<ReviewResponse> createReview(@PathVariable Long userId,
-                                                       @RequestBody ReviewRequest request) {
+                                                       @Valid @RequestBody ReviewRequest request) {
         return new ResponseEntity<>(reviewService.createReview(userId, request), HttpStatus.CREATED);
     }
 
