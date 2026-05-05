@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class ProductService {
@@ -37,8 +38,8 @@ public class ProductService {
             DressStyle dressStyle,
             Boolean onSale,
             Boolean bestSelling,
-            Long brandId,
-            Long productTypeId,
+            String brandName,
+            String productTypeName,
             ProductSort sort,
             Double minRating,
             Pageable pageable) {
@@ -60,7 +61,7 @@ public class ProductService {
                 dressStyle,
                 onSale      != null && onSale,
                 bestSelling != null && bestSelling,
-                brandId, productTypeId, minRating, pageable
+                brandName, productTypeName, minRating, pageable
         ).map(this::convertToResponse);
     }
 

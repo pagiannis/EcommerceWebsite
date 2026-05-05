@@ -33,8 +33,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)
-          AND (:brandId IS NULL OR p.brand.id = :brandId)
-          AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
+          AND (:brandName IS NULL OR LOWER(p.brand.name) = LOWER(:brandName))
+          AND (:productTypeName IS NULL OR LOWER(p.productType.name) = LOWER(:productTypeName))
           AND (:minRating IS NULL OR p.rating >= :minRating)
     """)
     Page<Product> findByFilters(
@@ -47,8 +47,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("dressStyle") DressStyle dressStyle,
             @Param("onSale") boolean onSale,
             @Param("bestSelling") boolean bestSelling,
-            @Param("brandId") Long brandId,
-            @Param("productTypeId") Long productTypeId,
+            @Param("brandName") String brandName,
+            @Param("productTypeName") String productTypeName,
             @Param("minRating") Double minRating,
             Pageable pageable
     );
@@ -64,8 +64,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)
-          AND (:brandId IS NULL OR p.brand.id = :brandId)
-          AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
+          AND (:brandName IS NULL OR LOWER(p.brand.name) = LOWER(:brandName))
+          AND (:productTypeName IS NULL OR LOWER(p.productType.name) = LOWER(:productTypeName))
           AND (:minRating IS NULL OR p.rating >= :minRating)
     """)
     Page<Product> findByCategoryAndFilters(
@@ -79,8 +79,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("dressStyle") DressStyle dressStyle,
             @Param("onSale") boolean onSale,
             @Param("bestSelling") boolean bestSelling,
-            @Param("brandId") Long brandId,
-            @Param("productTypeId") Long productTypeId,
+            @Param("brandName") String brandName,
+            @Param("productTypeName") String productTypeName,
             @Param("minRating") Double minRating,
             Pageable pageable
     );

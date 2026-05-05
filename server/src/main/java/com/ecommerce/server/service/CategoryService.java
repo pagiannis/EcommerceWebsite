@@ -51,8 +51,8 @@ public class CategoryService {
              DressStyle dressStyle,
              Boolean onSale,
              Boolean bestSelling,
-             Long brandId,
-             Long productTypeId,
+             String brandName,
+             String productTypeName,
              ProductSort sort,
              Double minRating,
              Pageable pageable) {
@@ -78,7 +78,7 @@ public class CategoryService {
                  dressStyle,
                  onSale      != null && onSale,
                  bestSelling != null && bestSelling,
-                 brandId, productTypeId, minRating, pageable
+                 brandName, productTypeName, minRating, pageable
          ).map(productService::convertToResponse);
      }
 
@@ -93,4 +93,3 @@ public class CategoryService {
         );
     }
 }
-
