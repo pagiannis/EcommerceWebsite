@@ -1,7 +1,7 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
+import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductImage;
@@ -68,6 +68,18 @@ public class ProductService {
     public Page<ProductResponse> searchProducts(String query, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(query, pageable)
                 .map(this::convertToResponse);
+    }
+
+    // Autocomplete — επιστρέφει μέχρι 8 προτάσεις για dropdown
+    public List<ProductSuggestionResponse> autocomplete(String query) {
+        return productRepository.findTop8ByNameContainingIgnoreCase(query)
+                .stream()
+                .map(p -> new ProductSuggestionResponse(
+                        p.getId(),
+                        p.getName(),
+                        p.getImages().isEmpty() ? null : p.getImages().get(0).getImageUrl()
+                ))
+                .toList();
     }
 
     // Λήψη λεπτομερειών ενός προϊόντος

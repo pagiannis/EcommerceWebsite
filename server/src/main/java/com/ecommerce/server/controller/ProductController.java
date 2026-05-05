@@ -1,6 +1,7 @@
 package com.ecommerce.server.controller;
 
 import com.ecommerce.server.dto.response.ProductResponse;
+import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
@@ -52,6 +53,11 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductDetail(id));
+    }
+
+    @GetMapping("/autocomplete")
+    public ResponseEntity<List<ProductSuggestionResponse>> autocomplete(@RequestParam String query) {
+        return ResponseEntity.ok(productService.autocomplete(query));
     }
 
     @GetMapping("/search")
