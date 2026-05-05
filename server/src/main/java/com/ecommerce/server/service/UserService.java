@@ -1,9 +1,16 @@
 package com.ecommerce.server.service;
 
+import com.ecommerce.server.dto.request.LoginRequest;
+import com.ecommerce.server.dto.request.UserRegistrationRequest;
+import com.ecommerce.server.dto.request.UserRequest;
+import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -11,23 +18,81 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    // Create a test user
-    public User createTestUser(String email) {
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        return toResponse(user);
+    }
+
+    public UserResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!user.getPasswordHash().equals(request.password())) { // TODO: compare hashed password
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        return toResponse(user);
+    }
+
+    public UserResponse registerUser(UserRegistrationRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email already in use: " + request.email());
+        }
+
         User user = User.builder()
-                .email(email)
-                .passwordHash("hashedPassword123")
-                .firstName("Test")
-                .lastName("User")
-                .phone("1234567890")
+                .email(request.email())
+                .passwordHash(request.password()) // TODO: hash password before storing
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phone(request.phone())
                 .build();
 
-        return userRepository.save(user);
+        return toResponse(userRepository.save(user));
     }
 
-    // Get user by ID
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public UserResponse updateUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new IllegalArgumentException("Email already in use: " + request.email());
+            }
+            user.setEmail(request.email());
+        }
+        if (request.firstName() != null) user.setFirstName(request.firstName());
+        if (request.lastName() != null) user.setLastName(request.lastName());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.password() != null) user.setPasswordHash(request.password()); // TODO: hash
+
+        user.setUpdatedAt(LocalDateTime.now());
+
+        return toResponse(userRepository.save(user));
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhone(),
+                user.getRole(),
+                user.getCreatedAt()
+        );
     }
 }
-

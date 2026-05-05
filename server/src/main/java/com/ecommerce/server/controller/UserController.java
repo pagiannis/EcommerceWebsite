@@ -1,11 +1,16 @@
 package com.ecommerce.server.controller;
 
-import com.ecommerce.server.models.User;
+import com.ecommerce.server.dto.request.LoginRequest;
+import com.ecommerce.server.dto.request.UserRegistrationRequest;
+import com.ecommerce.server.dto.request.UserRequest;
+import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -15,16 +20,35 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/test")
-    public ResponseEntity<User> createTestUser(@RequestParam String email) {
-        User user = userService.createTestUser(email);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> registerUser(@RequestBody UserRegistrationRequest request) {
+        return new ResponseEntity<>(userService.registerUser(request), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
+                                                   @RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
