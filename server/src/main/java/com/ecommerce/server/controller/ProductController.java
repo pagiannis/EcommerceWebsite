@@ -37,11 +37,12 @@ public class ProductController {
             @RequestParam(required = false) Boolean onSale,
             @RequestParam(required = false) Boolean bestSelling,
             @RequestParam(required = false) Long brandId,
-            @RequestParam(required = false) Long productTypeId) {
+            @RequestParam(required = false) Long productTypeId,
+            @RequestParam(required = false) Boolean newArrivals) {
 
         return ResponseEntity.ok(productService.getFilteredProducts(
                 minPrice, maxPrice, colors, filterSizes, dressStyle,
-                onSale, bestSelling, brandId, productTypeId,
+                onSale, bestSelling, brandId, productTypeId, newArrivals,
                 PageRequest.of(page, size)
         ));
     }

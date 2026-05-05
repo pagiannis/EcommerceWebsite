@@ -13,7 +13,9 @@ import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,7 +38,11 @@ public class ProductService {
             Boolean bestSelling,
             Long brandId,
             Long productTypeId,
+            Boolean newArrivals,
             Pageable pageable) {
+        if (Boolean.TRUE.equals(newArrivals))
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "createdAt"));
         boolean filterByColors = colors != null && !colors.isEmpty();
         boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
         return productRepository.findByFilters(
