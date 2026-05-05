@@ -6,7 +6,6 @@ import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
-import com.ecommerce.server.models.Category;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.Size;
@@ -14,7 +13,6 @@ import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -39,10 +37,15 @@ public class ProductService {
             Long brandId,
             Long productTypeId,
             Pageable pageable) {
+        boolean filterByColors = colors != null && !colors.isEmpty();
+        boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
         return productRepository.findByFilters(
-                minPrice, maxPrice, colors, sizes, dressStyle,
-                onSale != null ? onSale : false,
-                bestSelling != null ? bestSelling : false,
+                minPrice, maxPrice,
+                filterByColors ? colors : List.of(Color.RED), filterByColors,
+                filterBySizes  ? sizes  : List.of(Size.M),   filterBySizes,
+                dressStyle,
+                onSale      != null && onSale,
+                bestSelling != null && bestSelling,
                 brandId, productTypeId, pageable
         ).map(this::convertToResponse);
     }

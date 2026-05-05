@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
@@ -222,6 +223,7 @@ public class DataInitializer implements CommandLineRunner {
         product.setDressStyle(dressStyle);
         product.setRating(4.5);
         product.setReviewCount((int) (Math.random() * 200) + 10);
+        product.setCreatedAt(LocalDateTime.now());
 
         // Υπολογισμός discount
         BigDecimal discount = originalPrice.subtract(price);

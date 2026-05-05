@@ -55,11 +55,15 @@ public class CategoryService {
          categoryRepository.findById(categoryId)
                  .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
 
-         // Φέρνει προϊόντα της κατηγορίας με φίλτρα
+         boolean filterByColors = colors != null && !colors.isEmpty();
+         boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
          return productRepository.findByCategoryAndFilters(
-                 categoryId, minPrice, maxPrice, colors, sizes, dressStyle,
-                 onSale != null ? onSale : false,
-                 bestSelling != null ? bestSelling : false,
+                 categoryId, minPrice, maxPrice,
+                 filterByColors ? colors : List.of(Color.RED), filterByColors,
+                 filterBySizes  ? sizes  : List.of(Size.M),   filterBySizes,
+                 dressStyle,
+                 onSale      != null && onSale,
+                 bestSelling != null && bestSelling,
                  brandId, productTypeId, pageable
          ).map(productService::convertToResponse);
      }

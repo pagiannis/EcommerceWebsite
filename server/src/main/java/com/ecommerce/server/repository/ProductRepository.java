@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -25,8 +26,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         JOIN p.variants v
         WHERE (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (size(:colors) = 0 OR v.color IN (:colors))
-          AND (size(:sizes) = 0 OR v.size IN (:sizes))
+          AND (:filterByColors = false OR v.color IN (:colors))
+          AND (:filterBySizes = false OR v.size IN (:sizes))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)
@@ -37,10 +38,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("colors") List<Color> colors,
+            @Param("filterByColors") boolean filterByColors,
             @Param("sizes") List<Size> sizes,
+            @Param("filterBySizes") boolean filterBySizes,
             @Param("dressStyle") DressStyle dressStyle,
-            @Param("onSale") Boolean onSale,
-            @Param("bestSelling") Boolean bestSelling,
+            @Param("onSale") boolean onSale,
+            @Param("bestSelling") boolean bestSelling,
             @Param("brandId") Long brandId,
             @Param("productTypeId") Long productTypeId,
             Pageable pageable
@@ -52,8 +55,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         WHERE p.category.id = :categoryId
           AND (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (size(:colors) = 0 OR v.color IN (:colors))
-          AND (size(:sizes) = 0 OR v.size IN (:sizes))
+          AND (:filterByColors = false OR v.color IN (:colors))
+          AND (:filterBySizes = false OR v.size IN (:sizes))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)
@@ -65,16 +68,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("colors") List<Color> colors,
+            @Param("filterByColors") boolean filterByColors,
             @Param("sizes") List<Size> sizes,
+            @Param("filterBySizes") boolean filterBySizes,
             @Param("dressStyle") DressStyle dressStyle,
-            @Param("onSale") Boolean onSale,
-            @Param("bestSelling") Boolean bestSelling,
+            @Param("onSale") boolean onSale,
+            @Param("bestSelling") boolean bestSelling,
             @Param("brandId") Long brandId,
             @Param("productTypeId") Long productTypeId,
             Pageable pageable
     );
-
-    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 }
-
-

@@ -1,6 +1,7 @@
 package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.LoginRequest;
+import com.ecommerce.server.models.enums.Role;
 import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
@@ -75,6 +76,24 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(userRepository.save(user));
+    }
+
+    // --- Admin methods ---
+
+    public UserResponse changeUserRole(Long id, Role role) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+        return toResponse(userRepository.save(user));
+    }
+
+    public UserResponse adminUpdateUser(Long id, UserRequest request) {
+        return updateUser(id, request);
+    }
+
+    public void adminDeleteUser(Long id) {
+        deleteUser(id);
     }
 
     public void deleteUser(Long id) {
