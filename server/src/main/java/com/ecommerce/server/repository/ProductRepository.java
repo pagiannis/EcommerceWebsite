@@ -16,7 +16,9 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    // ...existing code...
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    long countByCategoryId(Long categoryId);
 
     @Query("""
         SELECT DISTINCT p FROM Product p

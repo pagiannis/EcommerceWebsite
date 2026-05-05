@@ -38,17 +38,6 @@ public class CategoryService {
         return convertToResponse(category);
     }
 
-     // Φέρνει προϊόντα μιας κατηγορίας με pagination
-     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
-         // Έλεγχος αν η κατηγορία υπάρχει
-         categoryRepository.findById(categoryId)
-                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
-
-         // Φέρνει προϊόντα της κατηγορίας
-         return productRepository.findByCategoryId(categoryId, pageable)
-                 .map(this::convertProductToResponse);
-     }
-
      // Φέρνει προϊόντα μιας κατηγορίας με φίλτρα και pagination
      public Page<ProductResponse> getProductsByCategoryWithFilters(
              Long categoryId,
@@ -72,50 +61,17 @@ public class CategoryService {
                  onSale != null ? onSale : false,
                  bestSelling != null ? bestSelling : false,
                  brandId, productTypeId, pageable
-         ).map(this::convertProductToResponse);
+         ).map(productService::convertToResponse);
      }
 
-    // Μετατρέπει Category entity σε DTO (με product count)
     private CategoryResponse convertToResponse(Category category) {
         long productCount = productRepository.countByCategoryId(category.getId());
-
         return new CategoryResponse(
                 category.getId(),
                 category.getName(),
                 category.getDescription(),
                 category.getImageUrl(),
                 (int) productCount
-        );
-    }
-
-    // Μετατρέπει Product entity σε DTO
-    private ProductResponse convertProductToResponse(com.ecommerce.server.models.Product product) {
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getCategory().getName(),
-                product.getBrand().getName(),
-                product.getProductType().getName(),
-                product.getDressStyle().toString(),
-                product.getPrice(),
-                product.getOriginalPrice(),
-                product.getDiscountPercent(),
-                product.getRating(),
-                product.getReviewCount(),
-                product.getImages().stream()
-                        .map(img -> img.getImageUrl())
-                        .toList(),
-                product.getVariants().stream()
-                        .map(variant -> new com.ecommerce.server.dto.response.ProductVariantResponse(
-                                variant.getId(),
-                                variant.getColor().toString(),
-                                variant.getSize().toString(),
-                                variant.getStockQuantity(),
-                                variant.getSku(),
-                                product.getPrice()
-                        ))
-                        .toList()
         );
     }
 }
