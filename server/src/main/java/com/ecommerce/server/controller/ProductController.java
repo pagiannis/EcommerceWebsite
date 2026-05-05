@@ -4,6 +4,7 @@ import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.service.ProductService;
 import org.springframework.data.domain.Page;
@@ -38,11 +39,12 @@ public class ProductController {
             @RequestParam(required = false) Boolean bestSelling,
             @RequestParam(required = false) Long brandId,
             @RequestParam(required = false) Long productTypeId,
-            @RequestParam(required = false) Boolean newArrivals) {
+            @RequestParam(required = false) ProductSort sort,
+            @RequestParam(required = false) Double minRating) {
 
         return ResponseEntity.ok(productService.getFilteredProducts(
                 minPrice, maxPrice, colors, filterSizes, dressStyle,
-                onSale, bestSelling, brandId, productTypeId, newArrivals,
+                onSale, bestSelling, brandId, productTypeId, sort, minRating,
                 PageRequest.of(page, size)
         ));
     }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -35,5 +36,15 @@ public class OrderController {
         return new ResponseEntity<>(
                 orderService.createOrder(userId, shippingAddressId, paymentMethod),
                 HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{orderId}/reorder")
+    public ResponseEntity<Map<String, Object>> reorder(@PathVariable Long orderId,
+                                                       @RequestParam Long userId) {
+        List<String> skipped = orderService.reorder(orderId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "Items added to cart",
+                "skipped", skipped
+        ));
     }
 }

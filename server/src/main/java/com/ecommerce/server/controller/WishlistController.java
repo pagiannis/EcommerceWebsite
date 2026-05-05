@@ -1,5 +1,6 @@
 package com.ecommerce.server.controller;
 
+import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.dto.response.WishlistItemResponse;
 import com.ecommerce.server.service.WishlistService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,13 @@ public class WishlistController {
     public ResponseEntity<Void> removeFromWishlist(@PathVariable Long userId, @PathVariable Long productId) {
         wishlistService.removeFromWishlist(userId, productId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{productId}/move-to-cart")
+    public ResponseEntity<CartItemResponse> moveToCart(@PathVariable Long userId,
+                                                       @PathVariable Long productId,
+                                                       @RequestParam Long variantId,
+                                                       @RequestParam(defaultValue = "1") int quantity) {
+        return ResponseEntity.ok(wishlistService.moveToCart(userId, productId, variantId, quantity));
     }
 }

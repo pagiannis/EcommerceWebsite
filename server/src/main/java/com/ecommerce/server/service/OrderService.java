@@ -132,6 +132,49 @@ public class OrderService {
     }
 
     /**
+     * Επανάληψη παλιάς παραγγελίας — προσθέτει τα items στο καλάθι
+     */
+    @Transactional
+    public List<String> reorder(Long orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<String> skipped = new java.util.ArrayList<>();
+
+        for (OrderItem item : order.getItems()) {
+            if (item.getVariant() == null) {
+                skipped.add(item.getProductName() + " (variant no longer exists)");
+                continue;
+            }
+            int available = item.getVariant().getStockQuantity();
+            if (available <= 0) {
+                skipped.add(item.getProductName() + " (out of stock)");
+                continue;
+            }
+            int quantity = Math.min(item.getQuantity(), available);
+            try {
+                cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
+                        .ifPresentOrElse(
+                                existing -> {
+                                    existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
+                                    cartItemRepository.save(existing);
+                                },
+                                () -> cartItemRepository.save(
+                                        com.ecommerce.server.models.CartItem.builder()
+                                                .user(order.getUser())
+                                                .variant(item.getVariant())
+                                                .quantity(quantity)
+                                                .build()
+                                )
+                        );
+            } catch (Exception e) {
+                skipped.add(item.getProductName() + " (" + e.getMessage() + ")");
+            }
+        }
+        return skipped;
+    }
+
+    /**
      * Ενημέρωση κατάστασης παραγγελίας (admin)
      */
     @Transactional

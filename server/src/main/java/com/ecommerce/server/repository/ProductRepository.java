@@ -33,6 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND (:bestSelling = false OR p.reviewCount >= 50)
           AND (:brandId IS NULL OR p.brand.id = :brandId)
           AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
+          AND (:minRating IS NULL OR p.rating >= :minRating)
     """)
     Page<Product> findByFilters(
             @Param("minPrice") BigDecimal minPrice,
@@ -46,6 +47,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("bestSelling") boolean bestSelling,
             @Param("brandId") Long brandId,
             @Param("productTypeId") Long productTypeId,
+            @Param("minRating") Double minRating,
             Pageable pageable
     );
 
@@ -62,6 +64,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND (:bestSelling = false OR p.reviewCount >= 50)
           AND (:brandId IS NULL OR p.brand.id = :brandId)
           AND (:productTypeId IS NULL OR p.productType.id = :productTypeId)
+          AND (:minRating IS NULL OR p.rating >= :minRating)
     """)
     Page<Product> findByCategoryAndFilters(
             @Param("categoryId") Long categoryId,
@@ -76,6 +79,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("bestSelling") boolean bestSelling,
             @Param("brandId") Long brandId,
             @Param("productTypeId") Long productTypeId,
+            @Param("minRating") Double minRating,
             Pageable pageable
     );
 }

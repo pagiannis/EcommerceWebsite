@@ -4,6 +4,7 @@ import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -46,10 +47,12 @@ public class CategoryController {
              @RequestParam(required = false) Boolean onSale,
              @RequestParam(required = false) Boolean bestSelling,
              @RequestParam(required = false) Long brandId,
-             @RequestParam(required = false) Long productTypeId) {
+             @RequestParam(required = false) Long productTypeId,
+             @RequestParam(required = false) ProductSort sort,
+             @RequestParam(required = false) Double minRating) {
          return ResponseEntity.ok(categoryService.getProductsByCategoryWithFilters(
                  categoryId, minPrice, maxPrice, colors, filterSizes, dressStyle,
-                 onSale, bestSelling, brandId, productTypeId,
+                 onSale, bestSelling, brandId, productTypeId, sort, minRating,
                  PageRequest.of(page, size)
          ));
      }

@@ -5,12 +5,15 @@ import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.models.Category;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,10 +53,21 @@ public class CategoryService {
              Boolean bestSelling,
              Long brandId,
              Long productTypeId,
+             ProductSort sort,
+             Double minRating,
              Pageable pageable) {
-         // Έλεγχος αν η κατηγορία υπάρχει
          categoryRepository.findById(categoryId)
                  .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+
+         if (sort != null) {
+             Sort s = switch (sort) {
+                 case NEWEST       -> Sort.by(Sort.Direction.DESC, "createdAt");
+                 case MOST_POPULAR -> Sort.by(Sort.Direction.DESC, "reviewCount");
+                 case PRICE_ASC    -> Sort.by(Sort.Direction.ASC,  "price");
+                 case PRICE_DESC   -> Sort.by(Sort.Direction.DESC, "price");
+             };
+             pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), s);
+         }
 
          boolean filterByColors = colors != null && !colors.isEmpty();
          boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
@@ -64,7 +78,7 @@ public class CategoryService {
                  dressStyle,
                  onSale      != null && onSale,
                  bestSelling != null && bestSelling,
-                 brandId, productTypeId, pageable
+                 brandId, productTypeId, minRating, pageable
          ).map(productService::convertToResponse);
      }
 

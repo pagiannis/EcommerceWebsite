@@ -103,6 +103,6 @@ public class AdminProductService {
 
     private ProductVariantResponse toVariantResponse(ProductVariant v, java.math.BigDecimal price) {
         return new ProductVariantResponse(v.getId(), v.getColor().toString(),
-                v.getSize().toString(), v.getStockQuantity(), v.getSku(), price);
+                v.getColor().getHexCode(), v.getSize().toString(), v.getStockQuantity(), v.getSku(), price);
     }
 }

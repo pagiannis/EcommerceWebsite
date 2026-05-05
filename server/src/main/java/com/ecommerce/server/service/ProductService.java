@@ -8,6 +8,7 @@ import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
+import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
@@ -38,11 +39,18 @@ public class ProductService {
             Boolean bestSelling,
             Long brandId,
             Long productTypeId,
-            Boolean newArrivals,
+            ProductSort sort,
+            Double minRating,
             Pageable pageable) {
-        if (Boolean.TRUE.equals(newArrivals))
-            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-                    Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (sort != null) {
+            Sort s = switch (sort) {
+                case NEWEST       -> Sort.by(Sort.Direction.DESC, "createdAt");
+                case MOST_POPULAR -> Sort.by(Sort.Direction.DESC, "reviewCount");
+                case PRICE_ASC    -> Sort.by(Sort.Direction.ASC,  "price");
+                case PRICE_DESC   -> Sort.by(Sort.Direction.DESC, "price");
+            };
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), s);
+        }
         boolean filterByColors = colors != null && !colors.isEmpty();
         boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
         return productRepository.findByFilters(
@@ -52,7 +60,7 @@ public class ProductService {
                 dressStyle,
                 onSale      != null && onSale,
                 bestSelling != null && bestSelling,
-                brandId, productTypeId, pageable
+                brandId, productTypeId, minRating, pageable
         ).map(this::convertToResponse);
     }
 
@@ -112,6 +120,7 @@ public class ProductService {
         return new ProductVariantResponse(
                 variant.getId(),
                 variant.getColor().toString(),
+                variant.getColor().getHexCode(),
                 variant.getSize().toString(),
                 variant.getStockQuantity(),
                 variant.getSku(),
