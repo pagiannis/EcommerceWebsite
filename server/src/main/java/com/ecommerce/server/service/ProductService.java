@@ -1,31 +1,33 @@
 package com.ecommerce.server.service;
 
+import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
+import com.ecommerce.server.models.Category;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.Size;
+import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
-
+@RequiredArgsConstructor
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
+    // Φίλτραρίσμα με πολλαπλά κριτήρια
     public Page<ProductResponse> getFilteredProducts(
             BigDecimal minPrice,
             BigDecimal maxPrice,
@@ -45,33 +47,38 @@ public class ProductService {
         ).map(this::convertToResponse);
     }
 
+    // Αναζήτηση προϊόντων κατά όνομα
+    public Page<ProductResponse> searchProducts(String query, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCase(query, pageable)
+                .map(this::convertToResponse);
+    }
+
+    // Λήψη λεπτομερειών ενός προϊόντος
     public ProductResponse getProductDetail(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         return convertToResponse(product);
     }
 
-    public Page<ProductResponse> searchProducts(String query, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCase(query, pageable)
-                .map(this::convertToResponse);
-    }
-
+    // Λήψη όλων των variants
     public List<ProductVariantResponse> getProductVariants(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
         return product.getVariants().stream()
                 .map(this::convertVariantToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    // Μετατροπή Product Entity σε ProductResponse DTO
     public ProductResponse convertToResponse(Product product) {
         List<String> imageUrls = product.getImages().stream()
                 .map(ProductImage::getImageUrl)
-                .collect(Collectors.toList());
+                .toList();
 
         List<ProductVariantResponse> variants = product.getVariants().stream()
                 .map(this::convertVariantToResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return new ProductResponse(
                 product.getId(),
@@ -91,6 +98,7 @@ public class ProductService {
         );
     }
 
+    // Μετατροπή ProductVariant Entity σε ProductVariantResponse DTO
     private ProductVariantResponse convertVariantToResponse(ProductVariant variant) {
         return new ProductVariantResponse(
                 variant.getId(),
