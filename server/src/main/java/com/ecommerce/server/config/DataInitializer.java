@@ -192,7 +192,8 @@ public class DataInitializer implements CommandLineRunner {
         ));
 
         productRepository.findById(p.id()).ifPresent(entity -> {
-            entity.setRating(3.5 + Math.random() * 1.5);
+            double rawRating = 3.5 + Math.random() * 1.5;
+            entity.setRating(Math.round(rawRating * 10.0) / 10.0);
             entity.setReviewCount((int) (Math.random() * 200) + 10);
             productRepository.save(entity);
         });
