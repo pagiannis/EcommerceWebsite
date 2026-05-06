@@ -6,7 +6,7 @@ interface SizeFilterProps {
 }
 
 const ALL_SIZES: Size[] = [
-  'XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large', 'XX-Large', '3X-Large', '4X-Large',
+  'X-Small', 'Small', 'Medium', 'Large', 'X-Large', 'XX-Large', '3X-Large',
 ];
 
 export default function SizeFilter({ selected, onChange }: SizeFilterProps) {
