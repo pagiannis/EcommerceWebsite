@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
+import {
+  mapApiProduct,
+  COLOR_HEX_TO_ENUM,
+  BRAND_NAME,
+  PRODUCT_TYPE_NAME,
+  DRESS_STYLE_TO_API,
+  SIZE_TO_API,
+  SORT_TO_API,
+  type ProductsParams,
+} from "../services/productsService";
 import type { Category } from "../types/category";
 import type { ProductType } from "../types/productType";
 import type { DressStyle } from "../types/dressStyle";
@@ -11,99 +21,81 @@ import FilterSidebar from "../components/home/FilterSidebar";
 import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopHeader, { SORT_OPTIONS } from "../components/shop/ShopHeader";
 import ProductGrid from "../components/shop/ProductGrid";
+import ProductGridSkeleton from "../components/shop/ProductGridSkeleton";
 import ShopPagination from "../components/shop/ShopPagination";
 import ActiveFilterChips from "../components/shop/ActiveFilterChips";
 
 const ITEMS_PER_PAGE = 9;
 
-const allColors = [...new Set(products.flatMap((p) => p.colors))];
-const VALID_CATEGORIES: Category[] = ["men", "women", "kids", "accessories"];
-const VALID_TYPES: ProductType[] = ["t-shirt", "jeans", "shirt", "polo", "hoodie", "shorts", "blazer"];
-const VALID_STYLES: DressStyle[] = ["casual", "formal", "party", "gym"];
-const VALID_BRANDS: Brand[] = ["nike", "levis", "tommy-hilfiger", "ralph-lauren", "hm", "zara", "calvin-klein"];
+const allColors = Object.keys(COLOR_HEX_TO_ENUM);
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const filters: FilterState = useMemo(() => {
-    const c = searchParams.get("category") ?? "all";
-    const t = searchParams.get("type") ?? "all";
-    const minP = Number(searchParams.get("minPrice") ?? "0");
-    const maxP = Number(searchParams.get("maxPrice") ?? "650");
-    const colors = searchParams.get("colors")?.split(",").filter(Boolean) ?? [];
-    const sizes = (searchParams.get("sizes")?.split(",").filter(Boolean) ?? []) as Size[];
-    return {
-      category: VALID_CATEGORIES.includes(c as Category) ? (c as Category) : "all",
-      productType: VALID_TYPES.includes(t as ProductType) ? (t as ProductType) : "all",
-      dressStyle: VALID_STYLES.includes(searchParams.get("style") as DressStyle) ? (searchParams.get("style") as DressStyle) : "all",
-      brand: VALID_BRANDS.includes(searchParams.get("brand") as Brand) ? (searchParams.get("brand") as Brand) : "all",
-      priceRange: [minP, maxP],
-      colors,
-      sizes,
+  const filters: FilterState = useMemo(
+    () => ({
+      category: (searchParams.get("category") ?? "all") as Category | "all",
+      productType: (searchParams.get("type") ?? "all") as ProductType | "all",
+      dressStyle: (searchParams.get("style") ?? "all") as DressStyle | "all",
+      brand: (searchParams.get("brand") ?? "all") as Brand | "all",
+      priceRange: [
+        Number(searchParams.get("minPrice") ?? "0"),
+        Number(searchParams.get("maxPrice") ?? "650"),
+      ],
+      colors: searchParams.get("colors")?.split(",").filter(Boolean) ?? [],
+      sizes: (searchParams.get("sizes")?.split(",").filter(Boolean) ??
+        []) as Size[],
       onSale: searchParams.get("onSale") === "true",
       newArrivals: searchParams.get("newArrivals") === "true",
       topSelling: searchParams.get("topSelling") === "true",
-    };
-  }, [searchParams]);
+    }),
+    [searchParams],
+  );
 
   const sort = searchParams.get("sort") ?? SORT_OPTIONS[0];
   const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
 
-  const filtered = useMemo(() => {
-    let result = products.slice();
-
-    if (filters.category !== "all") {
-      result = result.filter((p) => p.category === filters.category);
-    }
-    if (filters.productType !== "all") {
-      result = result.filter((p) => p.productType === filters.productType);
-    }
-    if (filters.dressStyle !== "all") {
-      result = result.filter((p) => p.dressStyle === filters.dressStyle);
-    }
-    if (filters.brand !== "all") {
-      result = result.filter((p) => p.brand === filters.brand);
-    }
-    result = result.filter(
-      (p) =>
-        p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1],
-    );
+  const params = useMemo<ProductsParams>(() => {
+    const p: ProductsParams = {
+      page: page - 1,
+      size: ITEMS_PER_PAGE,
+      sort: SORT_TO_API[sort],
+    };
+    if (filters.category !== "all") p.category = filters.category;
+    if (filters.productType !== "all")
+      p.productTypeName = PRODUCT_TYPE_NAME[filters.productType];
+    if (filters.dressStyle !== "all")
+      p.dressStyle = DRESS_STYLE_TO_API[filters.dressStyle];
+    if (filters.brand !== "all") p.brandName = BRAND_NAME[filters.brand];
+    if (filters.priceRange[0] > 0) p.minPrice = filters.priceRange[0];
+    if (filters.priceRange[1] < 650) p.maxPrice = filters.priceRange[1];
     if (filters.colors.length > 0) {
-      result = result.filter((p) =>
-        p.colors.some((c) => filters.colors.includes(c)),
-      );
+      const mapped = filters.colors
+        .map((h) => COLOR_HEX_TO_ENUM[h])
+        .filter(Boolean);
+      if (mapped.length > 0) p.colors = mapped;
     }
     if (filters.sizes.length > 0) {
-      result = result.filter((p) =>
-        p.sizes.some((s) => filters.sizes.includes(s)),
-      );
+      p.filterSizes = filters.sizes.map((s) => SIZE_TO_API[s]).filter(Boolean);
     }
-    if (filters.onSale) {
-      result = result.filter((p) => p.discountPercent != null);
-    }
-    if (filters.newArrivals) {
-      result = result.filter((p) => p.isNew);
-    }
-    if (filters.topSelling) {
-      result = result.filter((p) => p.isBestSeller);
-    }
+    if (filters.onSale) p.onSale = true;
+    if (filters.topSelling) p.bestSelling = true;
+    return p;
+  }, [filters, sort, page]);
 
-    if (sort === "Price: Low to High") result.sort((a, b) => a.price - b.price);
-    else if (sort === "Price: High to Low")
-      result.sort((a, b) => b.price - a.price);
+  const { data, isLoading, isError } = useProducts(params);
 
-    return result;
-  }, [filters, sort]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const currentStart =
-    filtered.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
-  const currentEnd = Math.min(page * ITEMS_PER_PAGE, filtered.length);
-  const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
+  const products = useMemo(
+    () => data?.content.map(mapApiProduct) ?? [],
+    [data],
   );
+
+  const totalCount = data?.totalElements ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+  const currentStart =
+    products.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
+  const currentEnd = (page - 1) * ITEMS_PER_PAGE + products.length;
 
   function handleFilterChange(f: FilterState) {
     setSearchParams((prev) => {
@@ -154,7 +146,12 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb category={filters.category} productType={filters.productType} dressStyle={filters.dressStyle} brand={filters.brand} />
+      <ShopBreadcrumb
+        category={filters.category}
+        productType={filters.productType}
+        dressStyle={filters.dressStyle}
+        brand={filters.brand}
+      />
 
       <div className="flex gap-6 flex-col lg:flex-row">
         <FilterSidebar
@@ -170,9 +167,10 @@ export default function ShopPage() {
             category={filters.category}
             productType={filters.productType}
             brand={filters.brand}
-            totalCount={filtered.length}
-            currentStart={currentStart}
-            currentEnd={currentEnd}
+            totalCount={isLoading ? 0 : totalCount}
+            currentStart={isLoading ? 0 : currentStart}
+            currentEnd={isLoading ? 0 : currentEnd}
+            isProductsLoading={isLoading}
             sort={sort}
             onSortChange={handleSortChange}
             onFilterOpen={() => setFilterOpen(true)}
@@ -186,7 +184,15 @@ export default function ShopPage() {
             }}
           />
 
-          <ProductGrid products={paginated} />
+          {isLoading ? (
+            <ProductGridSkeleton />
+          ) : isError ? (
+            <div className="py-20 text-center text-brand-red">
+              Failed to load products. Please try again.
+            </div>
+          ) : (
+            <ProductGrid products={products} />
+          )}
 
           <ShopPagination
             page={page}
