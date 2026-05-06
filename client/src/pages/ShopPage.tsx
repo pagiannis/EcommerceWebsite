@@ -33,35 +33,47 @@ export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const filters: FilterState = useMemo(() => ({
-    category: (searchParams.get("category") ?? "all") as Category | "all",
-    productType: (searchParams.get("type") ?? "all") as ProductType | "all",
-    dressStyle: (searchParams.get("style") ?? "all") as DressStyle | "all",
-    brand: (searchParams.get("brand") ?? "all") as Brand | "all",
-    priceRange: [
-      Number(searchParams.get("minPrice") ?? "0"),
-      Number(searchParams.get("maxPrice") ?? "650"),
-    ],
-    colors: searchParams.get("colors")?.split(",").filter(Boolean) ?? [],
-    sizes: (searchParams.get("sizes")?.split(",").filter(Boolean) ?? []) as Size[],
-    onSale: searchParams.get("onSale") === "true",
-    newArrivals: searchParams.get("newArrivals") === "true",
-    topSelling: searchParams.get("topSelling") === "true",
-  }), [searchParams]);
+  const filters: FilterState = useMemo(
+    () => ({
+      category: (searchParams.get("category") ?? "all") as Category | "all",
+      productType: (searchParams.get("type") ?? "all") as ProductType | "all",
+      dressStyle: (searchParams.get("style") ?? "all") as DressStyle | "all",
+      brand: (searchParams.get("brand") ?? "all") as Brand | "all",
+      priceRange: [
+        Number(searchParams.get("minPrice") ?? "0"),
+        Number(searchParams.get("maxPrice") ?? "650"),
+      ],
+      colors: searchParams.get("colors")?.split(",").filter(Boolean) ?? [],
+      sizes: (searchParams.get("sizes")?.split(",").filter(Boolean) ??
+        []) as Size[],
+      onSale: searchParams.get("onSale") === "true",
+      newArrivals: searchParams.get("newArrivals") === "true",
+      topSelling: searchParams.get("topSelling") === "true",
+    }),
+    [searchParams],
+  );
 
   const sort = searchParams.get("sort") ?? SORT_OPTIONS[0];
   const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
 
   const params = useMemo<ProductsParams>(() => {
-    const p: ProductsParams = { page: page - 1, size: ITEMS_PER_PAGE, sort: SORT_TO_API[sort] };
+    const p: ProductsParams = {
+      page: page - 1,
+      size: ITEMS_PER_PAGE,
+      sort: SORT_TO_API[sort],
+    };
     if (filters.category !== "all") p.category = filters.category;
-    if (filters.productType !== "all") p.productTypeName = PRODUCT_TYPE_NAME[filters.productType];
-    if (filters.dressStyle !== "all") p.dressStyle = DRESS_STYLE_TO_API[filters.dressStyle];
+    if (filters.productType !== "all")
+      p.productTypeName = PRODUCT_TYPE_NAME[filters.productType];
+    if (filters.dressStyle !== "all")
+      p.dressStyle = DRESS_STYLE_TO_API[filters.dressStyle];
     if (filters.brand !== "all") p.brandName = BRAND_NAME[filters.brand];
     if (filters.priceRange[0] > 0) p.minPrice = filters.priceRange[0];
     if (filters.priceRange[1] < 650) p.maxPrice = filters.priceRange[1];
     if (filters.colors.length > 0) {
-      const mapped = filters.colors.map((h) => COLOR_HEX_TO_ENUM[h]).filter(Boolean);
+      const mapped = filters.colors
+        .map((h) => COLOR_HEX_TO_ENUM[h])
+        .filter(Boolean);
       if (mapped.length > 0) p.colors = mapped;
     }
     if (filters.sizes.length > 0) {
@@ -81,7 +93,8 @@ export default function ShopPage() {
 
   const totalCount = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 1;
-  const currentStart = products.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
+  const currentStart =
+    products.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
   const currentEnd = (page - 1) * ITEMS_PER_PAGE + products.length;
 
   function handleFilterChange(f: FilterState) {
@@ -133,7 +146,12 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb category={filters.category} productType={filters.productType} dressStyle={filters.dressStyle} brand={filters.brand} />
+      <ShopBreadcrumb
+        category={filters.category}
+        productType={filters.productType}
+        dressStyle={filters.dressStyle}
+        brand={filters.brand}
+      />
 
       <div className="flex gap-6 flex-col lg:flex-row">
         <FilterSidebar
@@ -169,7 +187,9 @@ export default function ShopPage() {
           {isLoading ? (
             <ProductGridSkeleton />
           ) : isError ? (
-            <div className="py-20 text-center text-brand-red">Failed to load products. Please try again.</div>
+            <div className="py-20 text-center text-brand-red">
+              Failed to load products. Please try again.
+            </div>
           ) : (
             <ProductGrid products={products} />
           )}
