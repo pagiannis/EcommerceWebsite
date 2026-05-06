@@ -1,0 +1,192 @@
+import apiClient from './apiClient';
+import type { Product } from '../types/product';
+import type { Category } from '../types/category';
+import type { Brand } from '../types/brand';
+import type { ProductType } from '../types/productType';
+import type { DressStyle } from '../types/dressStyle';
+import type { Size } from '../types/size';
+
+export interface ProductVariantApi {
+  id: number;
+  color: string;
+  colorHex: string;
+  size: string;
+  stockQuantity: number;
+  sku: string;
+  price: number;
+}
+
+export interface ProductApi {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  brand: string;
+  productType: string;
+  dressStyle: string;
+  price: number;
+  originalPrice?: number;
+  discountPercent?: number;
+  rating: number;
+  reviewCount: number;
+  imageUrls: string[];
+  variants: ProductVariantApi[];
+}
+
+export interface PaginatedProductsResponse {
+  content: ProductApi[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface ProductsParams {
+  category?: string;
+  page?: number;
+  size?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  colors?: string[];
+  filterSizes?: string[];
+  dressStyle?: string;
+  onSale?: boolean;
+  bestSelling?: boolean;
+  brandName?: string;
+  productTypeName?: string;
+  sort?: 'NEWEST' | 'MOST_POPULAR' | 'PRICE_ASC' | 'PRICE_DESC';
+  minRating?: number;
+}
+
+// FilterState ↔ API conversion maps (exported for ShopPage use)
+
+export const COLOR_HEX_TO_ENUM: Record<string, string> = {
+  '#000000': 'BLACK',
+  '#FFFFFF': 'WHITE',
+  '#FF0000': 'RED',
+  '#0000FF': 'BLUE',
+  '#00C000': 'GREEN',
+  '#FFFF00': 'YELLOW',
+  '#FFC0CB': 'PINK',
+  '#808080': 'GRAY',
+  '#8B4513': 'BROWN',
+  '#800080': 'PURPLE',
+  '#FFA500': 'ORANGE',
+  '#000080': 'NAVY',
+};
+
+export const BRAND_NAME: Record<string, string> = {
+  nike: 'Nike',
+  levis: "Levi's",
+  'tommy-hilfiger': 'Tommy Hilfiger',
+  'ralph-lauren': 'Ralph Lauren',
+  hm: 'H&M',
+  zara: 'Zara',
+  'calvin-klein': 'Calvin Klein',
+};
+
+export const PRODUCT_TYPE_NAME: Record<string, string> = {
+  't-shirt': 'T-Shirt',
+  jeans: 'Jeans',
+  shirt: 'Shirt',
+  polo: 'Polo',
+  hoodie: 'Hoodie',
+  shorts: 'Shorts',
+  blazer: 'Blazer',
+};
+
+export const DRESS_STYLE_TO_API: Record<string, string> = {
+  casual: 'CASUAL',
+  formal: 'FORMAL',
+  party: 'PARTY',
+  gym: 'SPORT',
+};
+
+export const SIZE_TO_API: Record<string, string> = {
+  'X-Small': 'XS',
+  Small: 'S',
+  Medium: 'M',
+  Large: 'L',
+  'X-Large': 'XL',
+  'XX-Large': 'XXL',
+  '3X-Large': 'XXXL',
+};
+
+export const SORT_TO_API: Record<string, ProductsParams['sort']> = {
+  'Most Popular': 'MOST_POPULAR',
+  'Price: Low to High': 'PRICE_ASC',
+  'Price: High to Low': 'PRICE_DESC',
+  Newest: 'NEWEST',
+};
+
+// API → FilterState reverse maps (used only in mapApiProduct)
+
+const BRAND_SLUG: Record<string, Brand> = {
+  Nike: 'nike',
+  "Levi's": 'levis',
+  'Tommy Hilfiger': 'tommy-hilfiger',
+  'Ralph Lauren': 'ralph-lauren',
+  'H&M': 'hm',
+  Zara: 'zara',
+  'Calvin Klein': 'calvin-klein',
+};
+
+const PRODUCT_TYPE_SLUG: Record<string, ProductType> = {
+  'T-Shirt': 't-shirt',
+  Jeans: 'jeans',
+  Shirt: 'shirt',
+  Polo: 'polo',
+  Hoodie: 'hoodie',
+  Shorts: 'shorts',
+  Blazer: 'blazer',
+};
+
+const DRESS_STYLE_FROM_API: Record<string, DressStyle> = {
+  CASUAL: 'casual',
+  FORMAL: 'formal',
+  PARTY: 'party',
+  SPORT: 'gym',
+  BUSINESS: 'formal',
+};
+
+const SIZE_FROM_API: Record<string, Size> = {
+  XS: 'X-Small',
+  S: 'Small',
+  M: 'Medium',
+  L: 'Large',
+  XL: 'X-Large',
+  XXL: 'XX-Large',
+  XXXL: '3X-Large',
+};
+
+export function mapApiProduct(api: ProductApi): Product {
+  return {
+    id: String(api.id),
+    name: api.name,
+    description: api.description,
+    category: api.category as Category,
+    brand: (BRAND_SLUG[api.brand] ?? api.brand) as Brand,
+    productType: (PRODUCT_TYPE_SLUG[api.productType] ?? api.productType) as ProductType,
+    dressStyle: (DRESS_STYLE_FROM_API[api.dressStyle] ?? 'casual') as DressStyle,
+    price: api.price,
+    originalPrice: api.originalPrice,
+    discountPercent: api.discountPercent,
+    rating: api.rating,
+    reviewCount: api.reviewCount,
+    images: api.imageUrls,
+    colors: [...new Set(api.variants.map((v) => v.colorHex))],
+    sizes: [...new Set(api.variants.map((v) => SIZE_FROM_API[v.size] ?? v.size))] as Size[],
+  };
+}
+
+export async function fetchProducts(
+  params: ProductsParams = {},
+): Promise<PaginatedProductsResponse> {
+  const { data } = await apiClient.get<PaginatedProductsResponse>('/products', {
+    params,
+    paramsSerializer: { indexes: null },
+  });
+  return data;
+}
