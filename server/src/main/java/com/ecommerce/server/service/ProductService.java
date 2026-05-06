@@ -10,7 +10,6 @@ import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
-import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,10 +26,9 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
 
-    // Φίλτραρίσμα με πολλαπλά κριτήρια
     public Page<ProductResponse> getFilteredProducts(
+            String categoryName,
             BigDecimal minPrice,
             BigDecimal maxPrice,
             List<Color> colors,
@@ -43,6 +41,7 @@ public class ProductService {
             ProductSort sort,
             Double minRating,
             Pageable pageable) {
+
         if (sort != null) {
             Sort s = switch (sort) {
                 case NEWEST       -> Sort.by(Sort.Direction.DESC, "createdAt");
@@ -52,26 +51,32 @@ public class ProductService {
             };
             pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), s);
         }
+
         boolean filterByColors = colors != null && !colors.isEmpty();
         boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
+
+        // Normalize to lowercase here to avoid PostgreSQL type inference issue with LOWER(:param)
+        String normalizedCategory    = categoryName    != null ? categoryName.toLowerCase()    : null;
+        String normalizedBrand       = brandName       != null ? brandName.toLowerCase()       : null;
+        String normalizedProductType = productTypeName != null ? productTypeName.toLowerCase() : null;
+
         return productRepository.findByFilters(
+                normalizedCategory,
                 minPrice, maxPrice,
                 filterByColors ? colors : List.of(Color.RED), filterByColors,
                 filterBySizes  ? sizes  : List.of(Size.M),   filterBySizes,
                 dressStyle,
                 onSale      != null && onSale,
                 bestSelling != null && bestSelling,
-                brandName, productTypeName, minRating, pageable
+                normalizedBrand, normalizedProductType, minRating, pageable
         ).map(this::convertToResponse);
     }
 
-    // Αναζήτηση προϊόντων κατά όνομα
     public Page<ProductResponse> searchProducts(String query, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(query, pageable)
                 .map(this::convertToResponse);
     }
 
-    // Autocomplete — επιστρέφει μέχρι 8 προτάσεις για dropdown
     public List<ProductSuggestionResponse> autocomplete(String query) {
         return productRepository.findTop8ByNameContainingIgnoreCase(query)
                 .stream()
@@ -83,33 +88,27 @@ public class ProductService {
                 .toList();
     }
 
-    // Λήψη λεπτομερειών ενός προϊόντος
     public ProductResponse getProductDetail(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         return convertToResponse(product);
     }
 
-    // Λήψη όλων των variants
     public List<ProductVariantResponse> getProductVariants(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-
         return product.getVariants().stream()
                 .map(this::convertVariantToResponse)
                 .toList();
     }
 
-    // Μετατροπή Product Entity σε ProductResponse DTO
     public ProductResponse convertToResponse(Product product) {
         List<String> imageUrls = product.getImages().stream()
                 .map(ProductImage::getImageUrl)
                 .toList();
-
         List<ProductVariantResponse> variants = product.getVariants().stream()
                 .map(this::convertVariantToResponse)
                 .toList();
-
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
@@ -128,7 +127,6 @@ public class ProductService {
         );
     }
 
-    // Μετατροπή ProductVariant Entity σε ProductVariantResponse DTO
     private ProductVariantResponse convertVariantToResponse(ProductVariant variant) {
         return new ProductVariantResponse(
                 variant.getId(),
