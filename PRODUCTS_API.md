@@ -33,9 +33,9 @@ Base URL: `http://localhost:8080`
 
 **`colors`**: `RED`, `BLUE`, `BLACK`, `WHITE`, `GREEN`, `YELLOW`, `PINK`, `GRAY`, `BROWN`, `PURPLE`, `ORANGE`, `NAVY`
 
-**`filterSizes`**: `XS`, `S`, `M`, `L`, `XL`, `XXL`, `XXXL`
+**`filterSizes`**: `XXS`, `XS`, `S`, `M`, `L`, `XL`, `XXL`, `XXXL`, `XXXXL`
 
-**`dressStyle`**: `CASUAL`, `FORMAL`, `SPORT`, `PARTY`, `BUSINESS`
+**`dressStyle`**: `CASUAL`, `FORMAL`, `PARTY`, `GYM`
 
 **`sort`**: `NEWEST`, `MOST_POPULAR`, `PRICE_ASC`, `PRICE_DESC`
 
