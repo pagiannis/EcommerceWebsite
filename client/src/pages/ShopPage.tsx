@@ -152,6 +152,7 @@ export default function ShopPage() {
             totalCount={isLoading ? 0 : totalCount}
             currentStart={isLoading ? 0 : currentStart}
             currentEnd={isLoading ? 0 : currentEnd}
+            isProductsLoading={isLoading}
             sort={sort}
             onSortChange={handleSortChange}
             onFilterOpen={() => setFilterOpen(true)}
