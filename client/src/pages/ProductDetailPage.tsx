@@ -1,22 +1,28 @@
 import { Navigate, useParams } from 'react-router-dom';
-import { products } from '../data/products';
-import { reviews } from '../data/reviews';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import ProductImageGallery from '../components/product/ProductImageGallery';
 import ProductInfo from '../components/product/ProductInfo';
 import ProductTabs from '../components/product/ProductTabs';
 import RelatedProducts from '../components/product/RelatedProducts';
+import { useProduct } from '../hooks/useProduct';
+import { useProductReviews } from '../hooks/useProductReviews';
+import { useRelatedProducts } from '../hooks/useRelatedProducts';
 
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
-  const product = products.find(p => p.id === productId);
 
-  if (!productId || !product) return <Navigate to="/shop" />;
+  const { data: product, isLoading, isError } = useProduct(productId);
+  const { data: reviews = [] } = useProductReviews(productId);
+  const { data: related = [] } = useRelatedProducts(product);
 
-  const productReviews = reviews.filter(r => r.productId === product.id);
-  const related = products
-    .filter(p => p.id !== product.id && p.category === product.category && p.productType === product.productType)
-    .slice(0, 4);
+  if (!productId || isError) return <Navigate to="/shop" />;
+
+  if (isLoading || !product)
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10 text-center text-gray-400 lg:px-8">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
@@ -36,7 +42,7 @@ export default function ProductDetailPage() {
         <ProductInfo product={product} />
       </div>
 
-      <ProductTabs description={product.description} reviews={productReviews} />
+      <ProductTabs description={product.description} reviews={reviews} />
 
       <RelatedProducts products={related} />
     </div>

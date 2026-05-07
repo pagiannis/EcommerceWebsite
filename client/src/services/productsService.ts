@@ -6,7 +6,7 @@ import type { ProductType } from '../types/productType';
 import type { DressStyle } from '../types/dressStyle';
 import type { Size } from '../types/size';
 
-export interface ProductVariantApi {
+export interface ProductVariantResponse {
   id: number;
   color: string;
   colorHex: string;
@@ -16,7 +16,7 @@ export interface ProductVariantApi {
   price: number;
 }
 
-export interface ProductApi {
+export interface ProductResponse {
   id: number;
   name: string;
   description: string;
@@ -30,11 +30,11 @@ export interface ProductApi {
   rating: number;
   reviewCount: number;
   imageUrls: string[];
-  variants: ProductVariantApi[];
+  variants: ProductVariantResponse[];
 }
 
 export interface PaginatedProductsResponse {
-  content: ProductApi[];
+  content: ProductResponse[];
   totalElements: number;
   totalPages: number;
   number: number;
@@ -161,7 +161,7 @@ const SIZE_FROM_API: Record<string, Size> = {
   XXXL: '3X-Large',
 };
 
-export function mapApiProduct(api: ProductApi): Product {
+export function mapApiProduct(api: ProductResponse): Product {
   return {
     id: String(api.id),
     name: api.name,
@@ -188,5 +188,12 @@ export async function fetchProducts(
     params,
     paramsSerializer: { indexes: null },
   });
+  return data;
+}
+
+export async function fetchProductById(
+  id: string
+): Promise<ProductResponse> {
+  const { data } = await apiClient.get<ProductResponse>(`/products/${id}`);
   return data;
 }
