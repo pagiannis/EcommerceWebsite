@@ -307,6 +307,73 @@ GET /api/app-reviews
 
 ---
 
+---
+
+## Cart
+
+> ⚠️ **Προσωρινό API** — Μετά την υλοποίηση του authentication, το `userId` στο URL θα αφαιρεθεί και ο χρήστης θα αναγνωρίζεται αυτόματα από το JWT token. Η δομή του request/response θα παραμείνει ίδια.
+
+### Βήμα 1 — Βρες το variantId
+
+Για να προσθέσεις προϊόν στο cart χρειάζεσαι το `variantId` (όχι το `productId`). Κάθε variant αντιστοιχεί σε συγκεκριμένο χρώμα + μέγεθος.
+
+```
+GET /api/products/{productId}/variants
+```
+
+```json
+[
+  { "id": 14, "color": "BLACK", "colorHex": "#000000", "size": "M", "stockQuantity": 23, "sku": "SKU-2-BLA-M", "price": 85.00 },
+  { "id": 15, "color": "BLACK", "colorHex": "#000000", "size": "L", "stockQuantity": 10, "sku": "SKU-2-BLA-L", "price": 85.00 },
+  { "id": 16, "color": "WHITE", "colorHex": "#FFFFFF", "size": "M", "stockQuantity": 5,  "sku": "SKU-2-WHI-M", "price": 85.00 }
+]
+```
+
+Επιλέγεις το variant με το χρώμα και μέγεθος που θέλει ο χρήστης και παίρνεις το `id` του.
+
+---
+
+### 10. `POST /api/cart/{userId}` — Προσθήκη στο cart
+
+```json
+{
+  "variantId": 14,
+  "quantity": 2
+}
+```
+
+Επιστρέφει `201 Created` με το νέο cart item.
+
+---
+
+### 11. `GET /api/cart/{userId}` — Προβολή cart
+
+```
+GET /api/cart/1
+```
+
+---
+
+### 12. `PUT /api/cart/{cartItemId}?quantity=3` — Αλλαγή ποσότητας
+
+```
+PUT /api/cart/7?quantity=3
+```
+
+Επιστρέφει `200 OK` με το ενημερωμένο cart item.
+
+---
+
+### 13. `DELETE /api/cart/{cartItemId}` — Αφαίρεση από cart
+
+```
+DELETE /api/cart/7
+```
+
+Επιστρέφει `204 No Content`.
+
+---
+
 ## Σφάλματα Validation (400)
 
 Αν σταλούν λάθος τιμές:
