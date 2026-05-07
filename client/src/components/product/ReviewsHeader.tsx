@@ -23,12 +23,17 @@ export default function ReviewsHeader({
   onMinRatingChange,
 }: ReviewsHeaderProps) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setFilterOpen(false);
+      }
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -92,17 +97,43 @@ export default function ReviewsHeader({
         </div>
 
         {/* Sort dropdown — desktop only */}
-        <div className="relative hidden sm:inline-flex items-center rounded-full bg-brand-gray px-4 py-2">
-          <select
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="appearance-none cursor-pointer pr-5 text-sm font-medium text-brand-black outline-none bg-transparent"
+        <div ref={sortRef} className="relative hidden sm:block">
+          <button
+            type="button"
+            onClick={() => setSortOpen((o) => !o)}
+            className="flex items-center gap-2 rounded-full bg-brand-gray px-4 py-2.5 text-sm font-medium text-brand-black"
           >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o}>{o}</option>
-            ))}
-          </select>
-          <IoIosArrowDown className="pointer-events-none absolute right-3 h-4 w-4 text-brand-black" />
+            {sort}
+            <IoIosArrowDown
+              className={`h-4 w-4 transition-transform ${sortOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {sortOpen && (
+            <div className="absolute right-0 top-full z-10 mt-2 min-w-max rounded-2xl border border-gray-200 bg-white p-4 shadow-lg">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Sort by
+              </p>
+              <div className="flex flex-col gap-2">
+                {SORT_OPTIONS.map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    onClick={() => {
+                      onSortChange(o);
+                      setSortOpen(false);
+                    }}
+                    className={`rounded-lg px-3 py-1.5 text-left text-sm transition hover:bg-brand-gray ${
+                      sort === o
+                        ? "bg-brand-gray font-semibold text-brand-black"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <button
