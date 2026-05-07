@@ -174,6 +174,94 @@ GET /api/products/autocomplete?query=sh
 
 ---
 
+### 5. `GET /api/reviews/product/{productId}` — Reviews προϊόντος με φίλτρα
+
+Επιστρέφει τα reviews ενός προϊόντος. Υποστηρίζει φιλτράρισμα ανά rating και ταξινόμηση. Όλα τα params είναι προαιρετικά.
+
+#### Query Parameters
+
+| Param | Τύπος | Default | Περιγραφή |
+|---|---|---|---|
+| `sort` | enum | `LATEST` | Ταξινόμηση αποτελεσμάτων |
+| `minRating` | int | `0` (=όλα) | Ελάχιστο rating (1–5) |
+
+#### Τιμές Enums
+
+**`sort`**: `LATEST`, `OLDEST`, `HIGHEST_RATING`, `LOWEST_RATING`
+
+#### Παραδείγματα
+
+```
+# Όλα τα reviews (default: νεότερα πρώτα)
+GET /api/reviews/product/21
+
+# Μόνο reviews με rating >= 3
+GET /api/reviews/product/21?minRating=3
+
+# Ταξινομημένα από υψηλότερο rating
+GET /api/reviews/product/21?sort=HIGHEST_RATING
+
+# Συνδυασμός: rating >= 4, παλαιότερα πρώτα
+GET /api/reviews/product/21?sort=OLDEST&minRating=4
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": 5,
+    "productId": 21,
+    "userName": "Alice Johnson",
+    "rating": 5,
+    "comment": "Great fit and super comfortable. Will definitely order again.",
+    "createdAt": "2026-03-10 14:22:00"
+  },
+  {
+    "id": 12,
+    "productId": 21,
+    "userName": "Bob Smith",
+    "rating": 4,
+    "comment": "Nice product overall. Sizing is accurate.",
+    "createdAt": "2026-02-05 09:11:00"
+  }
+]
+```
+
+---
+
+### 6. `POST /api/reviews/user/{userId}` — Δημιουργία review
+
+#### Request Body
+
+```json
+{
+  "productId": 21,
+  "rating": 4,
+  "comment": "Very comfortable and fits perfectly."
+}
+```
+
+| Πεδίο | Τύπος | Required | Περιγραφή |
+|---|---|---|---|
+| `productId` | Long | ✅ | ID προϊόντος |
+| `rating` | int | ✅ | Βαθμολογία (1–5) |
+| `comment` | string | ❌ | Κείμενο κριτικής (max 1000 χαρακτήρες) |
+
+Επιστρέφει `201 Created` με το νέο `ReviewResponse`.
+
+---
+
+### 7. `DELETE /api/reviews/{reviewId}` — Διαγραφή review
+
+```
+DELETE /api/reviews/5
+```
+
+Επιστρέφει `204 No Content`.
+
+---
+
 ## Σφάλματα Validation (400)
 
 Αν σταλούν λάθος τιμές:

@@ -8,6 +8,7 @@ import com.ecommerce.server.models.User;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +31,17 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Λήψη reviews ενός προϊόντος
-     */
-    public List<ReviewResponse> getProductReviews(Long productId) {
-        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId)
+    public List<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating) {
+        Sort jpaSort = switch (sort != null ? sort : "LATEST") {
+            case "OLDEST"        -> Sort.by(Sort.Direction.ASC,  "createdAt");
+            case "HIGHEST_RATING"-> Sort.by(Sort.Direction.DESC, "rating");
+            case "LOWEST_RATING" -> Sort.by(Sort.Direction.ASC,  "rating");
+            default              -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
+
+        int effectiveMin = (minRating != null && minRating > 0) ? minRating : 0;
+
+        return reviewRepository.findByProductIdAndRatingGreaterThanEqual(productId, effectiveMin, jpaSort)
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
