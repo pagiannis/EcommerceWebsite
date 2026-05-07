@@ -1,10 +1,13 @@
 import { useRef } from "react";
-import { testimonials } from "../../data/testimonials";
+import { useAppReviews } from "../../hooks/useAppReviews";
 import StarRating from "../ui/StarRating";
+import TestimonialCardSkeleton from "./TestimonialCardSkeleton";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoArrowBack, IoArrowForward } from "react-icons/io5";
 
 export default function TestimonialsSection() {
+  const { data, isPending } = useAppReviews();
+  const testimonials = data ?? [];
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
@@ -41,21 +44,25 @@ export default function TestimonialsSection() {
           ref={scrollRef}
           className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 px-4 lg:px-8"
         >
-          {testimonials.map((t) => (
-            <div
-              key={t.id}
-              className="w-[calc(100%-32px)] flex-shrink-0 rounded-2xl border border-gray-200 p-6 lg:w-[360px]"
-            >
-              <StarRating rating={t.rating} />
-              <div className="mt-2 flex items-center gap-1">
-                <span className="font-semibold text-gray-900">{t.author}</span>
-                {t.verified && (
-                  <FaCheckCircle className="h-4 w-4 text-green-500" />
-                )}
-              </div>
-              <p className="mt-2 text-sm text-gray-600">{t.body}</p>
-            </div>
-          ))}
+          {isPending
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <TestimonialCardSkeleton key={i} />
+              ))
+            : testimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="w-[calc(100%-32px)] flex-shrink-0 rounded-2xl border border-gray-200 p-6 lg:w-[360px]"
+                >
+                  <StarRating rating={t.rating} />
+                  <div className="mt-2 flex items-center gap-1">
+                    <span className="font-semibold text-gray-900">{t.author}</span>
+                    {t.verified && (
+                      <FaCheckCircle className="h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">{t.body}</p>
+                </div>
+              ))}
         </div>
       </div>
     </section>
