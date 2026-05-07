@@ -24,6 +24,7 @@ Base URL: `http://localhost:8080`
 | `dressStyle` | enum | — | Στυλ ένδυσης |
 | `onSale` | boolean | — | Μόνο προϊόντα σε έκπτωση |
 | `bestSelling` | boolean | — | Μόνο best sellers (reviewCount ≥ 50) |
+| `topSelling` | boolean | — | Ταξινόμηση βάσει πωλήσεων (αγνοεί άλλα filters) |
 | `brandName` | string | — | Όνομα brand (case-insensitive) |
 | `productTypeName` | string | — | Τύπος προϊόντος (case-insensitive) |
 | `sort` | enum | — | Ταξινόμηση |
@@ -307,22 +308,12 @@ GET /api/app-reviews
 
 ---
 
----
-
-### 10. `GET /api/products/top-selling` — Top selling products
-
-Επιστρέφει τα products με τις περισσότερες πωλήσεις (υπολογίζεται από τα order items).
-
-| Param | Τύπος | Default | Περιγραφή |
-|---|---|---|---|
-| `limit` | int | `8` | Πλήθος αποτελεσμάτων (max 20) |
-
 ```
-GET /api/products/top-selling
-GET /api/products/top-selling?limit=4
+# Top selling products (ταξινόμηση βάσει πωλήσεων)
+GET /api/products?topSelling=true&size=8
 ```
 
-Επιστρέφει `List<ProductResponse>` (ίδια δομή με το `GET /api/products`).
+> ⚠️ Όταν το `topSelling=true` είναι ενεργό, αγνοούνται τα υπόλοιπα filters και η ταξινόμηση γίνεται αποκλειστικά βάσει πωλήσεων.
 
 ---
 

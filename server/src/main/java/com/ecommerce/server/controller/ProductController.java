@@ -41,6 +41,7 @@ public class ProductController {
             @RequestParam(required = false) DressStyle dressStyle,
             @RequestParam(required = false) Boolean onSale,
             @RequestParam(required = false) Boolean bestSelling,
+            @RequestParam(required = false) Boolean topSelling,
             @RequestParam(required = false) String brandName,
             @RequestParam(required = false) String productTypeName,
             @RequestParam(required = false) ProductSort sort,
@@ -48,15 +49,9 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.getFilteredProducts(
                 category, minPrice, maxPrice, colors, filterSizes, dressStyle,
-                onSale, bestSelling, brandName, productTypeName, sort, minRating,
+                onSale, bestSelling, topSelling, brandName, productTypeName, sort, minRating,
                 PageRequest.of(page, size)
         ));
-    }
-
-    @GetMapping("/top-selling")
-    public ResponseEntity<List<ProductResponse>> getTopSellingProducts(
-            @RequestParam(defaultValue = "8") @Min(1) @Max(20) int limit) {
-        return ResponseEntity.ok(productService.getTopSellingProducts(limit));
     }
 
     @GetMapping("/{id}")

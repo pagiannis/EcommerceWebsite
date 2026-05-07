@@ -27,9 +27,58 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants")
     List<Product> findAllWithVariants();
 
-    // Ταξινόμηση βάσει συνολικής ποσότητας πωλήσεων από order_items — για το top-selling endpoint
-    @Query("SELECT oi.product FROM OrderItem oi GROUP BY oi.product ORDER BY SUM(oi.quantity) DESC")
-    List<Product> findTopSellingProducts(Pageable pageable);
+    // topSelling=true: ταξινόμηση βάσει πωλήσεων — χρησιμοποιεί EXISTS για variants ώστε να μην
+    // πολλαπλασιαστεί το SUM(quantity) λόγω JOIN
+    @Query(value = """
+        SELECT p FROM Product p
+        JOIN p.brand b
+        JOIN p.productType pt
+        LEFT JOIN OrderItem oi ON oi.product = p
+        WHERE (:categoryName IS NULL OR LOWER(p.category.name) = :categoryName)
+          AND (:minPrice IS NULL OR p.price >= :minPrice)
+          AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+          AND (:filterByColors = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.color IN (:colors)))
+          AND (:filterBySizes = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.size IN (:sizes)))
+          AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
+          AND (:onSale = false OR p.discountPercent > 0)
+          AND (:bestSelling = false OR p.reviewCount >= 50)
+          AND (:brandName IS NULL OR LOWER(b.name) = :brandName)
+          AND (:productTypeName IS NULL OR LOWER(pt.name) = :productTypeName)
+          AND (:minRating IS NULL OR p.rating >= :minRating)
+        GROUP BY p
+        ORDER BY COALESCE(SUM(oi.quantity), 0) DESC
+        """,
+        countQuery = """
+        SELECT COUNT(DISTINCT p) FROM Product p
+        JOIN p.brand b
+        JOIN p.productType pt
+        WHERE (:categoryName IS NULL OR LOWER(p.category.name) = :categoryName)
+          AND (:minPrice IS NULL OR p.price >= :minPrice)
+          AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+          AND (:filterByColors = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.color IN (:colors)))
+          AND (:filterBySizes = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.size IN (:sizes)))
+          AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
+          AND (:onSale = false OR p.discountPercent > 0)
+          AND (:bestSelling = false OR p.reviewCount >= 50)
+          AND (:brandName IS NULL OR LOWER(b.name) = :brandName)
+          AND (:productTypeName IS NULL OR LOWER(pt.name) = :productTypeName)
+          AND (:minRating IS NULL OR p.rating >= :minRating)
+        """)
+    Page<Product> findTopSellingProducts(
+            @Param("categoryName") String categoryName,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("colors") List<Color> colors,
+            @Param("filterByColors") boolean filterByColors,
+            @Param("sizes") List<Size> sizes,
+            @Param("filterBySizes") boolean filterBySizes,
+            @Param("dressStyle") DressStyle dressStyle,
+            @Param("onSale") boolean onSale,
+            @Param("bestSelling") boolean bestSelling,
+            @Param("brandName") String brandName,
+            @Param("productTypeName") String productTypeName,
+            @Param("minRating") Double minRating,
+            Pageable pageable);
 
     @Query(value = """
         SELECT DISTINCT p FROM Product p

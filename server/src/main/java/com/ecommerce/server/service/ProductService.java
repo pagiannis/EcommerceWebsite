@@ -37,11 +37,31 @@ public class ProductService {
             DressStyle dressStyle,
             Boolean onSale,
             Boolean bestSelling,
+            Boolean topSelling,
             String brandName,
             String productTypeName,
             ProductSort sort,
             Double minRating,
             Pageable pageable) {
+
+        boolean filterByColors = colors != null && !colors.isEmpty();
+        boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
+
+        String normalizedCategory    = categoryName    != null ? categoryName.toLowerCase()    : null;
+        String normalizedBrand       = brandName       != null ? brandName.toLowerCase()       : null;
+        String normalizedProductType = productTypeName != null ? productTypeName.toLowerCase() : null;
+
+        if (topSelling != null && topSelling) {
+            return productRepository.findTopSellingProducts(
+                    normalizedCategory, minPrice, maxPrice,
+                    filterByColors ? colors : List.of(Color.RED), filterByColors,
+                    filterBySizes  ? sizes  : List.of(Size.M),   filterBySizes,
+                    dressStyle,
+                    onSale      != null && onSale,
+                    bestSelling != null && bestSelling,
+                    normalizedBrand, normalizedProductType, minRating, pageable
+            ).map(this::convertToResponse);
+        }
 
         if (sort != null) {
             Sort s = switch (sort) {
@@ -52,14 +72,6 @@ public class ProductService {
             };
             pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), s);
         }
-
-        boolean filterByColors = colors != null && !colors.isEmpty();
-        boolean filterBySizes  = sizes  != null && !sizes.isEmpty();
-
-        // Normalize to lowercase here to avoid PostgreSQL type inference issue with LOWER(:param)
-        String normalizedCategory    = categoryName    != null ? categoryName.toLowerCase()    : null;
-        String normalizedBrand       = brandName       != null ? brandName.toLowerCase()       : null;
-        String normalizedProductType = productTypeName != null ? productTypeName.toLowerCase() : null;
 
         return productRepository.findByFilters(
                 normalizedCategory,
@@ -100,13 +112,6 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return product.getVariants().stream()
                 .map(this::convertVariantToResponse)
-                .toList();
-    }
-
-    public List<ProductResponse> getTopSellingProducts(int limit) {
-        return productRepository.findTopSellingProducts(PageRequest.of(0, limit))
-                .stream()
-                .map(this::convertToResponse)
                 .toList();
     }
 
