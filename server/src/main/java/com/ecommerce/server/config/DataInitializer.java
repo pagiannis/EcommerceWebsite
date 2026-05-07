@@ -3,17 +3,17 @@ package com.ecommerce.server.config;
 import com.ecommerce.server.dto.request.*;
 import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
-import com.ecommerce.server.models.Product;
-import com.ecommerce.server.models.ProductImage;
+import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
-import com.ecommerce.server.repository.ProductImageRepository;
-import com.ecommerce.server.repository.ProductRepository;
+import com.ecommerce.server.repository.*;
 import com.ecommerce.server.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -26,19 +26,38 @@ public class DataInitializer implements CommandLineRunner {
     private final AdminProductService     adminProductService;
     private final ProductRepository       productRepository;
     private final ProductImageRepository  productImageRepository;
+    private final UserRepository          userRepository;
+    private final ReviewRepository        reviewRepository;
 
     private static final Size[] ALL_SIZES = {
         Size.XXS, Size.XS, Size.S, Size.M, Size.L, Size.XL, Size.XXL, Size.XXXL, Size.XXXXL
     };
 
+    private static final String[][] REVIEW_DATA = {
+        // {comment, rating}
+        {"Excellent quality, exactly as described. Very happy with my purchase!", "5"},
+        {"Great fit and super comfortable. Will definitely order again.", "5"},
+        {"Love the material, very durable and looks great.", "5"},
+        {"Perfect product! Highly recommend to everyone.", "5"},
+        {"Amazing value for the price. Exceeded my expectations.", "5"},
+        {"Very good quality. The fabric feels premium.", "4"},
+        {"Nice product overall. Sizing is accurate.", "4"},
+        {"Good purchase, arrived quickly and looks as pictured.", "4"},
+        {"Pretty happy with this. Comfortable and stylish.", "4"},
+        {"Solid quality, would buy again.", "4"},
+        {"Decent product. Nothing special but does the job.", "3"},
+        {"Average quality. Expected a bit more for the price.", "3"},
+        {"It's okay. Sizing runs a bit small, order one size up.", "3"},
+        {"Not bad, but the color is slightly different from the photos.", "3"},
+        {"Material feels a bit thin but the style is nice.", "2"},
+        {"Disappointed with the stitching quality. Not worth the price.", "2"},
+        {"Sizing is way off. Had to return it.", "1"},
+    };
+
     @Override
     public void run(String... args) {
-        if (productRepository.count() > 0) {
-            System.out.println("✅ Database already has products. Skipping initialization.");
-            return;
-        }
-
-        System.out.println("🚀 Initializing database with mock data...");
+        if (productRepository.count() == 0) {
+            System.out.println("🚀 Initializing database with mock data...");
 
         // ── Categories ───────────────────────────────────────────────────────
         Long men   = cat("men",   "Men's clothing collection");
@@ -157,7 +176,76 @@ public class DataInitializer implements CommandLineRunner {
         product("Kids Sport Shorts",         "Active sport shorts",           kids, nike,  30, 50,  shorts, DressStyle.GYM,    Color.BLACK, Color.BLUE);
         product("Kids Blazer",               "Smart kids blazer",             kids, tommy, 80, 120, blazer, DressStyle.FORMAL, Color.NAVY,  Color.BLACK);
 
-        System.out.println("✅ Database initialized successfully!");
+            System.out.println("✅ Database initialized successfully!");
+        } else {
+            System.out.println("✅ Database already has products. Skipping product initialization.");
+        }
+
+        if (reviewRepository.count() == 0) {
+            System.out.println("🚀 Seeding reviews...");
+            seedReviews();
+        } else {
+            System.out.println("✅ Database already has reviews. Skipping review initialization.");
+        }
+    }
+
+    // ── Review seeding ───────────────────────────────────────────────────────
+
+    private void seedReviews() {
+        List<User> reviewers = createTestReviewers();
+        List<Product> products = productRepository.findAll();
+
+        int totalReviews = 0;
+        for (Product product : products) {
+            int numReviews = 3 + (int) (product.getId() % 3);
+            for (int i = 0; i < numReviews; i++) {
+                User reviewer = reviewers.get((int) ((product.getId() + i) % reviewers.size()));
+                int dataIdx = (int) ((product.getId() * 7 + i * 3) % REVIEW_DATA.length);
+                int rating = Integer.parseInt(REVIEW_DATA[dataIdx][1]);
+                String comment = REVIEW_DATA[dataIdx][0];
+
+                Review review = Review.builder()
+                        .product(product)
+                        .user(reviewer)
+                        .rating(rating)
+                        .comment(comment)
+                        .createdAt(LocalDateTime.now().minusDays(product.getId() % 90 + (long) i * 7))
+                        .build();
+                reviewRepository.save(review);
+                totalReviews++;
+            }
+
+            Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
+            long count = reviewRepository.findByProductIdOrderByCreatedAtDesc(product.getId()).size();
+            product.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+            product.setReviewCount((int) count);
+            productRepository.save(product);
+        }
+
+        System.out.println("✅ Seeded " + totalReviews + " reviews for " + products.size() + " products!");
+    }
+
+    private List<User> createTestReviewers() {
+        String[][] data = {
+            {"Alice",  "Johnson",  "alice.johnson@testshop.com"},
+            {"Bob",    "Smith",    "bob.smith@testshop.com"},
+            {"Carol",  "Williams", "carol.williams@testshop.com"},
+            {"David",  "Brown",    "david.brown@testshop.com"},
+            {"Emma",   "Davis",    "emma.davis@testshop.com"},
+        };
+
+        List<User> users = new java.util.ArrayList<>();
+        for (String[] d : data) {
+            User user = userRepository.findByEmail(d[2]).orElseGet(() ->
+                    userRepository.save(User.builder()
+                            .firstName(d[0])
+                            .lastName(d[1])
+                            .email(d[2])
+                            .passwordHash("testpassword123")
+                            .build()));
+            users.add(user);
+        }
+        return users;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -190,13 +278,6 @@ public class DataInitializer implements CommandLineRunner {
                 name, description, categoryId, brandId, productTypeId, dressStyle,
                 BigDecimal.valueOf(price), BigDecimal.valueOf(originalPrice), discountPercent
         ));
-
-        productRepository.findById(p.id()).ifPresent(entity -> {
-            double rawRating = 3.5 + Math.random() * 1.5;
-            entity.setRating(Math.round(rawRating * 10.0) / 10.0);
-            entity.setReviewCount((int) (Math.random() * 200) + 10);
-            productRepository.save(entity);
-        });
 
         ProductImage image = new ProductImage();
         image.setProduct(productRepository.getReferenceById(p.id()));
