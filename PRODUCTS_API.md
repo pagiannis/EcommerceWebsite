@@ -262,6 +262,51 @@ DELETE /api/reviews/5
 
 ---
 
+### 8. `GET /api/app-reviews` — App reviews (testimonials)
+
+Επιστρέφει όλα τα approved app reviews για το homepage testimonials section.
+
+```
+GET /api/app-reviews
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": 1,
+    "userName": "Alice Johnson",
+    "rating": 5,
+    "comment": "Absolutely love this shop! The quality is outstanding and delivery was super fast.",
+    "createdAt": "2026-03-15 10:30:00",
+    "approved": true
+  }
+]
+```
+
+---
+
+### 9. `POST /api/app-reviews/user/{userId}` — Υποβολή app review
+
+#### Request Body
+
+```json
+{
+  "rating": 5,
+  "comment": "Amazing experience, will shop again!"
+}
+```
+
+| Πεδίο | Τύπος | Required | Περιγραφή |
+|---|---|---|---|
+| `rating` | int | ✅ | Βαθμολογία (1–5) |
+| `comment` | string | ✅ | Κείμενο κριτικής |
+
+Επιστρέφει `201 Created`. Το review δημιουργείται με `approved: false` και γίνεται ορατό μόλις το εγκρίνει ο admin μέσω `PATCH /api/admin/app-reviews/{id}/approve`.
+
+---
+
 ## Σφάλματα Validation (400)
 
 Αν σταλούν λάθος τιμές:
