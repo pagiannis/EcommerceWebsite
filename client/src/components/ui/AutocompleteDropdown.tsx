@@ -3,9 +3,17 @@ import type { AutocompleteItem } from "../../services/productsService";
 interface AutocompleteDropdownProps {
   items: AutocompleteItem[];
   onSelect: (id: number) => void;
+  noResults?: boolean;
 }
 
-export default function AutocompleteDropdown({ items, onSelect }: AutocompleteDropdownProps) {
+export default function AutocompleteDropdown({ items, onSelect, noResults }: AutocompleteDropdownProps) {
+  if (noResults) {
+    return (
+      <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-gray-100 bg-white shadow-lg px-4 py-3">
+        <p className="text-sm text-gray-500">No results found.</p>
+      </div>
+    );
+  }
   if (items.length === 0) return null;
   return (
     <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-gray-100 bg-white shadow-lg overflow-hidden">

@@ -222,6 +222,23 @@ export default function ShopPage() {
                 Try again
               </button>
             </div>
+          ) : products.length === 0 ? (
+            <div className="py-20 text-center">
+              {isSearchMode ? (
+                <>
+                  <p className="text-lg font-semibold text-brand-black">
+                    No results for &ldquo;{query}&rdquo;
+                  </p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Try a different search term or browse our categories.
+                  </p>
+                </>
+              ) : (
+                <p className="text-lg font-semibold text-brand-black">
+                  No products match your filters.
+                </p>
+              )}
+            </div>
           ) : (
             <ProductGrid products={products} />
           )}

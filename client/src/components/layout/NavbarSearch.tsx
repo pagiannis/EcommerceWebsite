@@ -27,15 +27,16 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
     if (searchOpen) setTimeout(() => mobileInputRef.current?.focus(), 50);
   }, [searchOpen]);
 
-  const { data: suggestions } = useQuery<AutocompleteItem[]>({
+  const { data: suggestions, isFetching } = useQuery<AutocompleteItem[]>({
     queryKey: ["autocomplete", debouncedQuery],
     queryFn: () => fetchAutocomplete(debouncedQuery),
     enabled: debouncedQuery.trim().length >= 2,
     staleTime: 1000 * 30,
   });
 
-  const visibleSuggestions =
-    showDropdown && debouncedQuery.trim().length >= 2 ? (suggestions ?? []) : [];
+  const queryReady = showDropdown && debouncedQuery.trim().length >= 2 && inputValue === debouncedQuery;
+  const visibleSuggestions = queryReady ? (suggestions ?? []) : [];
+  const showNoResults = queryReady && !isFetching && visibleSuggestions.length === 0;
 
   function handleInputChange(value: string) {
     setInputValue(value);
@@ -88,7 +89,7 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
                 className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
               />
             </form>
-            <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} />
+            <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} noResults={showNoResults} />
           </div>
           <button type="button" onClick={handleClose} aria-label="Close search">
             <IoClose className="h-6 w-6" />
@@ -104,7 +105,7 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
             {...sharedInputProps}
             className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
           />
-          <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} />
+          <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} noResults={showNoResults} />
         </form>
       </div>
     </>
