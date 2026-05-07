@@ -2,6 +2,7 @@ package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.BrandRequest;
 import com.ecommerce.server.models.Brand;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class AdminBrandService {
 
     public Brand updateBrand(Long id, BrandRequest request) {
         Brand brand = brandRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Brand not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Brand not found"));
         brand.setName(request.name());
         brand.setLogoUrl(request.logoUrl());
         return brandRepository.save(brand);
@@ -36,7 +37,7 @@ public class AdminBrandService {
 
     public void deleteBrand(Long id) {
         if (!brandRepository.existsById(id))
-            throw new RuntimeException("Brand not found");
+            throw new ResourceNotFoundException("Brand not found");
         brandRepository.deleteById(id);
     }
 }

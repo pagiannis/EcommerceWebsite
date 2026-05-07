@@ -4,6 +4,7 @@ import com.ecommerce.server.dto.request.AddressRequest;
 import com.ecommerce.server.dto.response.AddressResponse;
 import com.ecommerce.server.models.Address;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.AddressRepository;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class AddressService {
     @Transactional
     public AddressResponse updateAddress(Long addressId, AddressRequest request) {
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         if (Boolean.TRUE.equals(request.isDefault()))
             clearDefault(address.getUser().getId());
@@ -64,7 +65,7 @@ public class AddressService {
 
     public void deleteAddress(Long addressId) {
         if (!addressRepository.existsById(addressId))
-            throw new RuntimeException("Address not found");
+            throw new ResourceNotFoundException("Address not found");
         addressRepository.deleteById(addressId);
     }
 
@@ -72,7 +73,7 @@ public class AddressService {
     public AddressResponse setDefault(Long userId, Long addressId) {
         clearDefault(userId);
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
         address.setDefault(true);
         return toResponse(addressRepository.save(address));
     }

@@ -10,6 +10,7 @@ import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.ProductSort;
 import com.ecommerce.server.models.enums.Size;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -90,13 +91,13 @@ public class ProductService {
 
     public ProductResponse getProductDetail(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return convertToResponse(product);
     }
 
     public List<ProductVariantResponse> getProductVariants(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return product.getVariants().stream()
                 .map(this::convertVariantToResponse)
                 .toList();

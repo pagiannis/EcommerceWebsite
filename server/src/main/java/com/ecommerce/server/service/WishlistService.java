@@ -6,6 +6,8 @@ import com.ecommerce.server.dto.response.WishlistItemResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.models.WishlistItem;
+import com.ecommerce.server.exception.BadRequestException;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.repository.WishlistItemRepository;
@@ -58,7 +60,7 @@ public class WishlistService {
 
         // Έλεγχος αν υπάρχει ήδη
         if (wishlistItemRepository.findByUserIdAndProductId(userId, productId).isPresent()) {
-            throw new RuntimeException("Product already in wishlist");
+            throw new BadRequestException("Product already in wishlist");
         }
 
         WishlistItem wishlistItem = WishlistItem.builder()
