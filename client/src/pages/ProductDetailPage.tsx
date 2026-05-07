@@ -7,6 +7,7 @@ import RelatedProducts from '../components/product/RelatedProducts';
 import { useProduct } from '../hooks/useProduct';
 import { useProductReviews } from '../hooks/useProductReviews';
 import { useRelatedProducts } from '../hooks/useRelatedProducts';
+import ProductDetailSkeleton from '../components/product/ProductDetailSkeleton';
 
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
@@ -17,12 +18,7 @@ export default function ProductDetailPage() {
 
   if (!productId || isError) return <Navigate to="/shop" />;
 
-  if (isLoading || !product)
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-10 text-center text-gray-400 lg:px-8">
-        Loading...
-      </div>
-    );
+  if (isLoading || !product) return <ProductDetailSkeleton />;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
