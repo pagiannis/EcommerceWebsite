@@ -53,7 +53,7 @@ export interface ProductsParams {
   filterSizes?: string[];
   dressStyle?: string;
   onSale?: boolean;
-  bestSelling?: boolean;
+  topSelling?: boolean;
   brandName?: string;
   productTypeName?: string;
   sort?: 'NEWEST' | 'MOST_POPULAR' | 'PRICE_ASC' | 'PRICE_DESC';

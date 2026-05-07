@@ -84,7 +84,7 @@ export default function ShopPage() {
       p.filterSizes = filters.sizes.map((s) => SIZE_TO_API[s]).filter(Boolean);
     }
     if (filters.onSale) p.onSale = true;
-    if (filters.topSelling) p.bestSelling = true;
+    if (filters.topSelling) p.topSelling = true;
     return p;
   }, [filters, sort, page]);
 

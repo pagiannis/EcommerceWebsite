@@ -5,7 +5,7 @@ import ProductCard from "../product/ProductCard";
 import ProductCardSkeleton from "../product/ProductCardSkeleton";
 
 export default function TopSellingSection() {
-  const { data, isPending } = useProducts({ bestSelling: true, size: 4 });
+  const { data, isPending } = useProducts({ topSelling: true, size: 4 });
   const topSelling = data?.content.map(mapApiProduct) ?? [];
 
   return (
