@@ -103,6 +103,13 @@ public class ProductService {
                 .toList();
     }
 
+    public List<ProductResponse> getTopSellingProducts(int limit) {
+        return productRepository.findTopSellingProducts(PageRequest.of(0, limit))
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
     public ProductResponse convertToResponse(Product product) {
         List<String> imageUrls = product.getImages().stream()
                 .map(ProductImage::getImageUrl)

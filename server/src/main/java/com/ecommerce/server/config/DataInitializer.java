@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.ecommerce.server.models.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,8 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository          userRepository;
     private final ReviewRepository        reviewRepository;
     private final AppReviewRepository     appReviewRepository;
+    private final OrderRepository         orderRepository;
+    private final OrderItemRepository     orderItemRepository;
 
     private static final Size[] ALL_SIZES = {
         Size.XXS, Size.XS, Size.S, Size.M, Size.L, Size.XL, Size.XXL, Size.XXXL, Size.XXXXL
@@ -195,6 +199,13 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             System.out.println("✅ Database already has app reviews. Skipping app review initialization.");
         }
+
+        if (orderRepository.count() == 0) {
+            System.out.println("🚀 Seeding orders...");
+            seedOrders();
+        } else {
+            System.out.println("✅ Database already has orders. Skipping order initialization.");
+        }
     }
 
     // ── Review seeding ───────────────────────────────────────────────────────
@@ -254,6 +265,80 @@ public class DataInitializer implements CommandLineRunner {
             users.add(user);
         }
         return users;
+    }
+
+    private void seedOrders() {
+        List<User> users = createTestReviewers();
+        List<Product> allProducts = productRepository.findAll();
+        if (allProducts.isEmpty()) return;
+
+        // Πρώτα 8 products = top selling (εμφανίζονται σε πολλές παραγγελίες)
+        List<Product> topProducts = allProducts.subList(0, Math.min(8, allProducts.size()));
+        List<Product> otherProducts = allProducts.subList(Math.min(8, allProducts.size()), allProducts.size());
+
+        int orderSeq = 0;
+
+        // 4 παραγγελίες ανά user — κυρίως top products
+        for (int u = 0; u < users.size(); u++) {
+            User user = users.get(u);
+            for (int o = 0; o < 4; o++) {
+                List<Product> items = new ArrayList<>();
+                items.add(topProducts.get((u * 4 + o) % topProducts.size()));
+                items.add(topProducts.get((u * 4 + o + 2) % topProducts.size()));
+                if (o % 2 == 0 && !otherProducts.isEmpty()) {
+                    items.add(otherProducts.get((u + o) % otherProducts.size()));
+                }
+                createMockOrder(user, items, ++orderSeq, o % 2 == 0 ? 2 : 1);
+            }
+        }
+
+        // Επιπλέον παραγγελίες μόνο για top products (για να ξεχωρίζουν)
+        for (int i = 0; i < topProducts.size(); i++) {
+            for (int r = 0; r < 3; r++) {
+                User user = users.get((i + r) % users.size());
+                createMockOrder(user, List.of(topProducts.get(i)), ++orderSeq, 3);
+            }
+        }
+
+        System.out.println("✅ Seeded " + orderSeq + " orders!");
+    }
+
+    private void createMockOrder(User user, List<Product> products, int seq, int quantity) {
+        BigDecimal subtotal = products.stream()
+                .map(p -> p.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal tax      = subtotal.multiply(BigDecimal.valueOf(0.10));
+        BigDecimal shipping = BigDecimal.valueOf(5.00);
+        BigDecimal total    = subtotal.add(tax).add(shipping);
+
+        Order order = orderRepository.save(Order.builder()
+                .orderNumber("ORD-SEED-" + String.format("%04d", seq))
+                .user(user)
+                .status(OrderStatus.DELIVERED)
+                .subtotal(subtotal)
+                .tax(tax)
+                .shippingFee(shipping)
+                .total(total)
+                .paymentMethod("CARD")
+                .createdAt(LocalDateTime.now().minusDays((long) seq * 2))
+                .build());
+
+        for (Product product : products) {
+            if (product.getVariants().isEmpty()) continue;
+            ProductVariant variant = product.getVariants().get(0);
+
+            orderItemRepository.save(OrderItem.builder()
+                    .order(order)
+                    .product(product)
+                    .variant(variant)
+                    .productName(product.getName())
+                    .priceAtPurchase(product.getPrice())
+                    .selectedColor(variant.getColor().toString())
+                    .selectedSize(variant.getSize().toString())
+                    .quantity(quantity)
+                    .subtotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                    .build());
+        }
     }
 
     private void seedAppReviews() {

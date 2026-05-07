@@ -53,6 +53,12 @@ public class ProductController {
         ));
     }
 
+    @GetMapping("/top-selling")
+    public ResponseEntity<List<ProductResponse>> getTopSellingProducts(
+            @RequestParam(defaultValue = "8") @Min(1) @Max(20) int limit) {
+        return ResponseEntity.ok(productService.getTopSellingProducts(limit));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductDetail(id));

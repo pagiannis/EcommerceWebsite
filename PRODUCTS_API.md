@@ -309,6 +309,23 @@ GET /api/app-reviews
 
 ---
 
+### 10. `GET /api/products/top-selling` — Top selling products
+
+Επιστρέφει τα products με τις περισσότερες πωλήσεις (υπολογίζεται από τα order items).
+
+| Param | Τύπος | Default | Περιγραφή |
+|---|---|---|---|
+| `limit` | int | `8` | Πλήθος αποτελεσμάτων (max 20) |
+
+```
+GET /api/products/top-selling
+GET /api/products/top-selling?limit=4
+```
+
+Επιστρέφει `List<ProductResponse>` (ίδια δομή με το `GET /api/products`).
+
+---
+
 ## Cart
 
 > ⚠️ **Προσωρινό API** — Μετά την υλοποίηση του authentication, το `userId` στο URL θα αφαιρεθεί και ο χρήστης θα αναγνωρίζεται αυτόματα από το JWT token. Η δομή του request/response θα παραμείνει ίδια.
