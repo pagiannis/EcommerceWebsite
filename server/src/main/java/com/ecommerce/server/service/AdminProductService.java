@@ -7,6 +7,7 @@ import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductVariant;
 import java.time.LocalDateTime;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class AdminProductService {
 
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         product.setName(request.name());
         product.setDescription(request.description());
@@ -64,13 +65,13 @@ public class AdminProductService {
 
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id))
-            throw new RuntimeException("Product not found");
+            throw new ResourceNotFoundException("Product not found");
         productRepository.deleteById(id);
     }
 
     public ProductVariantResponse addVariant(Long productId, ProductVariantRequest request) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         ProductVariant variant = ProductVariant.builder()
                 .product(product)
@@ -85,7 +86,7 @@ public class AdminProductService {
 
     public ProductVariantResponse updateVariant(Long variantId, ProductVariantRequest request) {
         ProductVariant variant = productVariantRepository.findById(variantId)
-                .orElseThrow(() -> new RuntimeException("Variant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
 
         variant.setColor(request.color());
         variant.setSize(request.size());
@@ -97,7 +98,7 @@ public class AdminProductService {
 
     public void deleteVariant(Long variantId) {
         if (!productVariantRepository.existsById(variantId))
-            throw new RuntimeException("Variant not found");
+            throw new ResourceNotFoundException("Variant not found");
         productVariantRepository.deleteById(variantId);
     }
 

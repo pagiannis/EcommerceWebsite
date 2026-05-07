@@ -5,6 +5,7 @@ import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.Review;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
@@ -63,10 +64,10 @@ public class ReviewService {
     @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         // Δημιουργία review
         Review review = Review.builder()
@@ -90,7 +91,7 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
@@ -104,7 +105,7 @@ public class ReviewService {
      */
     private void updateProductRating(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Double avgRating = reviewRepository.findAverageRatingByProductId(productId);
         List<Review> reviews = reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);

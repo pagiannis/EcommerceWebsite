@@ -4,6 +4,8 @@ import com.ecommerce.server.dto.response.OrderResponse;
 import com.ecommerce.server.dto.response.OrderItemResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.OrderStatus;
+import com.ecommerce.server.exception.BadRequestException;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,7 +75,7 @@ public class OrderService {
         // Λήψη άδεώ καλαθιού
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
         if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new BadRequestException("Cart is empty");
         }
 
         // Υπολογισμός τιμών

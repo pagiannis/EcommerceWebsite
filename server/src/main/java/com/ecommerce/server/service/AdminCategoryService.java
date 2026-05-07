@@ -3,6 +3,7 @@ package com.ecommerce.server.service;
 import com.ecommerce.server.dto.request.CategoryRequest;
 import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.models.Category;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class AdminCategoryService {
 
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         category.setName(request.name());
         category.setDescription(request.description());
@@ -38,7 +39,7 @@ public class AdminCategoryService {
 
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id))
-            throw new RuntimeException("Category not found");
+            throw new ResourceNotFoundException("Category not found");
         categoryRepository.deleteById(id);
     }
 

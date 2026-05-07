@@ -2,6 +2,7 @@ package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.ProductTypeRequest;
 import com.ecommerce.server.models.ProductType;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,14 +28,14 @@ public class AdminProductTypeService {
 
     public ProductType updateProductType(Long id, ProductTypeRequest request) {
         ProductType productType = productTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ProductType not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("ProductType not found"));
         productType.setName(request.name());
         return productTypeRepository.save(productType);
     }
 
     public void deleteProductType(Long id) {
         if (!productTypeRepository.existsById(id))
-            throw new RuntimeException("ProductType not found");
+            throw new ResourceNotFoundException("ProductType not found");
         productTypeRepository.deleteById(id);
     }
 }

@@ -5,6 +5,8 @@ import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.models.CartItem;
 import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.BadRequestException;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
@@ -42,11 +44,11 @@ public class CartService {
 
          // Έλεγχος αν η ζητούμενη ποσότητα είναι διαθέσιμη
          if (request.quantity() <= 0) {
-             throw new RuntimeException("Quantity must be greater than 0");
+             throw new BadRequestException("Quantity must be greater than 0");
          }
 
          if (request.quantity() > variant.getStockQuantity()) {
-             throw new RuntimeException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
+             throw new BadRequestException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
          }
 
          // Έλεγχος αν υπάρχει ήδη στο καλάθι
@@ -57,7 +59,7 @@ public class CartService {
              // Αν υπάρχει ήδη, ελέγχουμε αν η νέα συνολική ποσότητα δεν υπερβαίνει το stock
              int newQuantity = existingItem.getQuantity() + request.quantity();
              if (newQuantity > variant.getStockQuantity()) {
-                 throw new RuntimeException("Total quantity exceeds available stock. Available: " + variant.getStockQuantity());
+                 throw new BadRequestException("Total quantity exceeds available stock. Available: " + variant.getStockQuantity());
              }
              existingItem.setQuantity(newQuantity);
              return convertToResponse(cartItemRepository.save(existingItem));
@@ -81,13 +83,13 @@ public class CartService {
 
          if (quantity <= 0) {
              cartItemRepository.delete(cartItem);
-             throw new RuntimeException("Quantity must be greater than 0");
+             throw new BadRequestException("Quantity must be greater than 0");
          }
 
          // Έλεγχος αν η νέα ποσότητα υπερβαίνει το stock
          ProductVariant variant = cartItem.getVariant();
          if (quantity > variant.getStockQuantity()) {
-             throw new RuntimeException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
+             throw new BadRequestException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
          }
 
          cartItem.setQuantity(quantity);

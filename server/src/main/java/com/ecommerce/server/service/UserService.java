@@ -6,6 +6,8 @@ import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.BadRequestException;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,16 +29,16 @@ public class UserService {
 
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return toResponse(user);
     }
 
     public UserResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         if (!user.getPasswordHash().equals(request.password())) { // TODO: compare hashed password
-            throw new RuntimeException("Invalid email or password");
+            throw new BadRequestException("Invalid email or password");
         }
 
         return toResponse(user);
@@ -60,7 +62,7 @@ public class UserService {
 
     public UserResponse updateUser(Long id, UserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         if (request.email() != null && !request.email().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
@@ -82,7 +84,7 @@ public class UserService {
 
     public UserResponse changeUserRole(Long id, Role role) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setRole(role);
         user.setUpdatedAt(LocalDateTime.now());
         return toResponse(userRepository.save(user));
@@ -98,7 +100,7 @@ public class UserService {
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with id: " + id);
+            throw new ResourceNotFoundException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
     }
