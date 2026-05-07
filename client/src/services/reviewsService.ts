@@ -26,3 +26,17 @@ export async function fetchProductReviews(productId: string): Promise<ReviewResp
   const { data } = await apiClient.get<ReviewResponse[]>(`/reviews/product/${productId}`);
   return data;
 }
+
+export interface AppReviewResponse {
+  id: number;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  approved: boolean;
+}
+
+export async function fetchAppReviews(): Promise<AppReviewResponse[]> {
+  const { data } = await apiClient.get<AppReviewResponse[]>('/app-reviews');
+  return data;
+}
