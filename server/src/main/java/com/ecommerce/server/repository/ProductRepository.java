@@ -23,6 +23,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     long countByCategoryId(Long categoryId);
 
+    // ΜΟΝΟ για DataInitializer — φέρνει variants eagerly ώστε να μην κλείσει η session πριν τα χρειαστούμε
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants")
+    List<Product> findAllWithVariants();
+
+    // Ταξινόμηση βάσει συνολικής ποσότητας πωλήσεων από order_items — για το top-selling endpoint
     @Query("SELECT oi.product FROM OrderItem oi GROUP BY oi.product ORDER BY SUM(oi.quantity) DESC")
     List<Product> findTopSellingProducts(Pageable pageable);
 

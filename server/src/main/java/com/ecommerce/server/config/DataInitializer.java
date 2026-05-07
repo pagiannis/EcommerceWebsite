@@ -269,7 +269,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedOrders() {
         List<User> users = createTestReviewers();
-        List<Product> allProducts = productRepository.findAll();
+        List<Product> allProducts = productRepository.findAllWithVariants();
         if (allProducts.isEmpty()) return;
 
         // Πρώτα 8 products = top selling (εμφανίζονται σε πολλές παραγγελίες)
