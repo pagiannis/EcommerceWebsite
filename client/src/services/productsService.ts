@@ -101,7 +101,7 @@ export const DRESS_STYLE_TO_API: Record<string, string> = {
   casual: 'CASUAL',
   formal: 'FORMAL',
   party: 'PARTY',
-  gym: 'SPORT',
+  gym: 'GYM',
 };
 
 export const SIZE_TO_API: Record<string, string> = {
@@ -147,7 +147,7 @@ const DRESS_STYLE_FROM_API: Record<string, DressStyle> = {
   CASUAL: 'casual',
   FORMAL: 'formal',
   PARTY: 'party',
-  SPORT: 'gym',
+  GYM: 'gym',
   BUSINESS: 'formal',
 };
 
