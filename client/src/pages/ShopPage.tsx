@@ -84,7 +84,7 @@ export default function ShopPage() {
     return p;
   }, [filters, sort, page]);
 
-  const { data, isLoading, isError } = useProducts(params);
+  const { data, isLoading, isError, refetch } = useProducts(params);
 
   const products = useMemo(
     () => data?.content.map(mapApiProduct) ?? [],
@@ -187,8 +187,14 @@ export default function ShopPage() {
           {isLoading ? (
             <ProductGridSkeleton />
           ) : isError ? (
-            <div className="py-20 text-center text-brand-red">
-              Failed to load products. Please try again.
+            <div className="py-20 text-center">
+              <p className="text-brand-red">Failed to load products.</p>
+              <button
+                onClick={() => refetch()}
+                className="mt-4 rounded-full border border-black px-6 py-2 text-sm font-medium hover:bg-black hover:text-white transition-colors"
+              >
+                Try again
+              </button>
             </div>
           ) : (
             <ProductGrid products={products} />
