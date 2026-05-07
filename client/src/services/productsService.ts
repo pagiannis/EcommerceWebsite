@@ -197,3 +197,29 @@ export async function fetchProductById(
   const { data } = await apiClient.get<ProductResponse>(`/products/${id}`);
   return data;
 }
+
+export interface AutocompleteItem {
+  id: number;
+  name: string;
+  imageUrl: string;
+}
+
+export interface SearchParams {
+  query: string;
+  page?: number;
+  size?: number;
+}
+
+export async function fetchSearchResults(
+  params: SearchParams,
+): Promise<PaginatedProductsResponse> {
+  const { data } = await apiClient.get<PaginatedProductsResponse>('/products/search', { params });
+  return data;
+}
+
+export async function fetchAutocomplete(query: string): Promise<AutocompleteItem[]> {
+  const { data } = await apiClient.get<AutocompleteItem[]>('/products/autocomplete', {
+    params: { query },
+  });
+  return data;
+}

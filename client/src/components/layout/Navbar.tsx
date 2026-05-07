@@ -1,10 +1,13 @@
-import { useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useCart } from "../../context/CartContext";
 import { LuShoppingCart } from "react-icons/lu";
 import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { IoMenu, IoClose } from "react-icons/io5";
+import { fetchAutocomplete, type AutocompleteItem } from "../../services/productsService";
+import AutocompleteDropdown from "../ui/AutocompleteDropdown";
 
 const brandsList = [
   { slug: "nike", label: "Nike" },
@@ -46,13 +49,33 @@ const typeParam: Record<string, string> = {
 
 export default function Navbar() {
   const { totalItems } = useCart();
+  const navigate = useNavigate();
+
   const [shopOpen, setShopOpen] = useState(false);
   const [brandsOpen, setBrandsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const brandsCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+  const desktopInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(inputValue), 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const { data: suggestions } = useQuery<AutocompleteItem[]>({
+    queryKey: ["autocomplete", debouncedQuery],
+    queryFn: () => fetchAutocomplete(debouncedQuery),
+    enabled: debouncedQuery.trim().length >= 2,
+    staleTime: 1000 * 30,
+  });
 
   function openShop() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -74,12 +97,38 @@ export default function Navbar() {
 
   function openMobileSearch() {
     setSearchOpen(true);
-    setTimeout(() => searchInputRef.current?.focus(), 50);
+    setTimeout(() => mobileInputRef.current?.focus(), 50);
   }
 
   function closeMobileSearch() {
     setSearchOpen(false);
+    setShowDropdown(false);
   }
+
+  function handleInputChange(value: string) {
+    setInputValue(value);
+    setShowDropdown(true);
+  }
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = inputValue.trim();
+    if (!q) return;
+    navigate(`/shop?query=${encodeURIComponent(q)}`);
+    setInputValue("");
+    setShowDropdown(false);
+    closeMobileSearch();
+  }
+
+  function handleSuggestionSelect(id: number) {
+    navigate(`/product/${id}`);
+    setInputValue("");
+    setShowDropdown(false);
+    closeMobileSearch();
+  }
+
+  const visibleSuggestions =
+    showDropdown && debouncedQuery.trim().length >= 2 ? (suggestions ?? []) : [];
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white">
@@ -108,14 +157,26 @@ export default function Navbar() {
 
         {/* Mobile: search input */}
         {searchOpen && (
-          <div className="flex flex-1 items-center gap-2 md:hidden">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-1 items-center gap-2 md:hidden"
+          >
             <div className="relative flex-1">
               <IoIosSearch className="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-400" />
               <input
-                ref={searchInputRef}
+                ref={mobileInputRef}
                 type="search"
+                value={inputValue}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={() => setShowDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                onKeyDown={(e) => e.key === "Escape" && setShowDropdown(false)}
                 placeholder="Search for products..."
                 className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
+              />
+              <AutocompleteDropdown
+                items={visibleSuggestions}
+                onSelect={handleSuggestionSelect}
               />
             </div>
             <button
@@ -125,7 +186,7 @@ export default function Navbar() {
             >
               <IoClose className="h-6 w-6" />
             </button>
-          </div>
+          </form>
         )}
 
         {/* Desktop: nav */}
@@ -240,14 +301,24 @@ export default function Navbar() {
 
         {/* Desktop: search bar */}
         <div className="hidden flex-1 items-center justify-center px-8 md:flex">
-          <div className="relative w-full max-w-sm">
+          <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm">
             <IoIosSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
+              ref={desktopInputRef}
               type="search"
+              value={inputValue}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              onKeyDown={(e) => e.key === "Escape" && setShowDropdown(false)}
               placeholder="Search for products..."
               className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
             />
-          </div>
+            <AutocompleteDropdown
+              items={visibleSuggestions}
+              onSelect={handleSuggestionSelect}
+            />
+          </form>
         </div>
 
         {/* Icons — hidden on mobile when search is open */}

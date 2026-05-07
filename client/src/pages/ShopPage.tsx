@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useProducts } from "../hooks/useProducts";
+import { useSearch } from "../hooks/useSearch";
 import {
   mapApiProduct,
   COLOR_HEX_TO_ENUM,
@@ -32,6 +33,9 @@ const allColors = Object.keys(COLOR_HEX_TO_ENUM);
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const query = searchParams.get("query") ?? "";
+  const isSearchMode = query.length > 0;
 
   const filters: FilterState = useMemo(
     () => ({
@@ -84,7 +88,13 @@ export default function ShopPage() {
     return p;
   }, [filters, sort, page]);
 
-  const { data, isLoading, isError, refetch } = useProducts(params);
+  const productsResult = useProducts(params, { enabled: !isSearchMode });
+  const searchResult = useSearch(
+    { query, page: page - 1, size: ITEMS_PER_PAGE },
+    { enabled: isSearchMode },
+  );
+
+  const { data, isLoading, isError, refetch } = isSearchMode ? searchResult : productsResult;
 
   const products = useMemo(
     () => data?.content.map(mapApiProduct) ?? [],
@@ -146,43 +156,59 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      <ShopBreadcrumb
-        category={filters.category}
-        productType={filters.productType}
-        dressStyle={filters.dressStyle}
-        brand={filters.brand}
-      />
+      {!isSearchMode && (
+        <ShopBreadcrumb
+          category={filters.category}
+          productType={filters.productType}
+          dressStyle={filters.dressStyle}
+          brand={filters.brand}
+        />
+      )}
 
       <div className="flex gap-6 flex-col lg:flex-row">
-        <FilterSidebar
-          filters={filters}
-          onChange={handleFilterChange}
-          allColors={allColors}
-          open={filterOpen}
-          onClose={() => setFilterOpen(false)}
-        />
+        {!isSearchMode && (
+          <FilterSidebar
+            filters={filters}
+            onChange={handleFilterChange}
+            allColors={allColors}
+            open={filterOpen}
+            onClose={() => setFilterOpen(false)}
+          />
+        )}
 
         <div className="flex-1">
-          <ShopHeader
-            category={filters.category}
-            productType={filters.productType}
-            brand={filters.brand}
-            totalCount={isLoading ? 0 : totalCount}
-            currentStart={isLoading ? 0 : currentStart}
-            currentEnd={isLoading ? 0 : currentEnd}
-            isProductsLoading={isLoading}
-            sort={sort}
-            onSortChange={handleSortChange}
-            onFilterOpen={() => setFilterOpen(true)}
-          />
-
-          <ActiveFilterChips
-            active={{
-              onSale: filters.onSale,
-              newArrivals: filters.newArrivals,
-              topSelling: filters.topSelling,
-            }}
-          />
+          {isSearchMode ? (
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-xl lg:text-2xl font-extrabold text-brand-black">
+                Results for &ldquo;{query}&rdquo;
+              </h1>
+              {!isLoading && (
+                <span className="text-sm text-gray-500">{totalCount} Products</span>
+              )}
+            </div>
+          ) : (
+            <>
+              <ShopHeader
+                category={filters.category}
+                productType={filters.productType}
+                brand={filters.brand}
+                totalCount={isLoading ? 0 : totalCount}
+                currentStart={isLoading ? 0 : currentStart}
+                currentEnd={isLoading ? 0 : currentEnd}
+                isProductsLoading={isLoading}
+                sort={sort}
+                onSortChange={handleSortChange}
+                onFilterOpen={() => setFilterOpen(true)}
+              />
+              <ActiveFilterChips
+                active={{
+                  onSale: filters.onSale,
+                  newArrivals: filters.newArrivals,
+                  topSelling: filters.topSelling,
+                }}
+              />
+            </>
+          )}
 
           {isLoading ? (
             <ProductGridSkeleton />
