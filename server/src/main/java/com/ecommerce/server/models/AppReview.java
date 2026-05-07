@@ -27,16 +27,6 @@ public class AppReview {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String comment;
 
-    /**
-     * Αν ο admin θες να εμφανίζει μόνο επιλεγμένες αξιολογήσεις
-     * (π.χ. στο homepage testimonials section)
-     */
-    @Builder.Default
-    private boolean featured = false;
-
-    /**
-     * Approval flow - δεν δείχνουμε reviews που δεν έχουν εγκριθεί
-     */
     @Builder.Default
     private boolean approved = false;
 

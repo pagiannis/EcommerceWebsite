@@ -8,8 +8,7 @@ import java.util.List;
 
 @Repository
 public interface AppReviewRepository extends JpaRepository<AppReview, Long> {
-    List<AppReview> findByApprovedAndFeaturedOrderByCreatedAtDesc(boolean approved, boolean featured);
-    List<AppReview> findByUserId(Long userId);
     List<AppReview> findByApprovedOrderByCreatedAtDesc(boolean approved);
+    List<AppReview> findByUserId(Long userId);
 }
 

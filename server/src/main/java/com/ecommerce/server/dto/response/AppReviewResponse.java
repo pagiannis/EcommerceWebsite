@@ -6,7 +6,6 @@ public record AppReviewResponse(
         Integer rating,
         String comment,
         String createdAt,
-        Boolean approved,
-        Boolean featured
+        Boolean approved
 ) {}
 

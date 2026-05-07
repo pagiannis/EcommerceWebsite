@@ -26,16 +26,6 @@ public class AdminAppReviewController {
         return ResponseEntity.ok(appReviewService.approveReview(id));
     }
 
-    @PatchMapping("/{id}/feature")
-    public ResponseEntity<AppReviewResponse> featureReview(@PathVariable Long id) {
-        return ResponseEntity.ok(appReviewService.featureReview(id));
-    }
-
-    @PatchMapping("/{id}/unfeature")
-    public ResponseEntity<AppReviewResponse> unfeatureReview(@PathVariable Long id) {
-        return ResponseEntity.ok(appReviewService.unfeatureReview(id));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         appReviewService.deleteReview(id);

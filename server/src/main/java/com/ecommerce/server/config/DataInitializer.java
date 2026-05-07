@@ -28,6 +28,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductImageRepository  productImageRepository;
     private final UserRepository          userRepository;
     private final ReviewRepository        reviewRepository;
+    private final AppReviewRepository     appReviewRepository;
 
     private static final Size[] ALL_SIZES = {
         Size.XXS, Size.XS, Size.S, Size.M, Size.L, Size.XL, Size.XXL, Size.XXXL, Size.XXXXL
@@ -187,6 +188,13 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             System.out.println("✅ Database already has reviews. Skipping review initialization.");
         }
+
+        if (appReviewRepository.count() == 0) {
+            System.out.println("🚀 Seeding app reviews...");
+            seedAppReviews();
+        } else {
+            System.out.println("✅ Database already has app reviews. Skipping app review initialization.");
+        }
     }
 
     // ── Review seeding ───────────────────────────────────────────────────────
@@ -246,6 +254,40 @@ public class DataInitializer implements CommandLineRunner {
             users.add(user);
         }
         return users;
+    }
+
+    private void seedAppReviews() {
+        List<User> users = createTestReviewers();
+
+        Object[][] data = {
+            {users.get(0), 5, "Absolutely love this shop! The quality is outstanding and delivery was super fast."},
+            {users.get(1), 5, "Best online shopping experience I've had. Great selection and the sizing guide is spot on."},
+            {users.get(2), 5, "Amazing customer service and the clothes are exactly as pictured. Will definitely shop again!"},
+            {users.get(3), 4, "Really happy with my order. The fabrics feel premium and the prices are fair."},
+            {users.get(4), 5, "Found exactly what I was looking for. Fast shipping and beautiful packaging too."},
+            {users.get(0), 4, "Great variety of styles and brands. The filter options make it easy to find what you need."},
+            {users.get(1), 5, "Ordered twice already and both times were perfect. Highly recommend!"},
+            {users.get(2), 4, "Good quality products. A few items were slightly different in color but overall very satisfied."},
+            {users.get(3), 5, "The checkout process is smooth and my order arrived earlier than expected. Very impressed!"},
+            {users.get(4), 4, "Love the range of brands available. Found items I couldn't find anywhere else locally."},
+            {users.get(0), 5, "Everything from browsing to delivery was seamless. The clothes fit perfectly too!"},
+            {users.get(1), 4, "Really good value for money. The quality matches the price point exactly."},
+            {users.get(2), 5, "My go-to shop for clothes now. Always find something I like and the deals are great."},
+            {users.get(3), 4, "Solid experience overall. The product photos are accurate and sizing is consistent."},
+            {users.get(4), 5, "Incredible selection and super easy to navigate. Customer support was helpful too."},
+        };
+
+        for (Object[] d : data) {
+            appReviewRepository.save(AppReview.builder()
+                    .user((User) d[0])
+                    .rating((Integer) d[1])
+                    .comment((String) d[2])
+                    .approved(true)
+                    .createdAt(LocalDateTime.now().minusDays((long) (Math.random() * 60)))
+                    .build());
+        }
+
+        System.out.println("✅ Seeded " + data.length + " app reviews!");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
