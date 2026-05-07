@@ -20,8 +20,11 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<List<ReviewResponse>> getProductReviews(@PathVariable Long productId) {
-        return ResponseEntity.ok(reviewService.getProductReviews(productId));
+    public ResponseEntity<List<ReviewResponse>> getProductReviews(
+            @PathVariable Long productId,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer minRating) {
+        return ResponseEntity.ok(reviewService.getProductReviews(productId, sort, minRating));
     }
 
     @GetMapping("/user/{userId}")
