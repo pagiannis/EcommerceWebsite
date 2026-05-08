@@ -264,11 +264,13 @@ GET /api/reviews/product/21?sort=OLDEST&minRating=4
 
 ---
 
-### 7. 🔒 `DELETE /api/reviews/{reviewId}` — Διαγραφή review
+### 7. 👤 `DELETE /api/reviews/{reviewId}` — Διαγραφή review
 
 ```
 DELETE /api/reviews/5
 ```
+
+Μόνο ο συγγραφέας του review μπορεί να το σβήσει (αλλιώς `403 Forbidden`).
 
 Επιστρέφει `204 No Content`.
 
@@ -510,6 +512,11 @@ DELETE /api/cart/7
 
 Επιστρέφει `204 No Content`. Το SESSION cookie ακυρώνεται.
 
+> **Rate limiting:** Τα `/login` και `/register` έχουν per-IP rate limit (10/min για login, 5/hr για register). Αν ξεπεραστεί, επιστρέφεται `429 Too Many Requests` με body:
+> ```json
+> { "status": 429, "error": "Too Many Requests", "message": "Too many login attempts. Please try again later." }
+> ```
+
 ---
 
 ### 👤 `GET /api/users/{id}` — Προφίλ χρήστη
@@ -543,6 +550,15 @@ POST /api/orders/user/1/checkout?shippingAddressId=1&paymentMethod=CARD
 ```
 
 Επιστρέφει `201 Created` με `OrderResponse`.
+
+#### Πιθανά error responses
+
+| Status | Πότε | Body |
+|---|---|---|
+| `400` | Άδειο cart, ή στο cart υπάρχει item με quantity > stock (stale cart) | `{ "message": "Not enough stock for ... Available: X, Requested: Y" }` |
+| `409` | Race condition: άλλο checkout άλλαξε το stock την ίδια στιγμή | `{ "message": "Stock changed during checkout. Please review your cart and try again." }` |
+
+Σε `409`, ο frontend πρέπει να επανα-φέρει το cart (`GET /api/cart/{userId}`) και να ζητήσει επιβεβαίωση από τον χρήστη πριν επανα-υποβληθεί ο checkout.
 
 ---
 

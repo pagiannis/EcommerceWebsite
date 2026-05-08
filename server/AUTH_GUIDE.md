@@ -10,12 +10,12 @@
 
 | Αρχείο | Τι κάνει |
 |--------|----------|
-| `config/SecurityConfig.java` | Κεντρική ρύθμιση Security — ποια endpoints απαιτούν login, BCrypt, CORS |
-| `service/UserDetailsServiceImpl.java` | Φορτώνει user από τη βάση για λογαριασμό του Spring Security |
-| `controller/UserController.java` | Login/logout endpoints με session management |
-| `service/UserService.java` | BCrypt hashing στο register/update password |
+| `config/SecurityConfig.java` | Κεντρική ρύθμιση Security — endpoints, BCrypt, CORS, rate limit filter |
+| `service/UserService.java` | Υλοποιεί `UserDetailsService` (φορτώνει user από βάση) + BCrypt hashing |
+| `controller/UserController.java` | Login/logout endpoints με session management & session rotation |
+| `security/AuthRateLimitFilter.java` | Per-IP rate limiting για login & register |
 | `config/DataInitializer.java` | Test users δημιουργούνται με hashed password |
-| `resources/application.properties` | Ενεργοποίηση JDBC session store |
+| `resources/application.properties` | JDBC session store + cookie hardening |
 
 ---
 
@@ -31,24 +31,28 @@ Body: { "email": "user@example.com", "password": "mypassword" }
 **Τι γίνεται στον server:**
 
 ```
-1. AuthenticationManager.authenticate()
+1. AuthRateLimitFilter ελέγχει το per-IP bucket — αν εξαντληθεί → 429
        ↓
-2. UserDetailsServiceImpl.loadUserByUsername(email)
+2. AuthenticationManager.authenticate()
+       ↓
+3. UserService.loadUserByUsername(email)
        ↓  φορτώνει User από βάση
-3. BCrypt.matches(rawPassword, storedHash)
+4. BCrypt.matches(rawPassword, storedHash)
        ↓  αν δεν ταιριάζει → 401 Unauthorized
-4. Δημιουργία SecurityContext με το Authentication object
+5. Session rotation: αν υπάρχει παλιό session, invalidate
        ↓
-5. Αποθήκευση SecurityContext στο HTTP Session
+6. Δημιουργία SecurityContext με το Authentication object
        ↓
-6. Spring Session JDBC αποθηκεύει το session στη βάση (πίνακας SPRING_SESSION)
+7. Αποθήκευση SecurityContext στο HTTP Session
        ↓
-7. Server επιστρέφει cookie: SESSION=<uuid>  +  UserResponse JSON
+8. Spring Session JDBC αποθηκεύει το session στη βάση (πίνακας SPRING_SESSION)
+       ↓
+9. Server επιστρέφει cookie: SESSION=<uuid>  +  UserResponse JSON
 ```
 
 **Response headers:**
 ```
-Set-Cookie: SESSION=abc123xyz; Path=/; HttpOnly; SameSite=Lax
+Set-Cookie: SESSION=abc123xyz; Path=/; HttpOnly; SameSite=Strict
 ```
 
 ---
@@ -111,7 +115,7 @@ Cookie: SESSION=abc123xyz
 
 ## Πίνακες βάσης για Sessions
 
-Το `spring.session.jdbc.initialize-schema=always` δημιουργεί αυτόματα:
+Το schema δημιουργείται μία φορά μέσω `spring.sql.init.mode=always` (το `spring.session.data.jdbc.initialize-schema=never` αποτρέπει το Spring Session να ξανατρέξει το script σε κάθε boot):
 
 ```sql
 SPRING_SESSION
@@ -119,7 +123,7 @@ SPRING_SESSION
 ├── SESSION_ID       -- το ID που πηγαίνει στο cookie
 ├── CREATION_TIME    -- πότε δημιουργήθηκε
 ├── LAST_ACCESS_TIME -- τελευταία χρήση
-├── MAX_INACTIVE_INTERVAL -- timeout σε δευτερόλεπτα (default: 1800 = 30 λεπτά)
+├── MAX_INACTIVE_INTERVAL -- timeout σε δευτερόλεπτα (24h = 86400)
 └── PRINCIPAL_NAME   -- το email του logged-in user
 
 SPRING_SESSION_ATTRIBUTES
@@ -163,8 +167,10 @@ Admin only:
 | `GET/POST /api/orders/user/{userId}/**` | `userId` == logged-in user | `UserService.requireSelf()` |
 | `GET /api/orders/{orderId}` | order ανήκει στον logged-in user | `OrderService.requireOrderOwner()` |
 | `POST /api/orders/{orderId}/reorder` | `userId` param == logged-in user | `UserService.requireSelf()` |
+| `DELETE /api/reviews/{reviewId}` | review ανήκει στον logged-in user | `ReviewService.deleteReview` (έλεγχος email) |
 | `* /api/users/{userId}/wishlist/**` | `userId` == logged-in user | `UserService.requireSelf()` |
-| `* /api/users/{userId}/addresses/**` | `userId` == logged-in user | `UserService.requireSelf()` |
+| `* /api/users/{userId}/addresses` (GET/POST) | `userId` == logged-in user | `UserService.requireSelf()` |
+| `PUT/DELETE/PATCH /api/users/{userId}/addresses/{addressId}` | `userId` == logged-in user **και** address ανήκει σε αυτόν | `UserService.requireSelf()` + `AddressService.requireAddressOwner()` |
 | `* /api/admin/**` | ROLE_ADMIN | SecurityConfig |
 
 Αν ο έλεγχος αποτύχει → `403 Forbidden`.
@@ -184,7 +190,44 @@ Admin only:
 
 Το BCrypt είναι **one-way** — δεν μπορεί να αποκρυπτογραφηθεί. Κατά το login, το Spring Security τρέχει `BCrypt.matches(rawPassword, storedHash)` και συγκρίνει αποτελέσματα χωρίς να αποκρυπτογραφεί.
 
-> **Προσοχή:** Οι ήδη υπάρχοντες users στη βάση με plain text passwords δεν θα μπορούν να κάνουν login. Πρέπει να γίνει wipe της βάσης (ή να τρέξεις UPDATE query με hashed τιμές).
+**Password policy:** ελάχιστο μήκος **8 χαρακτήρες** (`UserRequest`, `UserRegistrationRequest`).
+
+---
+
+## Hardening
+
+### Cookie attributes (`application.properties`)
+
+```properties
+server.servlet.session.cookie.same-site=strict
+server.servlet.session.cookie.http-only=true
+server.servlet.session.cookie.secure=false
+```
+
+| Attribute | Τι κάνει |
+|---|---|
+| `SameSite=Strict` | Browser στέλνει το cookie μόνο σε same-site requests → CSRF protection |
+| `HttpOnly=true` | Το JavaScript (`document.cookie`) δεν μπορεί να διαβάσει το cookie → προστασία από session theft μέσω XSS |
+| `Secure=false` (dev) / `true` (prod) | Σε prod με HTTPS, γύρισέ το `true` ώστε το cookie να μη στέλνεται ποτέ σε plain HTTP |
+
+### Session fixation protection
+
+Στο `UserController.login`, πριν δημιουργηθεί νέο session, ακυρώνεται το προηγούμενο. Έτσι ο authenticated user παίρνει νέο session ID και ένας attacker που ίσως είχε προ-θέσει γνωστό session ID στο θύμα δεν μπορεί να μοιραστεί το authenticated session.
+
+### Rate limiting (`AuthRateLimitFilter`)
+
+Per-IP buckets με Bucket4j, runs **πριν** το authentication ώστε flooded requests να μη φτάνουν στο BCrypt comparison.
+
+| Endpoint | Όριο |
+|---|---|
+| `POST /api/users/login` | 10 αιτήματα / λεπτό ανά IP |
+| `POST /api/users/register` | 5 αιτήματα / ώρα ανά IP |
+
+Αν ξεπεραστεί → `429 Too Many Requests` με JSON body. Σε production behind proxy, ο filter διαβάζει `X-Forwarded-For`.
+
+### Concurrency safety στο checkout
+
+Το `ProductVariant` έχει `@Version` field για optimistic locking. Αν δύο checkouts προσπαθήσουν να μειώσουν το stock του ίδιου variant ταυτόχρονα, η Hibernate ρίχνει `ObjectOptimisticLockingFailureException` → ο `GlobalExceptionHandler` το γυρνάει σαν `409 Conflict` με μήνυμα "Stock changed during checkout. Please review your cart and try again."
 
 ---
 
@@ -362,9 +405,12 @@ function Navbar() {
 
 ## Διάρκεια Session
 
-Default: **30 λεπτά** αδράνειας. Για να το αλλάξεις:
+Τρέχουσα ρύθμιση: **24 ώρες** αδράνειας (`server.servlet.session.timeout=24h`).
+
+Για άλλη διάρκεια:
 
 ```properties
 # application.properties
-server.servlet.session.timeout=1h   # 1 ώρα
+server.servlet.session.timeout=30m   # 30 λεπτά
+server.servlet.session.timeout=1h    # 1 ώρα
 ```
