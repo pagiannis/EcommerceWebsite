@@ -108,15 +108,27 @@ public class OrderService {
 
         // Δημιουργία OrderItems (SNAPSHOTS - αποθηκεύουμε τι ήταν τότε)
         for (CartItem cartItem : cartItems) {
-            Product product = cartItem.getVariant().getProduct();
+            ProductVariant variant = cartItem.getVariant();
+            Product product = variant.getProduct();
+
+            // Έλεγχος stock πριν την αφαίρεση
+            if (cartItem.getQuantity() > variant.getStockQuantity()) {
+                throw new BadRequestException(
+                        "Not enough stock for " + product.getName() +
+                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
+                                "Available: " + variant.getStockQuantity() +
+                                ", Requested: " + cartItem.getQuantity()
+                );
+            }
+
             OrderItem orderItem = OrderItem.builder()
                     .order(savedOrder)
                     .product(product)
-                    .variant(cartItem.getVariant())
+                    .variant(variant)
                     .productName(product.getName())           // SNAPSHOT
                     .priceAtPurchase(product.getPrice())      // SNAPSHOT - τιμή τώρα
-                    .selectedColor(cartItem.getVariant().getColor().toString())  // SNAPSHOT
-                    .selectedSize(cartItem.getVariant().getSize().toString())    // SNAPSHOT
+                    .selectedColor(variant.getColor().toString())  // SNAPSHOT
+                    .selectedSize(variant.getSize().toString())    // SNAPSHOT
                     .quantity(cartItem.getQuantity())
                     .subtotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
                     .build();
@@ -124,7 +136,6 @@ public class OrderService {
             orderItemRepository.save(orderItem);
 
             // Ενημέρωση stock (μείωση)
-            ProductVariant variant = cartItem.getVariant();
             variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
             productVariantRepository.save(variant);
         }

@@ -104,7 +104,7 @@ public class CartService {
     @Transactional
     public void removeFromCart(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
         requireCartItemOwner(cartItem);
         cartItemRepository.delete(cartItem);
     }

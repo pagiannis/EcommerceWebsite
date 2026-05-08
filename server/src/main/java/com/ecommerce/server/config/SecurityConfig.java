@@ -1,5 +1,6 @@
 package com.ecommerce.server.config;
 
+import com.ecommerce.server.security.AuthRateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,6 +25,12 @@ import java.util.List;
 @EnableWebSecurity
 @EnableJdbcHttpSession
 public class SecurityConfig {
+
+    private final AuthRateLimitFilter authRateLimitFilter;
+
+    public SecurityConfig(AuthRateLimitFilter authRateLimitFilter) {
+        this.authRateLimitFilter = authRateLimitFilter;
+    }
 
     // Ο αλγόριθμος που κάνει hash τους κωδικούς. Χρησιμοποιείται στο register,
     // στο update password, και αυτόματα από το Spring Security στο login για σύγκριση.
@@ -68,7 +76,10 @@ public class SecurityConfig {
             // Δημιουργεί session μόνο όταν χρειάζεται (π.χ. μετά το login).
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            );
+            )
+            // Rate limiting για /login και /register — τρέχει πριν φτάσουμε στο
+            // authentication, ώστε να μη γίνεται καν BCrypt comparison σε flooded requests.
+            .addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

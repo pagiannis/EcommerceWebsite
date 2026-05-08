@@ -38,14 +38,14 @@ public class AddressController {
                                                          @PathVariable Long addressId,
                                                          @Valid @RequestBody AddressRequest request) {
         userService.requireSelf(userId);
-        return ResponseEntity.ok(addressService.updateAddress(addressId, request));
+        return ResponseEntity.ok(addressService.updateAddress(userId, addressId, request));
     }
 
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long userId,
                                               @PathVariable Long addressId) {
         userService.requireSelf(userId);
-        addressService.deleteAddress(addressId);
+        addressService.deleteAddress(userId, addressId);
         return ResponseEntity.noContent().build();
     }
 

@@ -53,10 +53,10 @@ public class WishlistService {
     @Transactional
     public WishlistItemResponse addToWishlist(Long userId, Long productId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         // Έλεγχος αν υπάρχει ήδη
         if (wishlistItemRepository.findByUserIdAndProductId(userId, productId).isPresent()) {
@@ -77,7 +77,7 @@ public class WishlistService {
     @Transactional
     public void removeFromWishlist(Long userId, Long productId) {
         WishlistItem wishlistItem = wishlistItemRepository.findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException("Wishlist item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wishlist item not found"));
         wishlistItemRepository.delete(wishlistItem);
     }
 
@@ -94,7 +94,7 @@ public class WishlistService {
     @Transactional
     public CartItemResponse moveToCart(Long userId, Long productId, Long variantId, int quantity) {
         wishlistItemRepository.findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException("Wishlist item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wishlist item not found"));
 
         CartItemResponse response = cartService.addToCart(userId, new CartItemRequest(variantId, quantity));
         removeFromWishlist(userId, productId);

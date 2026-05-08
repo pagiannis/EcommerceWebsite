@@ -36,6 +36,14 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
+        // Session fixation protection: αν υπάρχει ήδη session, την ακυρώνουμε ώστε
+        // ο authenticated user να πάρει νέο session ID (αλλιώς ένας attacker που
+        // έδωσε γνωστό session ID στο θύμα θα μοιραζόταν το authenticated session).
+        HttpSession existing = httpRequest.getSession(false);
+        if (existing != null) {
+            existing.invalidate();
+        }
+
         // Αποθηκεύει το αποτέλεσμα του authentication στο SecurityContext (in-memory για το τρέχον request).
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
