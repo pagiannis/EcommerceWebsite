@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { CartItem } from '../types/cartItem';
 import type { Product } from '../types/product';
 import type { Size } from '../types/size';
@@ -24,7 +25,9 @@ function deriveAggregates(items: CartItem[]) {
   };
 }
 
-export const useCartStore = create<CartState>((set) => ({
+export const useCartStore = create<CartState>()(
+  persist(
+    (set) => ({
   items: [],
   totalItems: 0,
   subtotal: 0,
@@ -75,4 +78,17 @@ export const useCartStore = create<CartState>((set) => ({
   clearCart() {
     set({ items: [], totalItems: 0, subtotal: 0 });
   },
-}));
+}),
+    {
+      name: 'cart',
+      partialize: (state) => ({ items: state.items }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const { totalItems, subtotal } = deriveAggregates(state.items);
+          state.totalItems = totalItems;
+          state.subtotal = subtotal;
+        }
+      },
+    }
+  )
+);
