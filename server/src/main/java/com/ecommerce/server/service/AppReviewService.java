@@ -25,11 +25,8 @@ public class AppReviewService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Λήψη featured reviews για homepage
-     */
     public List<AppReviewResponse> getFeaturedReviews() {
-        return appReviewRepository.findByApprovedAndFeaturedOrderByCreatedAtDesc(true, true)
+        return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -67,8 +64,7 @@ public class AppReviewService {
                 .user(user)
                 .rating(request.rating())
                 .comment(request.comment())
-                .approved(false)  // Pending approval
-                .featured(false)
+                .approved(false)
                 .build();
 
         return convertToResponse(appReviewRepository.save(appReview));
@@ -83,34 +79,6 @@ public class AppReviewService {
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
         appReview.setApproved(true);
-        return convertToResponse(appReviewRepository.save(appReview));
-    }
-
-    /**
-     * Admin: Κάνει κριτική featured (εμφάνιση στο homepage)
-     */
-    @Transactional
-    public AppReviewResponse featureReview(Long reviewId) {
-        AppReview appReview = appReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-
-        if (!appReview.isApproved()) {
-            throw new RuntimeException("Can only feature approved reviews");
-        }
-
-        appReview.setFeatured(true);
-        return convertToResponse(appReviewRepository.save(appReview));
-    }
-
-    /**
-     * Admin: Αφαίρεση featured status
-     */
-    @Transactional
-    public AppReviewResponse unfeatureReview(Long reviewId) {
-        AppReview appReview = appReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-
-        appReview.setFeatured(false);
         return convertToResponse(appReviewRepository.save(appReview));
     }
 
@@ -135,8 +103,7 @@ public class AppReviewService {
                 appReview.getRating(),
                 appReview.getComment(),
                 createdAt,
-                appReview.isApproved(),
-                appReview.isFeatured()
+                appReview.isApproved()
         );
     }
 }

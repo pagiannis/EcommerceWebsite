@@ -1,33 +1,133 @@
 package com.ecommerce.server.service;
 
+import com.ecommerce.server.models.enums.Role;
+import com.ecommerce.server.dto.request.UserRegistrationRequest;
+import com.ecommerce.server.dto.request.UserRequest;
+import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // Create a test user
-    public User createTestUser(String email) {
+    // Καλείται αυτόματα από το Spring Security κατά το login.
+    // Παίρνει το email, φορτώνει τον user από τη βάση και επιστρέφει
+    // ένα UserDetails object που το Spring Security χρησιμοποιεί για
+    // να συγκρίνει τον κωδικό και να φτιάξει το Authentication object.
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),                                    // το hashed password για σύγκριση με BCrypt
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())) // π.χ. ROLE_USER ή ROLE_ADMIN
+        );
+    }
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        return toResponse(user);
+    }
+
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+        return toResponse(user);
+    }
+
+    public UserResponse registerUser(UserRegistrationRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email already in use: " + request.email());
+        }
+
         User user = User.builder()
-                .email(email)
-                .passwordHash("hashedPassword123")
-                .firstName("Test")
-                .lastName("User")
-                .phone("1234567890")
+                .email(request.email())
+                .passwordHash(passwordEncoder.encode(request.password())) // κωδικός αποθηκεύεται πάντα hashed
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phone(request.phone())
                 .build();
 
-        return userRepository.save(user);
+        return toResponse(userRepository.save(user));
     }
 
-    // Get user by ID
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public UserResponse updateUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new IllegalArgumentException("Email already in use: " + request.email());
+            }
+            user.setEmail(request.email());
+        }
+        if (request.firstName() != null) user.setFirstName(request.firstName());
+        if (request.lastName() != null) user.setLastName(request.lastName());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.password() != null) user.setPasswordHash(passwordEncoder.encode(request.password())); // hash πριν αποθήκευση
+
+        user.setUpdatedAt(LocalDateTime.now());
+
+        return toResponse(userRepository.save(user));
+    }
+
+    // --- Admin methods ---
+
+    public UserResponse changeUserRole(Long id, Role role) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+        return toResponse(userRepository.save(user));
+    }
+
+    public UserResponse adminUpdateUser(Long id, UserRequest request) {
+        return updateUser(id, request);
+    }
+
+    public void adminDeleteUser(Long id) {
+        deleteUser(id);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhone(),
+                user.getRole(),
+                user.getCreatedAt()
+        );
     }
 }
-

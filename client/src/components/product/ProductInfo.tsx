@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Product } from '../../types/product';
 import type { Size } from '../../types/size';
-import { useCart } from '../../context/CartContext';
+import { useCartStore } from '../../store/cartStore';
 import StarRating from '../ui/StarRating';
 import Badge from '../ui/Badge';
 import QuantityStepper from '../ui/QuantityStepper';
@@ -11,7 +11,7 @@ interface ProductInfoProps {
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-  const { addItem } = useCart();
+  const addItem = useCartStore((s) => s.addItem);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);

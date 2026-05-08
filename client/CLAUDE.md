@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Frontend**: React 19 + TypeScript + Vite
 - **Routing**: React Router DOM v7 (`createBrowserRouter`)
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` — no `tailwind.config.js`)
-- **Backend**: Spring Boot (separate service, not yet created)
+- **Backend**: Spring Boot REST API running at `http://localhost:8080/api` (separate service)
+- **Data fetching**: React Query (`@tanstack/react-query`) + axios (`src/services/apiClient.ts`)
 
 ## Commands
 
@@ -32,7 +33,7 @@ Client-side SPA with 4 pages: Home, Shop, Product Detail, Cart.
 
 **State**: Cart state lives in `src/context/CartContext.tsx`. `totalItems` and `subtotal` are derived with `useMemo` — never stored as separate state. Item identity key = `productId__color__size`. Later the Context integration will be replaced with Zustand
 
-**Data**: All product/review/testimonial data is mocked in `src/data/`. Products use `placehold.co` placeholder images.
+**Data**: Products and reviews are fetched from the Spring Boot backend. Testimonials are still mocked in `src/data/testimonials.ts`. Products use `placehold.co` placeholder images.
 
 **Tailwind tokens** (in `src/index.css` `@theme {}` block):
 - `bg-brand-black` / `text-brand-black` → `#000000`
@@ -45,4 +46,4 @@ Range slider thumb styles must be in raw CSS (`::-webkit-slider-thumb`) — Tail
 
 **TypeScript**: Strict mode (`noUnusedLocals`, `noUnusedParameters`). Use union types, not enums. TypeScript cannot narrow captured variables inside inner function declarations even after a type guard — use non-null assertion (`product!`) in those cases.
 
-**ShopPage filtering**: `useMemo` over `src/data/products.ts` array; `useSearchParams` seeds the initial category filter from the URL query param `?category=`.
+**ShopPage filtering**: All filters and pagination are sent as query params to the backend via `useProducts(params)`. `useSearchParams` drives the entire filter/sort/page state — the URL is the single source of truth. Conversion maps (e.g. `COLOR_HEX_TO_ENUM`, `SIZE_TO_API`) live in `src/services/productsService.ts`.

@@ -11,30 +11,34 @@ const SORT_OPTIONS = [
   "Newest",
 ];
 
-
 const BRAND_LABELS: Record<Brand, string> = {
-  nike: 'Nike',
+  nike: "Nike",
   levis: "Levi's",
-  'tommy-hilfiger': 'Tommy Hilfiger',
-  'ralph-lauren': 'Ralph Lauren',
-  hm: 'H&M',
-  zara: 'Zara',
-  'calvin-klein': 'Calvin Klein',
+  "tommy-hilfiger": "Tommy Hilfiger",
+  "ralph-lauren": "Ralph Lauren",
+  hm: "H&M",
+  zara: "Zara",
+  "calvin-klein": "Calvin Klein",
 };
 
-function buildTitle(category: Category | 'all', _productType: ProductType | 'all', brand: Brand | 'all'): string {
-  if (brand !== 'all') return BRAND_LABELS[brand];
-  if (category === 'all') return 'All Products';
+function buildTitle(
+  category: Category | "all",
+  _productType: ProductType | "all",
+  brand: Brand | "all",
+): string {
+  if (brand !== "all") return BRAND_LABELS[brand];
+  if (category === "all") return "All Products";
   return category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 interface ShopHeaderProps {
-  category: Category | 'all';
-  productType: ProductType | 'all';
-  brand: Brand | 'all';
+  category: Category | "all";
+  productType: ProductType | "all";
+  brand: Brand | "all";
   totalCount: number;
   currentStart: number;
   currentEnd: number;
+  isProductsLoading: boolean;
   sort: string;
   onSortChange: (sort: string) => void;
   onFilterOpen: () => void;
@@ -49,6 +53,7 @@ export default function ShopHeader({
   totalCount,
   currentStart,
   currentEnd,
+  isProductsLoading,
   sort,
   onSortChange,
   onFilterOpen,
@@ -71,12 +76,12 @@ export default function ShopHeader({
     <div className="mb-6 flex items-center justify-between">
       {/* Mobile layout */}
       <div className="flex items-center gap-2 lg:hidden">
-        <h1 className="text-xl font-extrabold text-brand-black">
-          {title}
-        </h1>
-        <span className="text-sm text-gray-500">
-          Showing {currentStart}-{currentEnd} of {totalCount} Products
-        </span>
+        <h1 className="text-xl font-extrabold text-brand-black">{title}</h1>
+        {!isProductsLoading && (
+          <span className="text-sm text-gray-500">
+            Showing {currentStart}-{currentEnd} of {totalCount} Products
+          </span>
+        )}
       </div>
 
       {/* Desktop layout */}
@@ -96,9 +101,11 @@ export default function ShopHeader({
 
       {/* Desktop: count + sort */}
       <div className="hidden lg:flex items-center gap-3 text-sm text-gray-500">
-        <span>
-          Showing {currentStart}-{currentEnd} of {totalCount} Products
-        </span>
+        {!isProductsLoading && (
+          <span>
+            Showing {currentStart}-{currentEnd} of {totalCount} Products
+          </span>
+        )}
         <div className="flex items-center gap-1">
           <span>Sort by:</span>
           <div ref={ref} className="relative">

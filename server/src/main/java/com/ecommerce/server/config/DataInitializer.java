@@ -1,264 +1,429 @@
 package com.ecommerce.server.config;
 
+import com.ecommerce.server.dto.request.*;
+import com.ecommerce.server.dto.response.CategoryResponse;
+import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
+import com.ecommerce.server.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.ecommerce.server.models.enums.OrderStatus;
 import java.math.BigDecimal;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final CategoryRepository categoryRepository;
-    private final BrandRepository brandRepository;
-    private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository;
-    private final ProductVariantRepository productVariantRepository;
-    private final ProductTypeRepository productTypeRepository;
+    private final AdminCategoryService    adminCategoryService;
+    private final AdminBrandService       adminBrandService;
+    private final AdminProductTypeService adminProductTypeService;
+    private final AdminProductService     adminProductService;
+    private final ProductRepository       productRepository;
+    private final ProductImageRepository  productImageRepository;
+    private final UserRepository          userRepository;
+    private final ReviewRepository        reviewRepository;
+    private final AppReviewRepository     appReviewRepository;
+    private final OrderRepository         orderRepository;
+    private final OrderItemRepository     orderItemRepository;
+    private final PasswordEncoder         passwordEncoder;
 
-    public DataInitializer(CategoryRepository categoryRepository,
-                           BrandRepository brandRepository,
-                           ProductRepository productRepository,
-                           ProductImageRepository productImageRepository,
-                           ProductVariantRepository productVariantRepository,
-                           ProductTypeRepository productTypeRepository) {
-        this.categoryRepository = categoryRepository;
-        this.brandRepository = brandRepository;
-        this.productRepository = productRepository;
-        this.productImageRepository = productImageRepository;
-        this.productVariantRepository = productVariantRepository;
-        this.productTypeRepository = productTypeRepository;
-    }
+    private static final Size[] ALL_SIZES = {
+        Size.XXS, Size.XS, Size.S, Size.M, Size.L, Size.XL, Size.XXL, Size.XXXL, Size.XXXXL
+    };
+
+    private static final String[][] REVIEW_DATA = {
+        // {comment, rating}
+        {"Excellent quality, exactly as described. Very happy with my purchase!", "5"},
+        {"Great fit and super comfortable. Will definitely order again.", "5"},
+        {"Love the material, very durable and looks great.", "5"},
+        {"Perfect product! Highly recommend to everyone.", "5"},
+        {"Amazing value for the price. Exceeded my expectations.", "5"},
+        {"Very good quality. The fabric feels premium.", "4"},
+        {"Nice product overall. Sizing is accurate.", "4"},
+        {"Good purchase, arrived quickly and looks as pictured.", "4"},
+        {"Pretty happy with this. Comfortable and stylish.", "4"},
+        {"Solid quality, would buy again.", "4"},
+        {"Decent product. Nothing special but does the job.", "3"},
+        {"Average quality. Expected a bit more for the price.", "3"},
+        {"It's okay. Sizing runs a bit small, order one size up.", "3"},
+        {"Not bad, but the color is slightly different from the photos.", "3"},
+        {"Material feels a bit thin but the style is nice.", "2"},
+        {"Disappointed with the stitching quality. Not worth the price.", "2"},
+        {"Sizing is way off. Had to return it.", "1"},
+    };
 
     @Override
     public void run(String... args) {
-        // Αν υπάρχουν ήδη data, μην κάνουμε τίποτα
-        if (productRepository.count() > 0) {
-            System.out.println("✅ Database already has products. Skipping initialization.");
-            return;
+        if (productRepository.count() == 0) {
+            System.out.println("🚀 Initializing database with mock data...");
+
+        // ── Categories ───────────────────────────────────────────────────────
+        Long men   = cat("men",   "Men's clothing collection");
+        Long women = cat("women", "Women's clothing collection");
+        Long kids  = cat("kids",  "Kids' clothing collection");
+
+        // ── Brands ───────────────────────────────────────────────────────────
+        Long calvin  = brand("Calvin Klein");
+        Long zara    = brand("Zara");
+        Long nike    = brand("Nike");
+        Long levis   = brand("Levi's");
+        Long tommy   = brand("Tommy Hilfiger");
+        Long ralph   = brand("Ralph Lauren");
+        Long hm      = brand("H&M");
+        Long gucci   = brand("Gucci");
+        Long prada   = brand("Prada");
+        Long versace = brand("Versace");
+
+        // ── Product Types ────────────────────────────────────────────────────
+        Long tshirt  = type("T-Shirt");
+        Long jeans   = type("Jeans");
+        Long shirt   = type("Shirt");
+        Long polo    = type("Polo");
+        Long hoodie  = type("Hoodie");
+        Long shorts  = type("Shorts");
+        Long blazer  = type("Blazer");
+
+        // ── MEN: T-Shirts, Jeans, Shirts, Polo, Hoodies, Shorts, Blazers ─────
+
+        // T-Shirts
+        product("Classic White Tee",        "Essential everyday t-shirt",    men, calvin, 30,  50,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.BLACK, Color.GRAY);
+        product("Graphic Print Tee",         "Bold graphic print",            men, nike,   35,  55,  tshirt, DressStyle.CASUAL, Color.BLACK, Color.WHITE);
+        product("Striped Tee",               "Classic striped design",        men, hm,     25,  40,  tshirt, DressStyle.CASUAL, Color.BLUE,  Color.WHITE, Color.BLACK);
+        product("Oversized Tee",             "Relaxed oversized fit",         men, zara,   30,  50,  tshirt, DressStyle.CASUAL, Color.BLACK, Color.GRAY);
+        product("Premium Cotton Tee",        "Soft premium quality",          men, ralph,  45,  70,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.NAVY, Color.BLACK);
+        product("Vintage Band Tee",          "Retro band graphic",            men, zara,   45,  70,  tshirt, DressStyle.CASUAL, Color.BLACK, Color.GRAY);
+        product("Gym Tank Top",              "Breathable gym tank",           men, nike,   30,  50,  tshirt, DressStyle.GYM,    Color.BLACK, Color.BLUE);
+
+        // Jeans
+        product("Classic Blue Jeans",        "Timeless denim essential",      men, levis,  120, 160, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Slim Fit Denim",            "Modern slim silhouette",        men, calvin, 95,  130, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Distressed Jeans",          "Edgy distressed style",         men, levis,  140, 190, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Relaxed Fit Denim",         "Comfortable relaxed fit",       men, levis,  110, 150, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.GRAY);
+        product("Skinny Stretch Jeans",      "Ultimate stretch comfort",      men, zara,   95,  135, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Raw Denim",                 "Untreated raw denim",           men, levis,  130, 180, jeans,  DressStyle.CASUAL, Color.BLUE);
+
+        // Shirts
+        product("Oxford Button Shirt",       "Classic oxford cloth",          men, prada,  150, 200, shirt,  DressStyle.FORMAL, Color.WHITE, Color.BLUE);
+        product("Slim Fit Dress Shirt",      "Modern slim fit",               men, gucci,  140, 180, shirt,  DressStyle.FORMAL, Color.WHITE, Color.BLACK, Color.NAVY);
+        product("Casual Linen Shirt",        "Light breathable linen",        men, versace,110, 145, shirt,  DressStyle.CASUAL, Color.WHITE, Color.BLUE);
+        product("Flannel Check Shirt",       "Warm flannel fabric",           men, levis,  70,  100, shirt,  DressStyle.CASUAL, Color.RED,   Color.BLUE);
+        product("Denim Shirt",               "Casual denim style",            men, levis,  80,  115, shirt,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Dress Shirt White",         "Classic white formal",          men, tommy,  85,  120, shirt,  DressStyle.FORMAL, Color.WHITE);
+
+        // Polo
+        product("Classic Polo",              "Timeless polo shirt",           men, ralph,  85,  120, polo,   DressStyle.CASUAL, Color.WHITE, Color.NAVY, Color.RED);
+        product("Slim Fit Polo",             "Modern slim silhouette",        men, tommy,  75,  110, polo,   DressStyle.CASUAL, Color.WHITE, Color.BLUE, Color.BLACK);
+        product("Pique Polo",                "Classic pique texture",         men, calvin, 80,  115, polo,   DressStyle.CASUAL, Color.WHITE, Color.BLACK);
+        product("Sport Polo",                "Performance polo shirt",        men, nike,   65,  95,  polo,   DressStyle.GYM,    Color.BLACK, Color.BLUE, Color.WHITE);
+        product("Vintage Polo",              "Retro vintage style",           men, gucci,  130, 170, polo,   DressStyle.CASUAL, Color.WHITE, Color.BLUE, Color.RED);
+
+        // Hoodies
+        product("Classic Zip Hoodie",        "Essential zip-up hoodie",       men, calvin, 95,  140, hoodie, DressStyle.CASUAL, Color.BLACK, Color.GRAY, Color.BLUE);
+        product("Tech Fleece Hoodie",        "Advanced fleece technology",    men, nike,   110, 160, hoodie, DressStyle.GYM,    Color.BLACK, Color.GRAY, Color.BLUE);
+        product("Oversized Hoodie",          "Relaxed oversized fit",         men, hm,     55,  85,  hoodie, DressStyle.CASUAL, Color.BLACK, Color.GRAY);
+        product("Pullover Hoodie",           "Classic pullover style",        men, ralph,  90,  130, hoodie, DressStyle.CASUAL, Color.NAVY,  Color.GRAY, Color.BLACK);
+
+        // Shorts
+        product("Running Shorts",            "Lightweight running shorts",    men, nike,   45,  70,  shorts, DressStyle.GYM,    Color.BLACK, Color.BLUE);
+        product("Chino Shorts",              "Smart casual chino shorts",     men, tommy,  55,  85,  shorts, DressStyle.CASUAL, Color.BROWN, Color.BLUE, Color.BLACK);
+        product("Denim Shorts",              "Classic denim cut-offs",        men, levis,  60,  90,  shorts, DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Swim Shorts",               "Quick-dry swim shorts",         men, calvin, 50,  75,  shorts, DressStyle.CASUAL, Color.BLUE,  Color.BLACK, Color.RED);
+        product("Gym Shorts",                "Lightweight gym shorts",        men, hm,     30,  50,  shorts, DressStyle.GYM,    Color.GRAY,  Color.BLACK);
+
+        // Blazers
+        product("Business Blazer",           "Professional business blazer",  men, prada,  250, 350, blazer, DressStyle.FORMAL, Color.BLACK, Color.GRAY);
+        product("Casual Blazer",             "Smart casual blazer",           men, tommy,  180, 250, blazer, DressStyle.CASUAL, Color.NAVY,  Color.BLACK);
+        product("Slim Fit Blazer",           "Modern slim cut",               men, gucci,  220, 300, blazer, DressStyle.FORMAL, Color.BLACK, Color.GRAY);
+
+        // ── WOMEN: T-Shirts, Jeans, Hoodies ──────────────────────────────────
+
+        // T-Shirts
+        product("Women's Basic Tee",         "Essential everyday tee",        women, hm,    25,  40,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.BLACK, Color.PINK);
+        product("Women's Crop Tee",          "Trendy crop silhouette",        women, zara,  30,  50,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.BLACK);
+        product("Women's Graphic Tee",       "Bold graphic print",            women, ralph, 45,  70,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.BLACK);
+        product("Women's Oversized Tee",     "Relaxed oversized fit",         women, hm,    30,  50,  tshirt, DressStyle.CASUAL, Color.GRAY,  Color.BLACK, Color.PINK);
+        product("Women's Fitted Tee",        "Flattering fitted cut",         women, calvin,40,  65,  tshirt, DressStyle.CASUAL, Color.WHITE, Color.BLACK, Color.PINK);
+        product("Women's Gym Tee",           "Performance gym tee",           women, nike,  35,  55,  tshirt, DressStyle.GYM,    Color.BLACK, Color.WHITE);
+
+        // Jeans
+        product("Women's Skinny Jeans",      "Classic skinny denim",          women, levis, 115, 160, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Women's Flare Jeans",       "Trendy flare silhouette",       women, levis, 105, 145, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Women's High Waist Jeans",  "High waist design",             women, calvin,120, 160, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.GRAY);
+        product("Women's Boyfriend Jeans",   "Relaxed boyfriend cut",         women, levis, 110, 150, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Women's Slim Jeans",        "Sleek slim fit",                women, zara,  90,  130, jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+
+        // Hoodies
+        product("Women's Zip Hoodie",        "Stylish zip hoodie",            women, calvin,90,  130, hoodie, DressStyle.CASUAL, Color.PINK,  Color.GRAY, Color.BLACK);
+        product("Women's Pullover Hoodie",   "Cozy pullover style",           women, ralph, 85,  125, hoodie, DressStyle.CASUAL, Color.GRAY,  Color.PINK, Color.WHITE);
+        product("Women's Cropped Hoodie",    "Trendy cropped hoodie",         women, zara,  65,  95,  hoodie, DressStyle.CASUAL, Color.PINK,  Color.BLACK);
+        product("Women's Gym Hoodie",        "Performance gym hoodie",        women, nike,  80,  120, hoodie, DressStyle.GYM,    Color.BLACK, Color.GRAY);
+
+        // ── KIDS: All types ──────────────────────────────────────────────────
+
+        product("Kids Graphic Tee",          "Fun graphic for children",      kids, hm,    25, 40,  tshirt, DressStyle.CASUAL, Color.BLUE,  Color.RED,  Color.YELLOW);
+        product("Kids Sport Tee",            "Active sports shirt",           kids, nike,  35, 55,  tshirt, DressStyle.GYM,    Color.BLUE,  Color.RED);
+        product("Kids Classic Jeans",        "Durable kid jeans",             kids, levis, 50, 80,  jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Kids Slim Jeans",           "Slim fit kids jeans",           kids, zara,  45, 70,  jeans,  DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Kids Polo Shirt",           "Classic kids polo",             kids, ralph, 45, 70,  polo,   DressStyle.CASUAL, Color.WHITE, Color.BLUE);
+        product("Kids Sport Polo",           "Active sport polo",             kids, nike,  40, 65,  polo,   DressStyle.GYM,    Color.RED,   Color.BLUE);
+        product("Kids Button Shirt",         "Smart kids shirt",              kids, tommy, 40, 65,  shirt,  DressStyle.FORMAL, Color.WHITE, Color.BLUE);
+        product("Kids Casual Shirt",         "Everyday kids shirt",           kids, hm,    30, 50,  shirt,  DressStyle.CASUAL, Color.BLUE,  Color.RED);
+        product("Kids Zip Hoodie",           "Cozy zip hoodie",               kids, hm,    40, 65,  hoodie, DressStyle.CASUAL, Color.BLUE,  Color.RED);
+        product("Kids Pullover Hoodie",      "Warm pullover hoodie",          kids, nike,  45, 70,  hoodie, DressStyle.GYM,    Color.BLACK, Color.BLUE);
+        product("Kids Shorts",               "Comfortable play shorts",       kids, hm,    25, 40,  shorts, DressStyle.CASUAL, Color.BLUE,  Color.BLACK);
+        product("Kids Sport Shorts",         "Active sport shorts",           kids, nike,  30, 50,  shorts, DressStyle.GYM,    Color.BLACK, Color.BLUE);
+        product("Kids Blazer",               "Smart kids blazer",             kids, tommy, 80, 120, blazer, DressStyle.FORMAL, Color.NAVY,  Color.BLACK);
+
+            System.out.println("✅ Database initialized successfully!");
+        } else {
+            System.out.println("✅ Database already has products. Skipping product initialization.");
         }
 
-        if (categoryRepository.count() > 0) {
-            System.out.println("✅ Database already has categories. Skipping initialization.");
-            return;
+        if (reviewRepository.count() == 0) {
+            System.out.println("🚀 Seeding reviews...");
+            seedReviews();
+        } else {
+            System.out.println("✅ Database already has reviews. Skipping review initialization.");
         }
 
-        System.out.println("🚀 Initializing database with mock data...");
+        if (appReviewRepository.count() == 0) {
+            System.out.println("🚀 Seeding app reviews...");
+            seedAppReviews();
+        } else {
+            System.out.println("✅ Database already has app reviews. Skipping app review initialization.");
+        }
 
-        // 1. Δημιουργία Categories
-        Category menCategory = createCategory("men", "Men's clothing collection");
-        Category womenCategory = createCategory("women", "Women's clothing collection");
-        Category kidsCategory = createCategory("kids", "Kids' clothing collection");
-        Category accessoriesCategory = createCategory("accessories", "Fashion accessories");
-
-        // 2. Δημιουργία Brands
-        Brand calvin = createBrand("Calvin Klein");
-        Brand gucci = createBrand("Gucci");
-        Brand prada = createBrand("Prada");
-        Brand zara = createBrand("Zara");
-        Brand versace = createBrand("Versace");
-
-        // 3. Δημιουργία Product Types
-        ProductType shirt = createProductType("Shirt");
-        ProductType jeans = createProductType("Jeans");
-        ProductType pants = createProductType("Pants");
-        ProductType hoodie = createProductType("Hoodie");
-        ProductType dress = createProductType("Dress");
-
-        // 4. Δημιουργία Products (100 products διαφορετικά)
-        // MEN - SHIRTS
-        createProductWithVariants("Premium Casual Shirt", "High-quality dress shirt for versatile styling", menCategory, calvin, BigDecimal.valueOf(120), BigDecimal.valueOf(150), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.WHITE, Color.BLUE, Color.BLACK});
-        createProductWithVariants("Cotton Blend Shirt", "Comfortable everyday shirt", menCategory, zara, BigDecimal.valueOf(85), BigDecimal.valueOf(110), shirt, DressStyle.CASUAL, "Checkered_Shirt.png", new Color[]{Color.RED, Color.BLUE, Color.WHITE});
-        createProductWithVariants("Oxford Button Shirt", "Classic oxford cloth shirt", menCategory, prada, BigDecimal.valueOf(150), BigDecimal.valueOf(200), shirt, DressStyle.FORMAL, "Vertical_Striped_Shirt.png", new Color[]{Color.WHITE, Color.BLUE});
-        createProductWithVariants("Slim Fit Dress Shirt", "Modern slim fit design", menCategory, gucci, BigDecimal.valueOf(140), BigDecimal.valueOf(180), shirt, DressStyle.FORMAL, "Black_Striped_T-shirt.png", new Color[]{Color.WHITE, Color.BLACK, Color.NAVY});
-        createProductWithVariants("Casual Linen Shirt", "Light and breathable linen", menCategory, versace, BigDecimal.valueOf(110), BigDecimal.valueOf(145), shirt, DressStyle.CASUAL, "Checkered_Shirt.png", new Color[]{Color.WHITE, Color.BLUE});
-        createProductWithVariants("Graphic Tee Collection", "Trendy graphic prints", menCategory, zara, BigDecimal.valueOf(50), BigDecimal.valueOf(75), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.WHITE, Color.GRAY});
-        createProductWithVariants("Sports Performance Shirt", "Moisture-wicking fabric", menCategory, calvin, BigDecimal.valueOf(95), BigDecimal.valueOf(130), shirt, DressStyle.SPORT, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE, Color.RED});
-        createProductWithVariants("Vintage Polo Shirt", "Classic polo style", menCategory, gucci, BigDecimal.valueOf(130), BigDecimal.valueOf(170), shirt, DressStyle.CASUAL, "Polo_with_Contrast_Trims.png", new Color[]{Color.WHITE, Color.BLUE, Color.RED});
-        createProductWithVariants("Premium Henley", "Elegant henley neckline", menCategory, prada, BigDecimal.valueOf(105), BigDecimal.valueOf(140), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.WHITE, Color.BLACK});
-        createProductWithVariants("Athletic Compression Shirt", "Supportive athletic wear", menCategory, versace, BigDecimal.valueOf(85), BigDecimal.valueOf(120), shirt, DressStyle.SPORT, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE});
-
-        // MEN - JEANS
-        createProductWithVariants("Classic Blue Jeans", "Timeless denim essential", menCategory, calvin, BigDecimal.valueOf(120), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Skinny_Fit_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Slim Fit Denim", "Modern slim silhouette", menCategory, zara, BigDecimal.valueOf(95), BigDecimal.valueOf(130), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Distressed Jeans", "Edgy distressed style", menCategory, gucci, BigDecimal.valueOf(140), BigDecimal.valueOf(190), jeans, DressStyle.CASUAL, "Skinny_Fit_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Relaxed Fit Denim", "Comfortable relaxed fit", menCategory, prada, BigDecimal.valueOf(130), BigDecimal.valueOf(170), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.GRAY});
-        createProductWithVariants("Slim Stretch Jeans", "Flexible stretch denim", menCategory, versace, BigDecimal.valueOf(110), BigDecimal.valueOf(150), jeans, DressStyle.CASUAL, "Skinny_Fit_Jeans.png", new Color[]{Color.BLUE, Color.BLACK, Color.WHITE});
-        createProductWithVariants("Premium Denim", "High-end quality jeans", menCategory, calvin, BigDecimal.valueOf(160), BigDecimal.valueOf(210), jeans, DressStyle.FORMAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Tapered Fit Jeans", "Tapered leg design", menCategory, zara, BigDecimal.valueOf(100), BigDecimal.valueOf(140), jeans, DressStyle.CASUAL, "Skinny_Fit_Jeans.png", new Color[]{Color.BLUE, Color.GRAY});
-        createProductWithVariants("Raw Denim", "Untreated raw denim", menCategory, gucci, BigDecimal.valueOf(150), BigDecimal.valueOf(200), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE});
-        createProductWithVariants("Skinny Stretch Jeans", "Ultimate stretch comfort", menCategory, prada, BigDecimal.valueOf(120), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Skinny_Fit_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Vintage Wash Jeans", "Classic vintage look", menCategory, versace, BigDecimal.valueOf(125), BigDecimal.valueOf(165), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-
-        // MEN - PANTS
-        createProductWithVariants("Chino Pants", "Versatile chino trousers", menCategory, calvin, BigDecimal.valueOf(90), BigDecimal.valueOf(125), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BROWN, Color.BLUE, Color.BLACK});
-        createProductWithVariants("Cargo Pants", "Utility cargo style", menCategory, zara, BigDecimal.valueOf(80), BigDecimal.valueOf(115), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BROWN, Color.GRAY, Color.BLACK});
-        createProductWithVariants("Dress Trousers", "Formal dress pants", menCategory, prada, BigDecimal.valueOf(140), BigDecimal.valueOf(190), pants, DressStyle.FORMAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Slim Fit Trousers", "Modern slim fit", menCategory, gucci, BigDecimal.valueOf(110), BigDecimal.valueOf(150), pants, DressStyle.FORMAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.GRAY, Color.BROWN});
-        createProductWithVariants("Casual Track Pants", "Comfortable lounge wear", menCategory, versace, BigDecimal.valueOf(75), BigDecimal.valueOf(110), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.GRAY, Color.BLACK, Color.BLUE});
-
-        // MEN - HOODIES
-        createProductWithVariants("Classic Zip Hoodie", "Essential zip-up hoodie", menCategory, calvin, BigDecimal.valueOf(95), BigDecimal.valueOf(140), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY, Color.BLUE});
-        createProductWithVariants("Premium Cotton Hoodie", "Soft premium quality", menCategory, zara, BigDecimal.valueOf(85), BigDecimal.valueOf(125), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Tech Fleece Hoodie", "Advanced fleece technology", menCategory, gucci, BigDecimal.valueOf(120), BigDecimal.valueOf(160), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY, Color.BLUE});
-        createProductWithVariants("Oversized Hoodie", "Relaxed oversized fit", menCategory, prada, BigDecimal.valueOf(110), BigDecimal.valueOf(150), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Athletic Hoodie", "Performance athletic", menCategory, versace, BigDecimal.valueOf(100), BigDecimal.valueOf(140), hoodie, DressStyle.SPORT, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.BLUE});
-
-        // WOMEN - SHIRTS
-        createProductWithVariants("Women's Fitted Blouse", "Elegant fitted cut", womenCategory, calvin, BigDecimal.valueOf(110), BigDecimal.valueOf(150), shirt, DressStyle.FORMAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLUE, Color.BLACK});
-        createProductWithVariants("Women's Casual Top", "Comfortable casual wear", womenCategory, zara, BigDecimal.valueOf(65), BigDecimal.valueOf(95), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.PINK, Color.BLACK});
-        createProductWithVariants("Women's Silk Blouse", "Luxurious silk material", womenCategory, gucci, BigDecimal.valueOf(160), BigDecimal.valueOf(220), shirt, DressStyle.FORMAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLACK});
-        createProductWithVariants("Women's V-Neck Tee", "Flattering V-neckline", womenCategory, prada, BigDecimal.valueOf(75), BigDecimal.valueOf(110), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLACK, Color.PINK});
-        createProductWithVariants("Women's Oversized Shirt", "Trendy oversized silhouette", womenCategory, versace, BigDecimal.valueOf(95), BigDecimal.valueOf(130), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLUE});
-
-        // WOMEN - JEANS
-        createProductWithVariants("Women's Skinny Jeans", "Classic skinny denim", womenCategory, calvin, BigDecimal.valueOf(115), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Women's Flare Jeans", "Trendy flare silhouette", womenCategory, zara, BigDecimal.valueOf(105), BigDecimal.valueOf(145), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Women's Bootcut Jeans", "Classic bootcut fit", womenCategory, gucci, BigDecimal.valueOf(130), BigDecimal.valueOf(180), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Women's High Waist Jeans", "High waist design", womenCategory, prada, BigDecimal.valueOf(120), BigDecimal.valueOf(160), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.GRAY});
-        createProductWithVariants("Women's Ripped Jeans", "Edgy ripped style", womenCategory, versace, BigDecimal.valueOf(125), BigDecimal.valueOf(170), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-
-        // WOMEN - DRESS
-        createProductWithVariants("Casual Day Dress", "Perfect everyday dress", womenCategory, calvin, BigDecimal.valueOf(95), BigDecimal.valueOf(140), dress, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLUE, Color.BLACK, Color.WHITE});
-        createProductWithVariants("Evening Gown", "Elegant evening wear", womenCategory, gucci, BigDecimal.valueOf(250), BigDecimal.valueOf(350), dress, DressStyle.PARTY, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.RED});
-        createProductWithVariants("Cocktail Dress", "Sophisticated cocktail", womenCategory, prada, BigDecimal.valueOf(180), BigDecimal.valueOf(250), dress, DressStyle.PARTY, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE});
-        createProductWithVariants("Maxi Dress", "Flowing maxi silhouette", womenCategory, zara, BigDecimal.valueOf(85), BigDecimal.valueOf(120), dress, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLUE, Color.BLACK});
-        createProductWithVariants("Summer Sundress", "Light summer dress", womenCategory, versace, BigDecimal.valueOf(75), BigDecimal.valueOf(110), dress, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.PINK});
-
-        // WOMEN - HOODIES & PANTS
-        createProductWithVariants("Women's Zip Hoodie", "Stylish zip hoodie", womenCategory, calvin, BigDecimal.valueOf(90), BigDecimal.valueOf(130), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.PINK, Color.GRAY, Color.BLACK});
-        createProductWithVariants("Women's Sweatpants", "Comfortable sweatpants", womenCategory, zara, BigDecimal.valueOf(60), BigDecimal.valueOf(90), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.GRAY, Color.BLACK, Color.PINK});
-        createProductWithVariants("Women's Yoga Pants", "Athletic yoga wear", womenCategory, gucci, BigDecimal.valueOf(95), BigDecimal.valueOf(140), pants, DressStyle.SPORT, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.PURPLE});
-        createProductWithVariants("Women's Leggings", "Versatile leggings", womenCategory, prada, BigDecimal.valueOf(75), BigDecimal.valueOf(110), pants, DressStyle.SPORT, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Women's Chino Pants", "Casual chino style", womenCategory, versace, BigDecimal.valueOf(85), BigDecimal.valueOf(120), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BROWN, Color.BLACK, Color.BLUE});
-
-        // KIDS - SHIRTS
-        createProductWithVariants("Kids Graphic Tee", "Fun graphic for children", kidsCategory, zara, BigDecimal.valueOf(35), BigDecimal.valueOf(55), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLUE, Color.RED, Color.YELLOW});
-        createProductWithVariants("Kids Polo Shirt", "Classic kids polo", kidsCategory, calvin, BigDecimal.valueOf(45), BigDecimal.valueOf(70), shirt, DressStyle.CASUAL, "Polo_with_Contrast_Trims.png", new Color[]{Color.WHITE, Color.BLUE});
-        createProductWithVariants("Kids Sport Shirt", "Active sports shirt", kidsCategory, gucci, BigDecimal.valueOf(55), BigDecimal.valueOf(85), shirt, DressStyle.SPORT, "Black_Striped_T-shirt.png", new Color[]{Color.BLUE, Color.RED});
-
-        // KIDS - PANTS & HOODIES
-        createProductWithVariants("Kids Jeans", "Durable kid jeans", kidsCategory, zara, BigDecimal.valueOf(50), BigDecimal.valueOf(80), jeans, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Kids Hoodie", "Cozy kids hoodie", kidsCategory, calvin, BigDecimal.valueOf(55), BigDecimal.valueOf(85), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLUE, Color.RED});
-        createProductWithVariants("Kids Shorts", "Comfortable kids shorts", kidsCategory, prada, BigDecimal.valueOf(35), BigDecimal.valueOf(55), pants, DressStyle.CASUAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLUE, Color.BLACK});
-
-        // ACCESSORIES - VARIOUS ITEMS
-        createProductWithVariants("Baseball Cap", "Classic baseball cap", accessoriesCategory, versace, BigDecimal.valueOf(35), BigDecimal.valueOf(55), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE, Color.WHITE});
-        createProductWithVariants("Winter Beanie", "Warm winter beanie", accessoriesCategory, calvin, BigDecimal.valueOf(30), BigDecimal.valueOf(50), shirt, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Leather Belt", "Premium leather belt", accessoriesCategory, gucci, BigDecimal.valueOf(60), BigDecimal.valueOf(95), pants, DressStyle.FORMAL, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.BROWN});
-        createProductWithVariants("Silk Scarf", "Elegant silk scarf", accessoriesCategory, prada, BigDecimal.valueOf(45), BigDecimal.valueOf(75), shirt, DressStyle.FORMAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLUE, Color.RED});
-        createProductWithVariants("Wool Gloves", "Warm wool gloves", accessoriesCategory, zara, BigDecimal.valueOf(25), BigDecimal.valueOf(45), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Sunglasses", "Premium sunglasses", accessoriesCategory, versace, BigDecimal.valueOf(85), BigDecimal.valueOf(130), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BROWN});
-        createProductWithVariants("Crossbody Bag", "Stylish crossbody bag", accessoriesCategory, gucci, BigDecimal.valueOf(120), BigDecimal.valueOf(180), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.BROWN});
-        createProductWithVariants("Backpack", "Durable backpack", accessoriesCategory, calvin, BigDecimal.valueOf(75), BigDecimal.valueOf(120), shirt, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Ankle Socks Bundle", "Comfortable socks", accessoriesCategory, zara, BigDecimal.valueOf(15), BigDecimal.valueOf(30), shirt, DressStyle.CASUAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.WHITE});
-        createProductWithVariants("Sports Watch", "Athletic sports watch", accessoriesCategory, prada, BigDecimal.valueOf(150), BigDecimal.valueOf(220), shirt, DressStyle.SPORT, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE});
-
-        // FORMAL COLLECTION - MEN'S
-        createProductWithVariants("Business Blazer", "Professional business blazer", menCategory, prada, BigDecimal.valueOf(250), BigDecimal.valueOf(350), shirt, DressStyle.FORMAL, "Signature_Anchor_Tailored_Wool_Blazer.png", new Color[]{Color.BLACK, Color.BLUE, Color.GRAY});
-        createProductWithVariants("Dress Shirt White", "Classic white dress shirt", menCategory, calvin, BigDecimal.valueOf(85), BigDecimal.valueOf(120), shirt, DressStyle.FORMAL, "Vertical_Striped_Shirt.png", new Color[]{Color.WHITE});
-        createProductWithVariants("Tie Selection", "Different tie styles", menCategory, gucci, BigDecimal.valueOf(45), BigDecimal.valueOf(75), shirt, DressStyle.FORMAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE, Color.RED});
-
-        // GYM & SPORTS
-        createProductWithVariants("Gym Tank Top", "Breathable tank top", menCategory, versace, BigDecimal.valueOf(40), BigDecimal.valueOf(65), shirt, DressStyle.SPORT, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BLUE});
-        createProductWithVariants("running Shorts", "Lightweight running shorts", menCategory, calvin, BigDecimal.valueOf(55), BigDecimal.valueOf(85), pants, DressStyle.SPORT, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.BLUE});
-        createProductWithVariants("Performance Jacket", "Wind-resistant jacket", menCategory, zara, BigDecimal.valueOf(95), BigDecimal.valueOf(140), shirt, DressStyle.SPORT, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.BLUE});
-        createProductWithVariants("Women's Sports Bra", "Supportive sports bra", womenCategory, gucci, BigDecimal.valueOf(65), BigDecimal.valueOf(100), shirt, DressStyle.SPORT, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.PURPLE});
-        createProductWithVariants("Women's Running Tights", "Compression running tights", womenCategory, prada, BigDecimal.valueOf(85), BigDecimal.valueOf(130), pants, DressStyle.SPORT, "Loose_Fit_Bermouda_Shorts.png", new Color[]{Color.BLACK, Color.BLUE});
-
-        // CASUAL COLLECTION - MORE VARIETY
-        createProductWithVariants("Vintage Band Tee", "Retro band graphic", menCategory, zara, BigDecimal.valueOf(45), BigDecimal.valueOf(70), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLACK, Color.GRAY});
-        createProductWithVariants("Summer Linen Blend", "Breathable linen mix", menCategory, gucci, BigDecimal.valueOf(105), BigDecimal.valueOf(145), shirt, DressStyle.CASUAL, "Checkered_Shirt.png", new Color[]{Color.WHITE, Color.BLUE});
-        createProductWithVariants("Casual Cardigan", "Lightweight cardigan", womenCategory, calvin, BigDecimal.valueOf(75), BigDecimal.valueOf(110), shirt, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.GRAY, Color.BLUE, Color.PINK});
-        createProductWithVariants("Denim Jacket", "Classic denim jacket", menCategory, prada, BigDecimal.valueOf(130), BigDecimal.valueOf(180), shirt, DressStyle.CASUAL, "Faded_Skinny_Jeans.png", new Color[]{Color.BLUE, Color.BLACK});
-        createProductWithVariants("Leather Jacket", "Premium leather jacket", womenCategory, versace, BigDecimal.valueOf(250), BigDecimal.valueOf(350), shirt, DressStyle.FORMAL, "Black_Striped_T-shirt.png", new Color[]{Color.BLACK, Color.BROWN});
-        createProductWithVariants("Rain Jacket", "Waterproof rain jacket", menCategory, zara, BigDecimal.valueOf(95), BigDecimal.valueOf(135), shirt, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.BLACK, Color.BLUE});
-        createProductWithVariants("Windbreaker", "Lightweight windbreaker", womenCategory, calvin, BigDecimal.valueOf(65), BigDecimal.valueOf(100), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.BLUE, Color.PINK});
-        createProductWithVariants("Sweatshirt", "Cozy sweatshirt", menCategory, gucci, BigDecimal.valueOf(85), BigDecimal.valueOf(125), hoodie, DressStyle.CASUAL, "Earth-Tone_Cloud_Wash_Hoodie.png", new Color[]{Color.GRAY, Color.BLACK});
-        createProductWithVariants("Henley Long Sleeve", "Long sleeve henley", womenCategory, prada, BigDecimal.valueOf(65), BigDecimal.valueOf(100), shirt, DressStyle.CASUAL, "Courage_Graphic_T-shirt.png", new Color[]{Color.WHITE, Color.BLACK});
-        createProductWithVariants("Button-Up Vest", "Casual button vest", menCategory, versace, BigDecimal.valueOf(110), BigDecimal.valueOf(160), shirt, DressStyle.CASUAL, "Vertical_Striped_Shirt.png", new Color[]{Color.BROWN, Color.BLACK});
-
-        System.out.println("✅ Database initialized with mock products!");
+        if (orderRepository.count() == 0) {
+            System.out.println("🚀 Seeding orders...");
+            seedOrders();
+        } else {
+            System.out.println("✅ Database already has orders. Skipping order initialization.");
+        }
     }
 
-    // Helper methods
-    private Category createCategory(String name, String description) {
-        Category category = new Category();
-        category.setName(name);
-        category.setDescription(description);
-        category.setImageUrl("https://picsum.photos/300/300?random=" + name.hashCode());
-        return categoryRepository.save(category);
+    // ── Review seeding ───────────────────────────────────────────────────────
+
+    private void seedReviews() {
+        List<User> reviewers = createTestReviewers();
+        List<Product> products = productRepository.findAll();
+
+        int totalReviews = 0;
+        for (Product product : products) {
+            int numReviews = 3 + (int) (product.getId() % 3);
+            for (int i = 0; i < numReviews; i++) {
+                User reviewer = reviewers.get((int) ((product.getId() + i) % reviewers.size()));
+                int dataIdx = (int) ((product.getId() * 7 + i * 3) % REVIEW_DATA.length);
+                int rating = Integer.parseInt(REVIEW_DATA[dataIdx][1]);
+                String comment = REVIEW_DATA[dataIdx][0];
+
+                Review review = Review.builder()
+                        .product(product)
+                        .user(reviewer)
+                        .rating(rating)
+                        .comment(comment)
+                        .createdAt(LocalDateTime.now().minusDays(product.getId() % 90 + (long) i * 7))
+                        .build();
+                reviewRepository.save(review);
+                totalReviews++;
+            }
+
+            Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
+            long count = reviewRepository.findByProductIdOrderByCreatedAtDesc(product.getId()).size();
+            product.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+            product.setReviewCount((int) count);
+            productRepository.save(product);
+        }
+
+        System.out.println("✅ Seeded " + totalReviews + " reviews for " + products.size() + " products!");
     }
 
-    private Brand createBrand(String name) {
-        Brand brand = new Brand();
-        brand.setName(name);
-        brand.setLogoUrl("https://picsum.photos/200/200?random=" + name.hashCode());
-        return brandRepository.save(brand);
+    private List<User> createTestReviewers() {
+        String[][] data = {
+            {"Alice",  "Johnson",  "alice.johnson@testshop.com"},
+            {"Bob",    "Smith",    "bob.smith@testshop.com"},
+            {"Carol",  "Williams", "carol.williams@testshop.com"},
+            {"David",  "Brown",    "david.brown@testshop.com"},
+            {"Emma",   "Davis",    "emma.davis@testshop.com"},
+        };
+
+        List<User> users = new java.util.ArrayList<>();
+        for (String[] d : data) {
+            User user = userRepository.findByEmail(d[2]).orElseGet(() ->
+                    userRepository.save(User.builder()
+                            .firstName(d[0])
+                            .lastName(d[1])
+                            .email(d[2])
+                            .passwordHash(passwordEncoder.encode("testpassword123"))
+                            .build()));
+            users.add(user);
+        }
+        return users;
     }
 
-    private ProductType createProductType(String name) {
-        ProductType productType = new ProductType();
-        productType.setName(name);
-        return productTypeRepository.save(productType);
+    private void seedOrders() {
+        List<User> users = createTestReviewers();
+        List<Product> allProducts = productRepository.findAllWithVariants();
+        if (allProducts.isEmpty()) return;
+
+        // Πρώτα 8 products = top selling (εμφανίζονται σε πολλές παραγγελίες)
+        List<Product> topProducts = allProducts.subList(0, Math.min(8, allProducts.size()));
+        List<Product> otherProducts = allProducts.subList(Math.min(8, allProducts.size()), allProducts.size());
+
+        int orderSeq = 0;
+
+        // 4 παραγγελίες ανά user — κυρίως top products
+        for (int u = 0; u < users.size(); u++) {
+            User user = users.get(u);
+            for (int o = 0; o < 4; o++) {
+                List<Product> items = new ArrayList<>();
+                items.add(topProducts.get((u * 4 + o) % topProducts.size()));
+                items.add(topProducts.get((u * 4 + o + 2) % topProducts.size()));
+                if (o % 2 == 0 && !otherProducts.isEmpty()) {
+                    items.add(otherProducts.get((u + o) % otherProducts.size()));
+                }
+                createMockOrder(user, items, ++orderSeq, o % 2 == 0 ? 2 : 1);
+            }
+        }
+
+        // Επιπλέον παραγγελίες μόνο για top products (για να ξεχωρίζουν)
+        for (int i = 0; i < topProducts.size(); i++) {
+            for (int r = 0; r < 3; r++) {
+                User user = users.get((i + r) % users.size());
+                createMockOrder(user, List.of(topProducts.get(i)), ++orderSeq, 3);
+            }
+        }
+
+        System.out.println("✅ Seeded " + orderSeq + " orders!");
     }
 
-    private void createProductWithVariants(String name, String description, Category category,
-                                          Brand brand, BigDecimal price, BigDecimal originalPrice,
-                                          ProductType productType, DressStyle dressStyle,
-                                          String imageName, Color[] colors) {
-        // Δημιουργία Product
-        Product product = new Product();
-        product.setName(name);
-        product.setDescription(description);
-        product.setCategory(category);
-        product.setBrand(brand);
-        product.setPrice(price);
-        product.setOriginalPrice(originalPrice);
-        product.setProductType(productType);
-        product.setDressStyle(dressStyle);
-        product.setRating(4.5);
-        product.setReviewCount((int) (Math.random() * 200) + 10);
+    private void createMockOrder(User user, List<Product> products, int seq, int quantity) {
+        BigDecimal subtotal = products.stream()
+                .map(p -> p.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal tax      = subtotal.multiply(BigDecimal.valueOf(0.10));
+        BigDecimal shipping = BigDecimal.valueOf(5.00);
+        BigDecimal total    = subtotal.add(tax).add(shipping);
 
-        // Υπολογισμός discount
-        BigDecimal discount = originalPrice.subtract(price);
-        int discountPercent = discount
-                .multiply(BigDecimal.valueOf(100))
-                .divide(originalPrice, 0, java.math.RoundingMode.UP)
-                .intValue();
-        product.setDiscountPercent(discountPercent);
+        Order order = orderRepository.save(Order.builder()
+                .orderNumber("ORD-SEED-" + String.format("%04d", seq))
+                .user(user)
+                .status(OrderStatus.DELIVERED)
+                .subtotal(subtotal)
+                .tax(tax)
+                .shippingFee(shipping)
+                .total(total)
+                .paymentMethod("CARD")
+                .createdAt(LocalDateTime.now().minusDays((long) seq * 2))
+                .build());
 
-        product = productRepository.save(product);
+        for (Product product : products) {
+            if (product.getVariants().isEmpty()) continue;
+            ProductVariant variant = product.getVariants().get(0);
 
-        // Δημιουργία ProductImage
+            orderItemRepository.save(OrderItem.builder()
+                    .order(order)
+                    .product(product)
+                    .variant(variant)
+                    .productName(product.getName())
+                    .priceAtPurchase(product.getPrice())
+                    .selectedColor(variant.getColor().toString())
+                    .selectedSize(variant.getSize().toString())
+                    .quantity(quantity)
+                    .subtotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                    .build());
+        }
+    }
+
+    private void seedAppReviews() {
+        List<User> users = createTestReviewers();
+
+        Object[][] data = {
+            {users.get(0), 5, "Absolutely love this shop! The quality is outstanding and delivery was super fast."},
+            {users.get(1), 5, "Best online shopping experience I've had. Great selection and the sizing guide is spot on."},
+            {users.get(2), 5, "Amazing customer service and the clothes are exactly as pictured. Will definitely shop again!"},
+            {users.get(3), 4, "Really happy with my order. The fabrics feel premium and the prices are fair."},
+            {users.get(4), 5, "Found exactly what I was looking for. Fast shipping and beautiful packaging too."},
+            {users.get(0), 4, "Great variety of styles and brands. The filter options make it easy to find what you need."},
+            {users.get(1), 5, "Ordered twice already and both times were perfect. Highly recommend!"},
+            {users.get(2), 4, "Good quality products. A few items were slightly different in color but overall very satisfied."},
+            {users.get(3), 5, "The checkout process is smooth and my order arrived earlier than expected. Very impressed!"},
+            {users.get(4), 4, "Love the range of brands available. Found items I couldn't find anywhere else locally."},
+            {users.get(0), 5, "Everything from browsing to delivery was seamless. The clothes fit perfectly too!"},
+            {users.get(1), 4, "Really good value for money. The quality matches the price point exactly."},
+            {users.get(2), 5, "My go-to shop for clothes now. Always find something I like and the deals are great."},
+            {users.get(3), 4, "Solid experience overall. The product photos are accurate and sizing is consistent."},
+            {users.get(4), 5, "Incredible selection and super easy to navigate. Customer support was helpful too."},
+        };
+
+        for (Object[] d : data) {
+            appReviewRepository.save(AppReview.builder()
+                    .user((User) d[0])
+                    .rating((Integer) d[1])
+                    .comment((String) d[2])
+                    .approved(true)
+                    .createdAt(LocalDateTime.now().minusDays((long) (Math.random() * 60)))
+                    .build());
+        }
+
+        System.out.println("✅ Seeded " + data.length + " app reviews!");
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private Long cat(String name, String description) {
+        CategoryResponse r = adminCategoryService.createCategory(
+                new CategoryRequest(name, description,
+                        "https://picsum.photos/300/300?random=" + Math.abs(name.hashCode())));
+        return r.id();
+    }
+
+    private Long brand(String name) {
+        return adminBrandService.createBrand(
+                new BrandRequest(name,
+                        "https://picsum.photos/200/200?random=" + Math.abs(name.hashCode())))
+                .getId();
+    }
+
+    private Long type(String name) {
+        return adminProductTypeService.createProductType(new ProductTypeRequest(name)).getId();
+    }
+
+    private void product(String name, String description, Long categoryId, Long brandId,
+                         int price, int originalPrice, Long productTypeId,
+                         DressStyle dressStyle, Color... colors) {
+
+        int discountPercent = (int) Math.round((originalPrice - price) * 100.0 / originalPrice);
+
+        ProductResponse p = adminProductService.createProduct(new ProductRequest(
+                name, description, categoryId, brandId, productTypeId, dressStyle,
+                BigDecimal.valueOf(price), BigDecimal.valueOf(originalPrice), discountPercent
+        ));
+
         ProductImage image = new ProductImage();
-        image.setProduct(product);
-        image.setImageUrl("https://picsum.photos/500/600?random=" + product.getId());
+        image.setProduct(productRepository.getReferenceById(p.id()));
+        image.setImageUrl("https://picsum.photos/500/600?random=" + p.id());
         productImageRepository.save(image);
 
-        // Δημιουργία ProductVariants (χρώμα + size συνδυασμοί)
-        Size[] sizes = {Size.S, Size.M, Size.L, Size.XL};
-
         for (Color color : colors) {
-            for (Size size : sizes) {
-                ProductVariant variant = new ProductVariant();
-                variant.setProduct(product);
-                variant.setColor(color);
-                variant.setSize(size);
-                variant.setStockQuantity((int) (Math.random() * 50) + 10); // Random stock 10-60
-                variant.setSku(generateSKU(product.getId(), color, size));
-                productVariantRepository.save(variant);
+            for (Size size : ALL_SIZES) {
+                String sku = String.format("SKU-%d-%s-%s-%s",
+                        p.id(),
+                        color.name().substring(0, 3),
+                        size.name(),
+                        UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+                adminProductService.addVariant(p.id(), new ProductVariantRequest(
+                        color, size, (int) (Math.random() * 50) + 10, sku
+                ));
             }
         }
     }
-
-    private String generateSKU(Long productId, Color color, Size size) {
-        // Δημιουργούμε unique SKU με random component για να αποφύγουμε duplicates
-        String randomPart = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        return String.format("SKU-%d-%s-%s-%s", productId, color.name().substring(0, 3), size.name(), randomPart);
-    }
 }
-

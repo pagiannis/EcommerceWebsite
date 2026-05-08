@@ -1,12 +1,17 @@
 package com.ecommerce.server.service;
 
+import com.ecommerce.server.dto.request.CartItemRequest;
+import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.dto.response.WishlistItemResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.models.WishlistItem;
+import com.ecommerce.server.exception.BadRequestException;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.repository.WishlistItemRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +25,16 @@ public class WishlistService {
     private final WishlistItemRepository wishlistItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CartService cartService;
 
     public WishlistService(WishlistItemRepository wishlistItemRepository,
                          ProductRepository productRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         @Lazy CartService cartService) {
         this.wishlistItemRepository = wishlistItemRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.cartService = cartService;
     }
 
     /**
@@ -52,7 +60,7 @@ public class WishlistService {
 
         // Έλεγχος αν υπάρχει ήδη
         if (wishlistItemRepository.findByUserIdAndProductId(userId, productId).isPresent()) {
-            throw new RuntimeException("Product already in wishlist");
+            throw new BadRequestException("Product already in wishlist");
         }
 
         WishlistItem wishlistItem = WishlistItem.builder()
@@ -78,6 +86,19 @@ public class WishlistService {
      */
     public Boolean isInWishlist(Long userId, Long productId) {
         return wishlistItemRepository.findByUserIdAndProductId(userId, productId).isPresent();
+    }
+
+    /**
+     * Μεταφορά προϊόντος από wishlist στο καλάθι
+     */
+    @Transactional
+    public CartItemResponse moveToCart(Long userId, Long productId, Long variantId, int quantity) {
+        wishlistItemRepository.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Wishlist item not found"));
+
+        CartItemResponse response = cartService.addToCart(userId, new CartItemRequest(variantId, quantity));
+        removeFromWishlist(userId, productId);
+        return response;
     }
 
     // Μετατροπή WishlistItem Entity σε WishlistItemResponse DTO

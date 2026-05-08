@@ -1,20 +1,22 @@
 package com.ecommerce.server.controller;
 
-
 import com.ecommerce.server.dto.request.CartItemRequest;
 import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.service.CartService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
+@Validated
 public class CartController {
 
     private final CartService cartService;
@@ -25,19 +27,20 @@ public class CartController {
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<CartItemResponse> addToCart(@PathVariable Long userId, @RequestBody CartItemRequest request){
+    public ResponseEntity<CartItemResponse> addToCart(@PathVariable Long userId, @Valid @RequestBody CartItemRequest request){
         CartItemResponse result = cartService.addToCart(userId, request);
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @PutMapping("/{cartItemId}")
-    public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable Long cartItemId, @RequestParam int quantity){
+    public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable Long cartItemId,
+                                                           @RequestParam @Min(value = 1, message = "Quantity must be at least 1") int quantity){
         return ResponseEntity.ok(cartService.updateQuantity(cartItemId, quantity));
     }
+    
     @DeleteMapping("/{cartItemId}")
     public ResponseEntity<Void> removeFromCart(@PathVariable Long cartItemId){
         cartService.removeFromCart(cartItemId);
         return ResponseEntity.noContent().build();
     }
-
 }

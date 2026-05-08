@@ -5,9 +5,11 @@ import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.Review;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +32,17 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Λήψη reviews ενός προϊόντος
-     */
-    public List<ReviewResponse> getProductReviews(Long productId) {
-        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId)
+    public List<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating) {
+        Sort jpaSort = switch (sort != null ? sort : "LATEST") {
+            case "OLDEST"        -> Sort.by(Sort.Direction.ASC,  "createdAt");
+            case "HIGHEST_RATING"-> Sort.by(Sort.Direction.DESC, "rating");
+            case "LOWEST_RATING" -> Sort.by(Sort.Direction.ASC,  "rating");
+            default              -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
+
+        int effectiveMin = (minRating != null && minRating > 0) ? minRating : 0;
+
+        return reviewRepository.findByProductIdAndRatingGreaterThanEqual(productId, effectiveMin, jpaSort)
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -56,10 +64,10 @@ public class ReviewService {
     @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         // Δημιουργία review
         Review review = Review.builder()
@@ -83,7 +91,7 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
@@ -97,7 +105,7 @@ public class ReviewService {
      */
     private void updateProductRating(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Double avgRating = reviewRepository.findAverageRatingByProductId(productId);
         List<Review> reviews = reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
