@@ -2,6 +2,7 @@ package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.AppReviewRequest;
 import com.ecommerce.server.dto.response.AppReviewResponse;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.models.AppReview;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.repository.AppReviewRepository;
@@ -58,7 +59,7 @@ public class AppReviewService {
     @Transactional
     public AppReviewResponse submitReview(Long userId, AppReviewRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         AppReview appReview = AppReview.builder()
                 .user(user)
@@ -76,7 +77,7 @@ public class AppReviewService {
     @Transactional
     public AppReviewResponse approveReview(Long reviewId) {
         AppReview appReview = appReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
         appReview.setApproved(true);
         return convertToResponse(appReviewRepository.save(appReview));
@@ -88,7 +89,7 @@ public class AppReviewService {
     @Transactional
     public void deleteReview(Long reviewId) {
         AppReview appReview = appReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         appReviewRepository.delete(appReview);
     }
 

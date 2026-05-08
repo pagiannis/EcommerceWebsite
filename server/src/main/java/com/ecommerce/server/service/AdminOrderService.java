@@ -2,6 +2,7 @@ package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.response.OrderItemResponse;
 import com.ecommerce.server.dto.response.OrderResponse;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.models.Order;
 import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.repository.OrderRepository;
@@ -25,12 +26,12 @@ public class AdminOrderService {
 
     public OrderResponse getOrderById(Long id) {
         return toResponse(orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found")));
     }
 
     public OrderResponse updateOrderStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         order.setStatus(status);
         return toResponse(orderRepository.save(order));
     }

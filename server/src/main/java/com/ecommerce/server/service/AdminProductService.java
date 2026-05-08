@@ -28,11 +28,11 @@ public class AdminProductService {
                 .name(request.name())
                 .description(request.description())
                 .category(categoryRepository.findById(request.categoryId())
-                        .orElseThrow(() -> new RuntimeException("Category not found")))
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found")))
                 .brand(brandRepository.findById(request.brandId())
-                        .orElseThrow(() -> new RuntimeException("Brand not found")))
+                        .orElseThrow(() -> new ResourceNotFoundException("Brand not found")))
                 .productType(productTypeRepository.findById(request.productTypeId())
-                        .orElseThrow(() -> new RuntimeException("ProductType not found")))
+                        .orElseThrow(() -> new ResourceNotFoundException("ProductType not found")))
                 .dressStyle(request.dressStyle())
                 .price(request.price())
                 .originalPrice(request.originalPrice())
@@ -50,11 +50,11 @@ public class AdminProductService {
         product.setName(request.name());
         product.setDescription(request.description());
         product.setCategory(categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found")));
         product.setBrand(brandRepository.findById(request.brandId())
-                .orElseThrow(() -> new RuntimeException("Brand not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Brand not found")));
         product.setProductType(productTypeRepository.findById(request.productTypeId())
-                .orElseThrow(() -> new RuntimeException("ProductType not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("ProductType not found")));
         product.setDressStyle(request.dressStyle());
         product.setPrice(request.price());
         product.setOriginalPrice(request.originalPrice());

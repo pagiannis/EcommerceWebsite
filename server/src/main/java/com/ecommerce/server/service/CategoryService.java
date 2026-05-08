@@ -1,6 +1,7 @@
 package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.response.CategoryResponse;
+import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.models.Category;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
@@ -24,7 +25,7 @@ public class CategoryService {
 
     public CategoryResponse getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return convertToResponse(category);
     }
 
