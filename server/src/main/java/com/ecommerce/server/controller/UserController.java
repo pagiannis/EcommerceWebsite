@@ -42,14 +42,20 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletRequest httpRequest) {
+        // Ελέγχει email + password μέσω του UserService.loadUserByUsername() και BCrypt.
+        // Αν είναι λάθος, πετάει BadCredentialsException → 401.
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
+        // Αποθηκεύει το αποτέλεσμα του authentication στο SecurityContext (in-memory για το τρέχον request).
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
+        // Δημιουργεί HTTP session και αποθηκεύει το SecurityContext σε αυτό.
+        // Το Spring Session JDBC αναλαμβάνει να το persist-άρει στη βάση.
+        // Ο browser λαμβάνει αυτόματα το SESSION cookie στο response.
         HttpSession session = httpRequest.getSession(true);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 
@@ -58,6 +64,8 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
+        // Διαγράφει το session από τη βάση και καθαρίζει το SecurityContext.
+        // Το SESSION cookie στον browser γίνεται άκυρο.
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();

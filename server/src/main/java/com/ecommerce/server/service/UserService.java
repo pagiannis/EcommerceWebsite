@@ -8,6 +8,10 @@ import com.ecommerce.server.models.User;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +20,25 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    // Καλείται αυτόματα από το Spring Security κατά το login.
+    // Παίρνει το email, φορτώνει τον user από τη βάση και επιστρέφει
+    // ένα UserDetails object που το Spring Security χρησιμοποιεί για
+    // να συγκρίνει τον κωδικό και να φτιάξει το Authentication object.
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),                                    // το hashed password για σύγκριση με BCrypt
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())) // π.χ. ROLE_USER ή ROLE_ADMIN
+        );
+    }
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -46,7 +65,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
+                .passwordHash(passwordEncoder.encode(request.password())) // κωδικός αποθηκεύεται πάντα hashed
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .phone(request.phone())
@@ -68,7 +87,7 @@ public class UserService {
         if (request.firstName() != null) user.setFirstName(request.firstName());
         if (request.lastName() != null) user.setLastName(request.lastName());
         if (request.phone() != null) user.setPhone(request.phone());
-        if (request.password() != null) user.setPasswordHash(passwordEncoder.encode(request.password()));
+        if (request.password() != null) user.setPasswordHash(passwordEncoder.encode(request.password())); // hash πριν αποθήκευση
 
         user.setUpdatedAt(LocalDateTime.now());
 
