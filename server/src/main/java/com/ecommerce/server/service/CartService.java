@@ -11,6 +11,8 @@ import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,6 +82,7 @@ public class CartService {
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
                  .orElseThrow(() -> new RuntimeException("Cart item not found"));
+         requireCartItemOwner(cartItem);
 
          if (quantity <= 0) {
              cartItemRepository.delete(cartItem);
@@ -101,6 +104,7 @@ public class CartService {
     public void removeFromCart(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        requireCartItemOwner(cartItem);
         cartItemRepository.delete(cartItem);
     }
 
@@ -108,6 +112,13 @@ public class CartService {
     @Transactional
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);
+    }
+
+    private void requireCartItemOwner(CartItem cartItem) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!cartItem.getUser().getEmail().equals(email)) {
+            throw new AccessDeniedException("Access denied");
+        }
     }
 
     // Μετατροπή CartItem Entity σε CartItemResponse DTO

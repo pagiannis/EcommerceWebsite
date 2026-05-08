@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.dto.request.CartItemRequest;
 import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.service.CartService;
+import com.ecommerce.server.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +21,17 @@ import java.util.List;
 public class CartController {
 
     private final CartService cartService;
+    private final UserService userService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<CartItemResponse>> getUserCart(@PathVariable Long userId){
+        userService.requireSelf(userId);
         return ResponseEntity.ok(cartService.getUserCart(userId));
     }
 
     @PostMapping("/{userId}")
     public ResponseEntity<CartItemResponse> addToCart(@PathVariable Long userId, @Valid @RequestBody CartItemRequest request){
+        userService.requireSelf(userId);
         CartItemResponse result = cartService.addToCart(userId, request);
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }

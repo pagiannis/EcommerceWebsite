@@ -132,7 +132,7 @@ SPRING_SESSION_ATTRIBUTES
 
 ## Authorization Rules
 
-Ορίζονται στο `SecurityConfig.java`:
+### Επίπεδο 1 — SecurityConfig (ποιος μπορεί να φτάσει στο endpoint)
 
 ```
 Public (δεν απαιτεί login):
@@ -144,18 +144,32 @@ Public (δεν απαιτεί login):
   GET   /api/reviews/**
   GET   /api/app-reviews/**
 
-Login required (οποιοσδήποτε logged-in user):
-  /api/cart/**
-  /api/orders/**
-  /api/wishlist/**
-  /api/addresses/**
-  /api/users/{id}  (GET, PUT, DELETE)
+Login required:
+  οτιδήποτε άλλο (anyRequest().authenticated())
 
-Admin only (ROLE_ADMIN):
+Admin only:
   /api/admin/**
 ```
 
-Για να προσθέσεις νέο protected endpoint, δεν χρειάζεται να αλλάξεις τίποτα — το `anyRequest().authenticated()` καλύπτει αυτόματα οτιδήποτε δεν έχει οριστεί ρητά ως public.
+### Επίπεδο 2 — Ownership checks (ποιος μπορεί να αγγίξει τι)
+
+Πέρα από το αν ο user είναι logged in, υπάρχει δεύτερος έλεγχος που εξασφαλίζει ότι ο user αγγίζει **μόνο τα δικά του δεδομένα**:
+
+| Endpoint | Έλεγχος | Πού γίνεται |
+|---|---|---|
+| `GET/PUT/DELETE /api/users/{id}` | `id` == logged-in user | `UserService.requireSelf()` |
+| `GET/POST /api/cart/{userId}` | `userId` == logged-in user | `UserService.requireSelf()` |
+| `PUT/DELETE /api/cart/{cartItemId}` | cartItem ανήκει στον logged-in user | `CartService.requireCartItemOwner()` |
+| `GET/POST /api/orders/user/{userId}/**` | `userId` == logged-in user | `UserService.requireSelf()` |
+| `GET /api/orders/{orderId}` | order ανήκει στον logged-in user | `OrderService.requireOrderOwner()` |
+| `POST /api/orders/{orderId}/reorder` | `userId` param == logged-in user | `UserService.requireSelf()` |
+| `* /api/users/{userId}/wishlist/**` | `userId` == logged-in user | `UserService.requireSelf()` |
+| `* /api/users/{userId}/addresses/**` | `userId` == logged-in user | `UserService.requireSelf()` |
+| `* /api/admin/**` | ROLE_ADMIN | SecurityConfig |
+
+Αν ο έλεγχος αποτύχει → `403 Forbidden`.
+
+Για να προσθέσεις νέο protected endpoint, δεν χρειάζεται να αλλάξεις το `SecurityConfig` — το `anyRequest().authenticated()` το καλύπτει αυτόματα. Αν χρειάζεται ownership check, πρόσθεσε `userService.requireSelf()` στον controller ή αντίστοιχη μέθοδο στο service.
 
 ---
 
@@ -243,71 +257,62 @@ export const logout = async (): Promise<void> => {
 
 ---
 
-### 3. Διαχείριση auth state (Context)
+### 3. Διαχείριση auth state (Zustand)
 
-Χρειάζεσαι ένα `AuthContext` για να ξέρει όλη η εφαρμογή αν ο user είναι logged in:
+Χρησιμοποίησε **Zustand** για το auth state — το project το έχει ήδη εγκατεστημένο και είναι πιο απλό από Context:
 
-```tsx
-// client/src/context/AuthContext.tsx
-import { createContext, useContext, useState, ReactNode } from "react";
+```ts
+// client/src/store/authStore.ts
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { UserResponse, login as apiLogin, logout as apiLogout } from "../services/authService";
 
-interface AuthContextType {
+interface AuthState {
   user: UserResponse | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  isLoggedIn: boolean;
+  isLoggedIn: () => boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(null);
+      login: async (email, password) => {
+        const userData = await apiLogin(email, password);
+        set({ user: userData });
+      },
 
-  const login = async (email: string, password: string) => {
-    const userData = await apiLogin(email, password);
-    setUser(userData);
-  };
+      logout: async () => {
+        await apiLogout();
+        set({ user: null });
+      },
 
-  const logout = async () => {
-    await apiLogout();
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: user !== null }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-};
+      isLoggedIn: () => get().user !== null,
+    }),
+    {
+      name: "auth",         // κλειδί στο localStorage
+      partialize: (state) => ({ user: state.user }), // αποθηκεύει μόνο τον user, όχι τις συναρτήσεις
+    }
+  )
+);
 ```
 
-Στο `main.tsx`, τύλιξε την εφαρμογή με `<AuthProvider>`:
+Το `persist` middleware αποθηκεύει αυτόματα τον user στο `localStorage` — δεν χρειάζεται να κάνεις τίποτα άλλο για persist μετά από refresh.
 
-```tsx
-// client/src/main.tsx
-<AuthProvider>
-  <CartProvider>
-    <App />
-  </CartProvider>
-</AuthProvider>
-```
+Δεν χρειάζεται `<AuthProvider>` ή αλλαγές στο `main.tsx` — το Zustand store είναι global αυτόματα.
 
 ---
 
 ### 4. Χειρισμός 401 (optional — καλή πρακτική)
 
-Αν ο server επιστρέψει 401 (π.χ. έληξε το session), ο axios interceptor μπορεί να κάνει αυτόματα redirect στο login:
+Αν ο server επιστρέψει 401 (π.χ. έληξε το session), ο axios interceptor καθαρίζει το store και κάνει redirect στο login:
 
 ```ts
 // client/src/services/apiClient.ts
 import axios from "axios";
+import { useAuthStore } from "../store/authStore";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -318,6 +323,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      useAuthStore.setState({ user: null });
       window.location.href = "/login";
     }
     return Promise.reject(error);
@@ -332,14 +338,14 @@ export default apiClient;
 ### Πώς χρησιμοποιείς το auth state σε component
 
 ```tsx
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/authStore";
 
 function Navbar() {
-  const { isLoggedIn, user, logout } = useAuth();
+  const { user, logout, isLoggedIn } = useAuthStore();
 
   return (
     <nav>
-      {isLoggedIn ? (
+      {isLoggedIn() ? (
         <>
           <span>Γεια, {user?.firstName}</span>
           <button onClick={logout}>Logout</button>
@@ -351,23 +357,6 @@ function Navbar() {
   );
 }
 ```
-
----
-
-### Σημαντικό: Persist login μετά από refresh
-
-Το `useState` χάνει την τιμή του μετά από page refresh. Αν θέλεις ο user να παραμένει logged in μετά από refresh, πρέπει να κάνεις ένα `/api/users/me` endpoint που επιστρέφει τον logged-in user βάσει του session, και να το καλείς στο mount του `AuthProvider`:
-
-```tsx
-// Μέσα στο AuthProvider
-useEffect(() => {
-  apiClient.get<UserResponse>("/users/me")
-    .then(({ data }) => setUser(data))
-    .catch(() => setUser(null));
-}, []);
-```
-
-Αυτό το endpoint δεν υπάρχει ακόμα — θα χρειαστεί να το προσθέσεις στον backend.
 
 ---
 

@@ -8,7 +8,9 @@ import com.ecommerce.server.models.User;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,6 +46,14 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public void requireSelf(Long targetUserId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserResponse self = getUserByEmail(email);
+        if (!self.id().equals(targetUserId)) {
+            throw new AccessDeniedException("Access denied");
+        }
     }
 
     public UserResponse getUserById(Long id) {

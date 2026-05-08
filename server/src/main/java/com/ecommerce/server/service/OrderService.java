@@ -7,6 +7,8 @@ import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -174,6 +176,15 @@ public class OrderService {
             }
         }
         return skipped;
+    }
+
+    public void requireOrderOwner(Long orderId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        if (!order.getUser().getEmail().equals(email)) {
+            throw new AccessDeniedException("Access denied");
+        }
     }
 
     /**
