@@ -9,6 +9,7 @@ import com.ecommerce.server.repository.*;
 import com.ecommerce.server.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.ecommerce.server.models.enums.OrderStatus;
@@ -33,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AppReviewRepository     appReviewRepository;
     private final OrderRepository         orderRepository;
     private final OrderItemRepository     orderItemRepository;
+    private final PasswordEncoder         passwordEncoder;
 
     private static final Size[] ALL_SIZES = {
         Size.XXS, Size.XS, Size.S, Size.M, Size.L, Size.XL, Size.XXL, Size.XXXL, Size.XXXXL
@@ -260,7 +262,7 @@ public class DataInitializer implements CommandLineRunner {
                             .firstName(d[0])
                             .lastName(d[1])
                             .email(d[2])
-                            .passwordHash("testpassword123")
+                            .passwordHash(passwordEncoder.encode("testpassword123"))
                             .build()));
             users.add(user);
         }

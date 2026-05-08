@@ -1,15 +1,14 @@
 package com.ecommerce.server.service;
 
-import com.ecommerce.server.dto.request.LoginRequest;
 import com.ecommerce.server.models.enums.Role;
 import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
-import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +19,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -33,14 +33,9 @@ public class UserService {
         return toResponse(user);
     }
 
-    public UserResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
-
-        if (!user.getPasswordHash().equals(request.password())) { // TODO: compare hashed password
-            throw new BadRequestException("Invalid email or password");
-        }
-
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
         return toResponse(user);
     }
 
@@ -51,7 +46,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.email())
-                .passwordHash(request.password()) // TODO: hash password before storing
+                .passwordHash(passwordEncoder.encode(request.password()))
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .phone(request.phone())
@@ -73,7 +68,7 @@ public class UserService {
         if (request.firstName() != null) user.setFirstName(request.firstName());
         if (request.lastName() != null) user.setLastName(request.lastName());
         if (request.phone() != null) user.setPhone(request.phone());
-        if (request.password() != null) user.setPasswordHash(request.password()); // TODO: hash
+        if (request.password() != null) user.setPasswordHash(passwordEncoder.encode(request.password()));
 
         user.setUpdatedAt(LocalDateTime.now());
 
