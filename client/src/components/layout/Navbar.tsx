@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useCartStore } from "../../store/cartStore";
 import { LuShoppingCart } from "react-icons/lu";
 import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
@@ -19,7 +19,7 @@ const brandsList = [
 ] as const;
 
 export default function Navbar() {
-  const { totalItems } = useCart();
+  const totalItems = useCartStore((s) => s.totalItems);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
