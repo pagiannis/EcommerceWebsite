@@ -8,6 +8,7 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.AddressRepository;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class AddressService {
     @Transactional
     public AddressResponse addAddress(Long userId, AddressRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (Boolean.TRUE.equals(request.isDefault()))
             clearDefault(userId);
@@ -47,12 +48,11 @@ public class AddressService {
     }
 
     @Transactional
-    public AddressResponse updateAddress(Long addressId, AddressRequest request) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+    public AddressResponse updateAddress(Long userId, Long addressId, AddressRequest request) {
+        Address address = requireAddressOwner(userId, addressId);
 
         if (Boolean.TRUE.equals(request.isDefault()))
-            clearDefault(address.getUser().getId());
+            clearDefault(userId);
 
         address.setStreet(request.street());
         address.setCity(request.city());
@@ -63,19 +63,27 @@ public class AddressService {
         return toResponse(addressRepository.save(address));
     }
 
-    public void deleteAddress(Long addressId) {
-        if (!addressRepository.existsById(addressId))
-            throw new ResourceNotFoundException("Address not found");
+    public void deleteAddress(Long userId, Long addressId) {
+        requireAddressOwner(userId, addressId);
         addressRepository.deleteById(addressId);
     }
 
     @Transactional
     public AddressResponse setDefault(Long userId, Long addressId) {
+        Address address = requireAddressOwner(userId, addressId);
         clearDefault(userId);
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
         address.setDefault(true);
         return toResponse(addressRepository.save(address));
+    }
+
+    // Επιβεβαιώνει ότι η διεύθυνση ανήκει στον συγκεκριμένο user — αλλιώς 403.
+    private Address requireAddressOwner(Long userId, Long addressId) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        if (!address.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Access denied");
+        }
+        return address;
     }
 
     // Αφαιρεί το default flag από όλες τις διευθύνσεις του χρήστη
