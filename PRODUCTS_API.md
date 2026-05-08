@@ -317,6 +317,101 @@ GET /api/products?topSelling=true&size=8
 
 ---
 
+## Addresses
+
+> 🔒 Όλα τα address endpoints απαιτούν login (SESSION cookie).
+
+### `GET /api/users/{userId}/addresses` — Λίστα διευθύνσεων
+
+```
+GET /api/users/1/addresses
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": 1,
+    "street": "Ermou 12",
+    "city": "Athens",
+    "postalCode": "10563",
+    "country": "Greece",
+    "isDefault": true
+  },
+  {
+    "id": 2,
+    "street": "Tsimiski 45",
+    "city": "Thessaloniki",
+    "postalCode": "54623",
+    "country": "Greece",
+    "isDefault": false
+  }
+]
+```
+
+---
+
+### `POST /api/users/{userId}/addresses` — Προσθήκη διεύθυνσης
+
+```
+POST /api/users/1/addresses
+```
+
+#### Request Body
+
+```json
+{
+  "street": "Ermou 12",
+  "city": "Athens",
+  "postalCode": "10563",
+  "country": "Greece",
+  "isDefault": true
+}
+```
+
+| Πεδίο | Τύπος | Required |
+|---|---|---|
+| `street` | string | ✅ |
+| `city` | string | ✅ |
+| `postalCode` | string | ✅ |
+| `country` | string | ✅ |
+| `isDefault` | boolean | ✅ |
+
+Επιστρέφει `201 Created` με το νέο `AddressResponse`.
+
+---
+
+### `PUT /api/users/{userId}/addresses/{addressId}` — Επεξεργασία διεύθυνσης
+
+```
+PUT /api/users/1/addresses/2
+```
+
+Request body ίδιο με το POST. Επιστρέφει `200 OK` με το ενημερωμένο `AddressResponse`.
+
+---
+
+### `DELETE /api/users/{userId}/addresses/{addressId}` — Διαγραφή διεύθυνσης
+
+```
+DELETE /api/users/1/addresses/2
+```
+
+Επιστρέφει `204 No Content`.
+
+---
+
+### `PATCH /api/users/{userId}/addresses/{addressId}/default` — Ορισμός ως προεπιλεγμένη
+
+```
+PATCH /api/users/1/addresses/2/default
+```
+
+Αφαιρεί το `isDefault` από την υπάρχουσα default και το ορίζει στη διεύθυνση με `addressId`. Επιστρέφει `200 OK` με το ενημερωμένο `AddressResponse`.
+
+---
+
 ## Cart
 
 > ⚠️ **Προσωρινό API** — Μετά την υλοποίηση του authentication, το `userId` στο URL θα αφαιρεθεί και ο χρήστης θα αναγνωρίζεται αυτόματα από το JWT token. Η δομή του request/response θα παραμείνει ίδια.
