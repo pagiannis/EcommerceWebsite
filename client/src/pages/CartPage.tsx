@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCartStore } from '../store/cartStore';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import CartItem from '../components/cart/CartItem';
 import OrderSummary from '../components/cart/OrderSummary';
 import { LuShoppingCart } from 'react-icons/lu';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal } = useCart();
+  const items = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const subtotal = useCartStore((s) => s.subtotal);
 
   if (items.length === 0) {
     return (
