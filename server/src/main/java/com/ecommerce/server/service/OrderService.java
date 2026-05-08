@@ -58,7 +58,7 @@ public class OrderService {
      */
     public OrderResponse getOrderDetail(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         return convertToResponse(order);
     }
 
@@ -69,10 +69,10 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(Long userId, Long shippingAddressId, String paymentMethod) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Address shippingAddress = addressRepository.findById(shippingAddressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         // Λήψη άδεώ καλαθιού
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
@@ -141,7 +141,7 @@ public class OrderService {
     @Transactional
     public List<String> reorder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         List<String> skipped = new java.util.ArrayList<>();
 
@@ -193,7 +193,7 @@ public class OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         order.setStatus(newStatus);
         return convertToResponse(orderRepository.save(order));
     }

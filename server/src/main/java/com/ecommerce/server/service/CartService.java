@@ -7,6 +7,7 @@ import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
+
 import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
@@ -39,10 +40,10 @@ public class CartService {
      @Transactional
      public CartItemResponse addToCart(Long userId, CartItemRequest request) {
          User user = userRepository.findById(userId)
-                 .orElseThrow(() -> new RuntimeException("User not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
          ProductVariant variant = productVariantRepository.findById(request.variantId())
-                 .orElseThrow(() -> new RuntimeException("Variant not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
 
          // Έλεγχος αν η ζητούμενη ποσότητα είναι διαθέσιμη
          if (request.quantity() <= 0) {
@@ -81,7 +82,7 @@ public class CartService {
      @Transactional
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
-                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
          requireCartItemOwner(cartItem);
 
          if (quantity <= 0) {

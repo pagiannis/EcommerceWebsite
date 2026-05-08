@@ -5,6 +5,7 @@ import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class UserService implements UserDetailsService {
 
     public UserResponse registerUser(UserRegistrationRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already in use: " + request.email());
+            throw new ConflictException("Email already in use: " + request.email());
         }
 
         User user = User.builder()
@@ -90,7 +91,7 @@ public class UserService implements UserDetailsService {
 
         if (request.email() != null && !request.email().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
-                throw new IllegalArgumentException("Email already in use: " + request.email());
+                throw new ConflictException("Email already in use: " + request.email());
             }
             user.setEmail(request.email());
         }
