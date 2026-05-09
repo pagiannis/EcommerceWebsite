@@ -10,6 +10,8 @@ import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,6 +94,12 @@ public class ReviewService {
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+
+        // Μόνο ο συγγραφέας του review μπορεί να το σβήσει.
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!review.getUser().getEmail().equals(email)) {
+            throw new AccessDeniedException("Access denied");
+        }
 
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
