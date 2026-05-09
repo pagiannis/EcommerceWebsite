@@ -382,14 +382,14 @@ public class DataInitializer implements CommandLineRunner {
     private Long cat(String name, String description) {
         CategoryResponse r = adminCategoryService.createCategory(
                 new CategoryRequest(name, description,
-                        "https://picsum.photos/300/300?random=" + Math.abs(name.hashCode())));
+                        "https://picsum.photos/150/150.webp?random=" + Math.abs(name.hashCode())));
         return r.id();
     }
 
     private Long brand(String name) {
         return adminBrandService.createBrand(
                 new BrandRequest(name,
-                        "https://picsum.photos/200/200?random=" + Math.abs(name.hashCode())))
+                        "https://picsum.photos/100/100.webp?random=" + Math.abs(name.hashCode())))
                 .getId();
     }
 
@@ -410,7 +410,7 @@ public class DataInitializer implements CommandLineRunner {
 
         ProductImage image = new ProductImage();
         image.setProduct(productRepository.getReferenceById(p.id()));
-        image.setImageUrl("https://picsum.photos/500/600?random=" + p.id());
+        image.setImageUrl("https://picsum.photos/400/500.webp?random=" + p.id());
         productImageRepository.save(image);
 
         for (Color color : colors) {
