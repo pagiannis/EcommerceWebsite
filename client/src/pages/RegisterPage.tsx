@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import axios from "axios";
 import { useRegisterMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 
@@ -15,6 +16,21 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | { message?: string; errors?: Record<string, string> }
+      | undefined;
+    if (data?.errors) {
+      const first = Object.values(data.errors)[0];
+      if (first) return first;
+    }
+    if (data?.message) return data.message;
+    if (error.response?.status === 409) return "This email is already in use.";
+  }
+  return "Registration failed. Please try again.";
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -32,7 +48,11 @@ export default function RegisterPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   function onSubmit(values: FormValues) {
-    registerUser(values, { onSuccess: () => navigate("/") });
+    const payload = {
+      ...values,
+      phone: values.phone?.trim() ? values.phone.trim() : undefined,
+    };
+    registerUser(payload, { onSuccess: () => navigate("/") });
   }
 
   return (
@@ -125,9 +145,7 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-brand-red">
-              Registration failed. This email may already be in use.
-            </p>
+            <p className="text-sm text-brand-red">{getErrorMessage(error)}</p>
           )}
 
           <button
