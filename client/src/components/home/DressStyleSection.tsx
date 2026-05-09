@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import casualImg from "../../assets/dressstyles/Casual.png";
-import formalImg from "../../assets/dressstyles/Formal.png";
-import partyImg from "../../assets/dressstyles/Party.png";
-import gymImg from "../../assets/dressstyles/Gym.png";
+import casualImg from "../../assets/dressstyles/Casual.webp";
+import formalImg from "../../assets/dressstyles/Formal.webp";
+import partyImg from "../../assets/dressstyles/Party.webp";
+import gymImg from "../../assets/dressstyles/Gym.webp";
 
 const dressStyles = [
   { label: "Casual", img: casualImg, to: "/shop?style=casual", span: "lg:col-span-1" },
