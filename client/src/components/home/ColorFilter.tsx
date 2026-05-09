@@ -1,4 +1,4 @@
-import { FaCheck } from "react-icons/fa6";
+import { Check } from "lucide-react";
 
 interface ColorFilterProps {
   colors: string[];
@@ -32,7 +32,7 @@ export default function ColorFilter({
         >
           {selected.includes(color) && (
             <span className="text-sm font-bold leading-none text-white">
-              <FaCheck />
+              <Check className="h-3 w-3" />
             </span>
           )}
         </button>

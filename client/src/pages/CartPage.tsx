@@ -3,7 +3,7 @@ import { useCartStore } from '../store/cartStore';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import CartItem from '../components/cart/CartItem';
 import OrderSummary from '../components/cart/OrderSummary';
-import { LuShoppingCart } from 'react-icons/lu';
+import { ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -14,7 +14,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
-        <LuShoppingCart className="h-16 w-16 text-gray-300 p-2" />
+        <ShoppingCart className="h-16 w-16 text-gray-300 p-2" />
         <h2 className="font-display text-2xl font-bold text-gray-900">Your cart is empty</h2>
         <p className="mt-2 text-gray-500">Looks like you haven't added anything yet.</p>
         <Link

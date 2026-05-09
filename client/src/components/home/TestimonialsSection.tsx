@@ -2,8 +2,7 @@ import { useRef } from "react";
 import { useAppReviews } from "../../hooks/useAppReviews";
 import StarRating from "../ui/StarRating";
 import TestimonialCardSkeleton from "./TestimonialCardSkeleton";
-import { FaCheckCircle } from "react-icons/fa";
-import { IoArrowBack, IoArrowForward } from "react-icons/io5";
+import { CircleCheck, ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function TestimonialsSection() {
   const { data, isPending } = useAppReviews();
@@ -29,10 +28,10 @@ export default function TestimonialsSection() {
           </h2>
           <div className="flex gap-3">
             <button onClick={() => scroll("left")} aria-label="Previous">
-              <IoArrowBack className="flex h-6 w-6 items-center justify-center" />
+              <ArrowLeft className="flex h-6 w-6 items-center justify-center" />
             </button>
             <button onClick={() => scroll("right")} aria-label="Next">
-              <IoArrowForward className="flex h-6 w-6 items-center justify-center" />
+              <ArrowRight className="flex h-6 w-6 items-center justify-center" />
             </button>
           </div>
         </div>
@@ -57,7 +56,7 @@ export default function TestimonialsSection() {
                   <div className="mt-2 flex items-center gap-1">
                     <span className="font-semibold text-gray-900">{t.author}</span>
                     {t.verified && (
-                      <FaCheckCircle className="h-4 w-4 text-green-500" />
+                      <CircleCheck className="h-4 w-4 text-green-500" />
                     )}
                   </div>
                   <p className="mt-2 text-sm text-gray-600">{t.body}</p>

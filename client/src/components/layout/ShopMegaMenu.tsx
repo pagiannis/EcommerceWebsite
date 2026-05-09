@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaChevronDown } from "react-icons/fa";
+import { ChevronDown } from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const megaMenu = [
@@ -51,7 +51,7 @@ export default function ShopMegaMenu() {
         className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black"
       >
         Shop
-        <FaChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" />
       </button>
 
       {open && (

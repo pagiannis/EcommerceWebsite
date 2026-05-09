@@ -1,4 +1,4 @@
-import { RiDeleteBin5Fill } from "react-icons/ri";
+import { Trash2 } from "lucide-react";
 import type { CartItem as CartItemType } from "../../types/cartItem";
 import type { Size } from "../../types/size";
 import QuantityStepper from "../ui/QuantityStepper";
@@ -49,7 +49,7 @@ export default function CartItem({
             className="text-brand-red hover:opacity-70"
             aria-label="Remove item"
           >
-            <RiDeleteBin5Fill className="h-5 w-5" />
+            <Trash2 className="h-5 w-5" />
           </button>
         </div>
         <div className="flex items-center justify-between">

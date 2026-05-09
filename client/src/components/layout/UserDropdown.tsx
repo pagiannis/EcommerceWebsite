@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaRegUserCircle } from "react-icons/fa";
+import { CircleUserRound } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 
 export default function UserDropdown() {
@@ -28,7 +28,7 @@ export default function UserDropdown() {
         aria-label="Account"
         onClick={() => setOpen((o) => !o)}
       >
-        <FaRegUserCircle className="h-6 w-6" />
+        <CircleUserRound className="h-6 w-6" />
       </button>
 
       {open && (

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import FilterIcon from "../ui/FilterIcon";
-import { IoIosArrowDown } from "react-icons/io";
+import { ChevronDown } from "lucide-react";
 
 const SORT_OPTIONS = ["Latest", "Oldest", "Highest Rating", "Lowest Rating"];
 const RATING_OPTIONS = [0, 4, 3, 2, 1] as const;
@@ -104,7 +104,7 @@ export default function ReviewsHeader({
             className="flex items-center gap-2 rounded-full bg-brand-gray px-4 py-2.5 text-sm font-medium text-brand-black"
           >
             {sort}
-            <IoIosArrowDown
+            <ChevronDown
               className={`h-4 w-4 transition-transform ${sortOpen ? "rotate-180" : ""}`}
             />
           </button>
