@@ -2,11 +2,12 @@ import { useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
 import { LuShoppingCart } from "react-icons/lu";
-import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";
 import ShopMegaMenu, { megaMenu } from "./ShopMegaMenu";
 import NavbarSearch from "./NavbarSearch";
+import UserDropdown from "./UserDropdown";
 
 const brandsList = [
   { slug: "nike", label: "Nike" },
@@ -144,9 +145,7 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link to="/account">
-              <FaRegUserCircle className="h-6 w-6" />
-            </Link>
+            <UserDropdown />
           </div>
         )}
       </div>
