@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLoginMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
+import FormField from "../components/ui/FormField";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -46,36 +47,24 @@ export default function LoginPage() {
           Sign In
         </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              {...register("email")}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-              placeholder="you@example.com"
-            />
-            {errors.email && (
-              <p className="mt-1 text-xs text-brand-red">{errors.email.message}</p>
-            )}
-          </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-4"
+        >
+          <FormField
+            label="Email"
+            type="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              {...register("password")}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="mt-1 text-xs text-brand-red">{errors.password.message}</p>
-            )}
-          </div>
+          <FormField
+            label="Password"
+            type="password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
 
           {error && (
             <p className="text-sm text-brand-red">
@@ -86,7 +75,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-full bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+            className="w-full rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
           >
             {isPending ? "Signing in…" : "Sign In"}
           </button>
@@ -94,7 +83,10 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Don't have an account?{" "}
-          <Link to="/register" className="font-semibold text-brand-black hover:underline">
+          <Link
+            to="/register"
+            className="font-semibold text-brand-black hover:underline"
+          >
             Register
           </Link>
         </p>

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRegisterMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
+import FormField from "../components/ui/FormField";
 
 const schema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -49,80 +50,46 @@ export default function RegisterPage() {
           Create Account
         </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-4"
+        >
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                First Name
-              </label>
-              <input
-                type="text"
-                {...register("firstName")}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-                placeholder="John"
-              />
-              {errors.firstName && (
-                <p className="mt-1 text-xs text-brand-red">{errors.firstName.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <input
-                type="text"
-                {...register("lastName")}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-                placeholder="Doe"
-              />
-              {errors.lastName && (
-                <p className="mt-1 text-xs text-brand-red">{errors.lastName.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              {...register("email")}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-              placeholder="you@example.com"
+            <FormField
+              label="First Name"
+              type="text"
+              error={errors.firstName?.message}
+              {...register("firstName")}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-brand-red">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              {...register("password")}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="mt-1 text-xs text-brand-red">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Phone{" "}
-              <span className="font-normal text-gray-400">(optional)</span>
-            </label>
-            <input
-              type="tel"
-              {...register("phone")}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-black"
-              placeholder="+1 555 000 0000"
+            <FormField
+              label="Last Name"
+              type="text"
+              error={errors.lastName?.message}
+              {...register("lastName")}
             />
           </div>
+
+          <FormField
+            label="Email"
+            type="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+
+          <FormField
+            label="Password"
+            type="password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+
+          <FormField
+            label="Phone"
+            hint="(optional)"
+            type="tel"
+            {...register("phone")}
+          />
 
           {error && (
             <p className="text-sm text-brand-red">
@@ -133,7 +100,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-full bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+            className="w-full rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
           >
             {isPending ? "Creating account…" : "Create Account"}
           </button>
@@ -141,7 +108,10 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-brand-black hover:underline">
+          <Link
+            to="/login"
+            className="font-semibold text-brand-black hover:underline"
+          >
             Sign In
           </Link>
         </p>
