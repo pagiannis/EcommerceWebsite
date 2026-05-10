@@ -64,6 +64,7 @@ public class AddressService {
         return toResponse(addressRepository.save(address));
     }
 
+    @Transactional
     public void deleteAddress(Long userId, Long addressId) {
         requireAddressOwner(userId, addressId);
         addressRepository.deleteById(addressId);

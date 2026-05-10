@@ -176,24 +176,24 @@ public class OrderService {
                 continue;
             }
             int quantity = Math.min(item.getQuantity(), available);
-            try {
-                cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
-                        .ifPresentOrElse(
-                                existing -> {
-                                    existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
-                                    cartItemRepository.save(existing);
-                                },
-                                () -> cartItemRepository.save(
-                                        com.ecommerce.server.models.CartItem.builder()
-                                                .user(order.getUser())
-                                                .variant(item.getVariant())
-                                                .quantity(quantity)
-                                                .build()
-                                )
-                        );
-            } catch (Exception e) {
-                skipped.add(item.getProductName() + " (" + e.getMessage() + ")");
-            }
+            // Τα expected fail cases (variant null, out of stock) πιάνονται πριν το save.
+            // Αν σπάσει το save παρ' όλα αυτά, αφήνουμε το exception να γίνει propagate
+            // ώστε το transaction να κάνει rollback — ένα catch εδώ θα οδηγούσε σε
+            // UnexpectedRollbackException στο commit.
+            cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
+                    .ifPresentOrElse(
+                            existing -> {
+                                existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
+                                cartItemRepository.save(existing);
+                            },
+                            () -> cartItemRepository.save(
+                                    com.ecommerce.server.models.CartItem.builder()
+                                            .user(order.getUser())
+                                            .variant(item.getVariant())
+                                            .quantity(quantity)
+                                            .build()
+                            )
+                    );
         }
         return skipped;
     }
