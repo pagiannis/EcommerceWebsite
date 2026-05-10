@@ -8,15 +8,18 @@ import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminOrderService {
 
     private final OrderRepository orderRepository;
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders(OrderStatus status) {
         List<Order> orders = status != null
                 ? orderRepository.findByStatus(status)
@@ -24,6 +27,7 @@ public class AdminOrderService {
         return orders.stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id) {
         return toResponse(orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found")));
