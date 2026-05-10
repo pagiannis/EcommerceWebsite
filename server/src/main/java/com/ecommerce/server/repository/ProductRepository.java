@@ -19,7 +19,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    List<Product> findTop8ByNameStartingWithIgnoreCase(String name);
+    @Query(value = """
+        SELECT p FROM Product p 
+        WHERE LOWER(p.name) LIKE LOWER(CONCAT(:query, '%')) 
+           OR LOWER(p.name) LIKE LOWER(CONCAT('% ', :query, '%'))
+        """)
+    List<Product> findTop8ByWordPrefix(@Param("query") String query, Pageable pageable);
 
     long countByCategoryId(Long categoryId);
 
