@@ -11,13 +11,9 @@ export function useLoginMutation() {
 }
 
 export function useRegisterMutation() {
-  const login = useAuthStore((s) => s.login);
+  const register = useAuthStore((s) => s.register);
   return useMutation({
-    mutationFn: async (payload: RegisterPayload) => {
-      const { register } = await import("../services/authService");
-      await register(payload);
-      await login(payload.email, payload.password);
-    },
+    mutationFn: (payload: RegisterPayload) => register(payload),
   });
 }
 
