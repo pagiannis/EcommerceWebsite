@@ -30,17 +30,14 @@ public class Product {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @BatchSize(size = 50)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @BatchSize(size = 50)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @BatchSize(size = 50)
     @JoinColumn(name = "product_type_id", nullable = false)
     private ProductType productType;
 
