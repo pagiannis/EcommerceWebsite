@@ -93,7 +93,7 @@ public class ProductService {
     }
 
     public List<ProductSuggestionResponse> autocomplete(String query) {
-        return productRepository.findTop8ByNameContainingIgnoreCase(query)
+        return productRepository.findTop8ByWordPrefix(query, PageRequest.of(0, 8))
                 .stream()
                 .map(p -> new ProductSuggestionResponse(
                         p.getId(),
