@@ -19,7 +19,7 @@ export default function UserDropdown() {
 
   return (
     <div
-      className="relative"
+      className="relative flex items-center"
       onMouseEnter={handleOpen}
       onMouseLeave={handleClose}
     >

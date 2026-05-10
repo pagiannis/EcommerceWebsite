@@ -134,7 +134,7 @@ export default function Navbar() {
             >
               <Search className="h-6 w-6" />
             </button>
-            <Link to="/cart" className="relative">
+            <Link to="/cart" className="relative inline-flex items-center">
               <ShoppingCart className="h-6 w-6" />
               {totalItems > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-black text-[10px] font-bold text-white">
