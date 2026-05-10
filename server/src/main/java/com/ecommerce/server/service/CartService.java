@@ -81,19 +81,14 @@ public class CartService {
          return convertToResponse(cartItemRepository.save(cartItem));
      }
 
-     // Ενημέρωση ποσότητας
+     // Ενημέρωση ποσότητας. Ο controller επιβάλλει @Min(1) στο quantity,
+     // οπότε εδώ δεν χρειάζεται extra έλεγχος για quantity <= 0.
      @Transactional
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
                  .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
          requireCartItemOwner(cartItem);
 
-         if (quantity <= 0) {
-             cartItemRepository.delete(cartItem);
-             throw new BadRequestException("Quantity must be greater than 0");
-         }
-
-         // Έλεγχος αν η νέα ποσότητα υπερβαίνει το stock
          ProductVariant variant = cartItem.getVariant();
          if (quantity > variant.getStockQuantity()) {
              throw new BadRequestException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
