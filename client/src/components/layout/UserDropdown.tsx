@@ -5,6 +5,8 @@ import { useAuthStore } from "../../store/authStore";
 
 export default function UserDropdown() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -16,6 +18,14 @@ export default function UserDropdown() {
   function handleClose() {
     closeTimer.current = setTimeout(() => setOpen(false), 150);
   }
+
+  function handleSignOut() {
+    setOpen(false);
+    logout();
+  }
+
+  const linkClass =
+    "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50";
 
   return (
     <div
@@ -32,16 +42,30 @@ export default function UserDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-0 min-w-[160px] rounded-xl border border-gray-100 bg-white py-3 shadow-lg">
+        <div className="absolute right-0 top-full mt-0 min-w-[180px] rounded-xl border border-gray-100 bg-white py-3 shadow-lg">
           {isLoggedIn() ? (
             <>
-              <Link
-                to="/account"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                onClick={() => setOpen(false)}
-              >
+              <p className="px-4 py-2 text-sm font-semibold text-gray-900">
+                Hi, {user!.firstName}
+              </p>
+              <div className="mx-4 mb-1 border-t border-gray-200" />
+              <Link to="/account" className={linkClass} onClick={() => setOpen(false)}>
                 My Account
               </Link>
+              <Link to="/orders" className={linkClass} onClick={() => setOpen(false)}>
+                My Orders
+              </Link>
+              <Link to="/wishlist" className={linkClass} onClick={() => setOpen(false)}>
+                Wishlist
+              </Link>
+              <div className="mx-4 mt-1 border-t border-gray-200" />
+              <button
+                type="button"
+                className="block w-full px-4 py-2 text-left text-sm text-gray-500 underline hover:bg-gray-50"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
             </>
           ) : (
             <>
