@@ -19,7 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    List<Product> findTop8ByNameContainingIgnoreCase(String name);
+    List<Product> findTop8ByNameStartingWithIgnoreCase(String name);
 
     long countByCategoryId(Long categoryId);
 
