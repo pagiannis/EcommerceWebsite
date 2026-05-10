@@ -52,7 +52,7 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             String path = request.getRequestURI();
-            String ip = clientIp(request);
+            String ip = request.getRemoteAddr();
 
             if (LOGIN_PATH.equals(path)) {
                 if (!tryConsume(loginBuckets, ip, this::newLoginBucket)) {
@@ -87,17 +87,6 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                 .refillIntervally(50, Duration.ofHours(1))
                 .build();
         return Bucket.builder().addLimit(limit).build();
-    }
-
-    // Παίρνει το πραγματικό IP του client. Αν τρέχουμε πίσω από proxy/load balancer
-    // χρησιμοποιούμε το X-Forwarded-For (πρώτο IP της λίστας), αλλιώς το remote address.
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            int comma = forwarded.indexOf(',');
-            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private void reject(HttpServletResponse response, String message) throws IOException {
