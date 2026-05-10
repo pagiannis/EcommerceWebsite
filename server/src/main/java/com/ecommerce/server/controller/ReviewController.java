@@ -40,6 +40,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{reviewId}")
+    @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
     public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.noContent().build();

@@ -3,6 +3,7 @@ package com.ecommerce.server.models;
 import com.ecommerce.server.models.enums.DressStyle;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,14 +30,17 @@ public class Product {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     @JoinColumn(name = "product_type_id", nullable = false)
     private ProductType productType;
 
@@ -65,10 +69,12 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC")
+    @BatchSize(size = 50)
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<ProductVariant> variants = new ArrayList<>();
 }

@@ -9,8 +9,9 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,24 +91,33 @@ public class ReviewService {
     }
 
     /**
-     * Διαγραφή κριτικής
+     * Διαγραφή κριτικής. Ο ownership check γίνεται declarative στο controller
+     * μέσω @PreAuthorize("@reviewService.isReviewOwner(#reviewId)").
      */
     @Transactional
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
-        // Μόνο ο συγγραφέας του review μπορεί να το σβήσει.
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!review.getUser().getEmail().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
 
-        // Ενημέρωση rating
         updateProductRating(productId);
+    }
+
+    /**
+     * Ownership check για χρήση από @PreAuthorize SpEL:
+     * @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
+     */
+    @Transactional(readOnly = true)
+    public boolean isReviewOwner(Long reviewId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
+            return false;
+        }
+        return reviewRepository.findById(reviewId)
+                .map(r -> r.getUser().getId().equals(user.getId()))
+                .orElse(false);
     }
 
     /**
