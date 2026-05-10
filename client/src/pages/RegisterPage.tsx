@@ -67,12 +67,14 @@ export default function RegisterPage() {
             <FormField
               label="First Name"
               type="text"
+              maxLength={100}
               error={errors.firstName?.message}
               {...register("firstName")}
             />
             <FormField
               label="Last Name"
               type="text"
+              maxLength={100}
               error={errors.lastName?.message}
               {...register("lastName")}
             />
@@ -87,6 +89,7 @@ export default function RegisterPage() {
 
           <FormField
             label="Password"
+            hint="(min. 8 characters)"
             type="password"
             error={errors.password?.message}
             {...register("password")}
@@ -94,7 +97,7 @@ export default function RegisterPage() {
 
           <FormField
             label="Phone"
-            hint="(optional)"
+            hint="(optional · 10–15 digits)"
             type="tel"
             {...register("phone")}
           />
