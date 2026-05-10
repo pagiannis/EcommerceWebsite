@@ -2,9 +2,11 @@ package com.ecommerce.server.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "brands")
+@BatchSize(size = 50)
 @Getter
 @Setter
 @NoArgsConstructor
