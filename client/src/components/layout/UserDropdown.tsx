@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CircleUserRound } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 
 export default function UserDropdown() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -21,7 +21,7 @@ export default function UserDropdown() {
 
   function handleSignOut() {
     setOpen(false);
-    logout();
+    navigate("/logout");
   }
 
   const linkClass =
