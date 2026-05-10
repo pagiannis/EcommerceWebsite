@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useLoginMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 import FormField from "../components/ui/FormField";
+import { Loader2 } from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -75,9 +76,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
           >
-            {isPending ? "Signing in…" : "Sign In"}
+            {isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
 

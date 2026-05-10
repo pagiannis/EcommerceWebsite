@@ -6,17 +6,24 @@ import { z } from "zod";
 import { useRegisterMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 import FormField from "../components/ui/FormField";
+import { Loader2 } from "lucide-react";
 
 const schema = z.object({
-  firstName: z.string().min(1, "First name is required").max(100, "First name must not exceed 100 characters"),
-  lastName: z.string().min(1, "Last name is required").max(100, "Last name must not exceed 100 characters"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .max(100, "First name must not exceed 100 characters"),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .max(100, "Last name must not exceed 100 characters"),
   email: z.string().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   phone: z
     .string()
     .refine(
       (val) => val === "" || /^\+?[0-9]{10,15}$/.test(val),
-      "Phone must be 10–15 digits, optionally starting with +"
+      "Phone must be 10–15 digits, optionally starting with +",
     ),
 });
 
@@ -40,7 +47,7 @@ export default function RegisterPage() {
   function onSubmit(values: FormValues) {
     registerUser(
       { ...values, phone: values.phone || undefined },
-      { onSuccess: () => navigate("/") }
+      { onSuccess: () => navigate("/") },
     );
   }
 
@@ -111,9 +118,13 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-xl bg-brand-black py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
           >
-            {isPending ? "Creating account…" : "Create Account"}
+            {isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 
