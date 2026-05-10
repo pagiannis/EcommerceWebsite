@@ -77,6 +77,21 @@ export const COLOR_HEX_TO_ENUM: Record<string, string> = {
   '#000080': 'NAVY',
 };
 
+export const COLOR_ENUM_TO_HEX: Record<string, string> = {
+  BLACK: '#000000',
+  WHITE: '#FFFFFF',
+  RED: '#FF0000',
+  BLUE: '#0000FF',
+  GREEN: '#00C000',
+  YELLOW: '#FFFF00',
+  PINK: '#FFC0CB',
+  GRAY: '#808080',
+  BROWN: '#8B4513',
+  PURPLE: '#800080',
+  ORANGE: '#FFA500',
+  NAVY: '#000080',
+};
+
 export const BRAND_NAME: Record<string, string> = {
   nike: 'Nike',
   levis: "Levi's",
@@ -151,7 +166,7 @@ const DRESS_STYLE_FROM_API: Record<string, DressStyle> = {
   BUSINESS: 'formal',
 };
 
-const SIZE_FROM_API: Record<string, Size> = {
+export const SIZE_FROM_API: Record<string, Size> = {
   XS: 'X-Small',
   S: 'Small',
   M: 'Medium',
@@ -178,6 +193,12 @@ export function mapApiProduct(api: ProductResponse): Product {
     images: api.imageUrls,
     colors: [...new Set(api.variants.map((v) => v.colorHex))],
     sizes: [...new Set(api.variants.map((v) => SIZE_FROM_API[v.size] ?? v.size))] as Size[],
+    variants: api.variants.map((v) => ({
+      id: v.id,
+      colorHex: v.colorHex,
+      size: SIZE_FROM_API[v.size] ?? v.size,
+      stockQuantity: v.stockQuantity,
+    })),
   };
 }
 
