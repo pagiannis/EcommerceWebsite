@@ -11,8 +11,10 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,6 +123,21 @@ public class CartService {
         if (!cartItem.getUser().getEmail().equals(email)) {
             throw new AccessDeniedException("Access denied");
         }
+    }
+
+    /**
+     * Ownership check για χρήση από @PreAuthorize SpEL:
+     * @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
+     */
+    @Transactional(readOnly = true)
+    public boolean isCartItemOwner(Long cartItemId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
+            return false;
+        }
+        return cartItemRepository.findById(cartItemId)
+                .map(ci -> ci.getUser().getId().equals(user.getId()))
+                .orElse(false);
     }
 
     // Μετατροπή CartItem Entity σε CartItemResponse DTO

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class AppReviewController {
     }
 
     @PostMapping("/user/{userId}")
+    @PreAuthorize("#userId == authentication.principal.id")
     public ResponseEntity<AppReviewResponse> submitReview(@PathVariable Long userId,
                                                           @Valid @RequestBody AppReviewRequest request) {
         return new ResponseEntity<>(appReviewService.submitReview(userId, request), HttpStatus.CREATED);

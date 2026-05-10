@@ -2,12 +2,12 @@ package com.ecommerce.server.controller;
 
 import com.ecommerce.server.dto.response.CartItemResponse;
 import com.ecommerce.server.dto.response.WishlistItemResponse;
-import com.ecommerce.server.service.UserService;
 import com.ecommerce.server.service.WishlistService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,32 +17,28 @@ import java.util.List;
 @RequestMapping("/api/users/{userId}/wishlist")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize("#userId == authentication.principal.id")
 public class WishlistController {
 
     private final WishlistService wishlistService;
-    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<List<WishlistItemResponse>> getUserWishlist(@PathVariable Long userId) {
-        userService.requireSelf(userId);
         return ResponseEntity.ok(wishlistService.getUserWishlist(userId));
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<Boolean> isInWishlist(@PathVariable Long userId, @PathVariable Long productId) {
-        userService.requireSelf(userId);
         return ResponseEntity.ok(wishlistService.isInWishlist(userId, productId));
     }
 
     @PostMapping("/{productId}")
     public ResponseEntity<WishlistItemResponse> addToWishlist(@PathVariable Long userId, @PathVariable Long productId) {
-        userService.requireSelf(userId);
         return new ResponseEntity<>(wishlistService.addToWishlist(userId, productId), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> removeFromWishlist(@PathVariable Long userId, @PathVariable Long productId) {
-        userService.requireSelf(userId);
         wishlistService.removeFromWishlist(userId, productId);
         return ResponseEntity.noContent().build();
     }
@@ -52,7 +48,6 @@ public class WishlistController {
                                                        @PathVariable Long productId,
                                                        @RequestParam Long variantId,
                                                        @RequestParam(defaultValue = "1") @Min(value = 1, message = "Quantity must be at least 1") int quantity) {
-        userService.requireSelf(userId);
         return ResponseEntity.ok(wishlistService.moveToCart(userId, productId, variantId, quantity));
     }
 }

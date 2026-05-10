@@ -8,10 +8,9 @@ import com.ecommerce.server.models.User;
 import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,10 +38,13 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-        return new org.springframework.security.core.userdetails.User(
+        // AuthUser αντί για default Spring User: εκθέτει το id ώστε το
+        // @PreAuthorize("#userId == authentication.principal.id") να δουλεύει.
+        return new AuthUser(
+                user.getId(),
                 user.getEmail(),
-                user.getPasswordHash(),                                    // το hashed password για σύγκριση με BCrypt
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())) // π.χ. ROLE_USER ή ROLE_ADMIN
+                user.getPasswordHash(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
 
@@ -51,15 +53,6 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public void requireSelf(Long targetUserId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserResponse self = getUserByEmail(email);
-        if (!self.id().equals(targetUserId)) {
-            throw new AccessDeniedException("Access denied");
-        }
     }
 
     @Transactional(readOnly = true)
