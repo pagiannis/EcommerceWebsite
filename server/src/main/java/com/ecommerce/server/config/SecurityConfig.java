@@ -60,6 +60,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,
                         "/api/products/**", "/api/categories/**",
                         "/api/reviews/**", "/api/app-reviews/**").permitAll()
+                // OpenAPI / Swagger UI — public docs.
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Μόνο ADMIN — αν ο user έχει ROLE_USER θα λάβει 403.
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Οτιδήποτε άλλο (cart, orders, wishlist, addresses) απαιτεί login.

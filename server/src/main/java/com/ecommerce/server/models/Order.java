@@ -1,6 +1,7 @@
 package com.ecommerce.server.models;
 
 import com.ecommerce.server.models.enums.OrderStatus;
+import com.ecommerce.server.models.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -49,7 +50,9 @@ public class Order {
     @JoinColumn(name = "shipping_address_id")
     private Address shippingAddress;
 
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

@@ -29,6 +29,7 @@ public class CartService {
 
 
     // Λήψη καλαθιού χρήστη
+    @Transactional(readOnly = true)
     public List<CartItemResponse> getUserCart(Long userId) {
         return cartItemRepository.findByUserId(userId)
                 .stream()

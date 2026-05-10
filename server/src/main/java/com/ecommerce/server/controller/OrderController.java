@@ -1,8 +1,10 @@
 package com.ecommerce.server.controller;
 
+import com.ecommerce.server.dto.request.CheckoutRequest;
 import com.ecommerce.server.dto.response.OrderResponse;
 import com.ecommerce.server.service.OrderService;
 import com.ecommerce.server.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,11 +36,10 @@ public class OrderController {
     @PostMapping("/user/{userId}/checkout")
     public ResponseEntity<OrderResponse> checkout(
             @PathVariable Long userId,
-            @RequestParam Long shippingAddressId,
-            @RequestParam String paymentMethod) {
+            @Valid @RequestBody CheckoutRequest request) {
         userService.requireSelf(userId);
         return new ResponseEntity<>(
-                orderService.createOrder(userId, shippingAddressId, paymentMethod),
+                orderService.createOrder(userId, request.shippingAddressId(), request.paymentMethod()),
                 HttpStatus.CREATED);
     }
 

@@ -21,6 +21,7 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public List<AddressResponse> getUserAddresses(Long userId) {
         return addressRepository.findByUserId(userId).stream()
                 .map(this::toResponse)

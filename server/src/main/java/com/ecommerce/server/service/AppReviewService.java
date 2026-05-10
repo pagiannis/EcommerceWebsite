@@ -26,6 +26,7 @@ public class AppReviewService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<AppReviewResponse> getFeaturedReviews() {
         return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
                 .stream()
@@ -36,6 +37,7 @@ public class AppReviewService {
     /**
      * Λήψη όλων των εγκεκριμένων reviews
      */
+    @Transactional(readOnly = true)
     public List<AppReviewResponse> getApprovedReviews() {
         return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
                 .stream()
@@ -46,6 +48,7 @@ public class AppReviewService {
     /**
      * Λήψη reviews χρήστη
      */
+    @Transactional(readOnly = true)
     public List<AppReviewResponse> getUserReviews(Long userId) {
         return appReviewRepository.findByUserId(userId)
                 .stream()

@@ -34,6 +34,7 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating) {
         Sort jpaSort = switch (sort != null ? sort : "LATEST") {
             case "OLDEST"        -> Sort.by(Sort.Direction.ASC,  "createdAt");
@@ -53,6 +54,7 @@ public class ReviewService {
     /**
      * Λήψη reviews χρήστη
      */
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getUserReviews(Long userId) {
         return reviewRepository.findByUserId(userId)
                 .stream()

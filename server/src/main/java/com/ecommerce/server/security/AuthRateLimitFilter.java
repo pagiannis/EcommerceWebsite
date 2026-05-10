@@ -1,5 +1,7 @@
 package com.ecommerce.server.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
@@ -13,8 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -23,9 +23,12 @@ import java.util.function.Supplier;
  *
  * Όρια:
  *   - /api/users/login    : 10 αιτήματα/λεπτό ανά IP
- *   - /api/users/register :  5 αιτήματα/ώρα   ανά IP
+ *   - /api/users/register : 50 αιτήματα/ώρα   ανά IP
  *
  * Όταν ξεπεραστεί το όριο επιστρέφει 429 Too Many Requests.
+ *
+ * Τα buckets αποθηκεύονται σε Caffeine cache με expireAfterAccess ώστε
+ * παλιές καταχωρήσεις IP να καθαρίζονται αυτόματα και να μη γεμίζει η μνήμη.
  */
 @Component
 public class AuthRateLimitFilter extends OncePerRequestFilter {
@@ -33,8 +36,15 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     private static final String LOGIN_PATH = "/api/users/login";
     private static final String REGISTER_PATH = "/api/users/register";
 
-    private final Map<String, Bucket> loginBuckets = new ConcurrentHashMap<>();
-    private final Map<String, Bucket> registerBuckets = new ConcurrentHashMap<>();
+    private final Cache<String, Bucket> loginBuckets = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofMinutes(15))
+            .maximumSize(100_000)
+            .build();
+
+    private final Cache<String, Bucket> registerBuckets = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofHours(2))
+            .maximumSize(100_000)
+            .build();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -59,8 +69,8 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private boolean tryConsume(Map<String, Bucket> buckets, String ip, Supplier<Bucket> factory) {
-        return buckets.computeIfAbsent(ip, k -> factory.get()).tryConsume(1);
+    private boolean tryConsume(Cache<String, Bucket> buckets, String ip, Supplier<Bucket> factory) {
+        return buckets.get(ip, k -> factory.get()).tryConsume(1);
     }
 
     private Bucket newLoginBucket() {

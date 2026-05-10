@@ -321,7 +321,7 @@ public class DataInitializer implements CommandLineRunner {
                 .tax(tax)
                 .shippingFee(shipping)
                 .total(total)
-                .paymentMethod("CARD")
+                .paymentMethod(PaymentMethod.CARD)
                 .createdAt(LocalDateTime.now().minusDays((long) seq * 2))
                 .build());
 

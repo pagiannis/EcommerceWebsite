@@ -512,7 +512,7 @@ DELETE /api/cart/7
 
 Επιστρέφει `204 No Content`. Το SESSION cookie ακυρώνεται.
 
-> **Rate limiting:** Τα `/login` και `/register` έχουν per-IP rate limit (10/min για login, 5/hr για register). Αν ξεπεραστεί, επιστρέφεται `429 Too Many Requests` με body:
+> **Rate limiting:** Τα `/login` και `/register` έχουν per-IP rate limit (10/min για login, 50/hr για register). Αν ξεπεραστεί, επιστρέφεται `429 Too Many Requests` με body:
 > ```json
 > { "status": 429, "error": "Too Many Requests", "message": "Too many login attempts. Please try again later." }
 > ```
@@ -546,8 +546,23 @@ DELETE /api/cart/7
 ### 👤 `POST /api/orders/user/{userId}/checkout` — Ολοκλήρωση αγοράς
 
 ```
-POST /api/orders/user/1/checkout?shippingAddressId=1&paymentMethod=CARD
+POST /api/orders/user/1/checkout
+Content-Type: application/json
 ```
+
+#### Request Body
+
+```json
+{
+  "shippingAddressId": 1,
+  "paymentMethod": "CARD"
+}
+```
+
+| Πεδίο | Τύπος | Required | Περιγραφή |
+|---|---|---|---|
+| `shippingAddressId` | Long | ✅ | ID διεύθυνσης αποστολής (πρέπει να ανήκει στον logged-in user) |
+| `paymentMethod` | enum | ✅ | `CARD`, `PAYPAL`, ή `CASH_ON_DELIVERY` |
 
 Επιστρέφει `201 Created` με `OrderResponse`.
 
@@ -555,10 +570,14 @@ POST /api/orders/user/1/checkout?shippingAddressId=1&paymentMethod=CARD
 
 | Status | Πότε | Body |
 |---|---|---|
-| `400` | Άδειο cart, ή στο cart υπάρχει item με quantity > stock (stale cart) | `{ "message": "Not enough stock for ... Available: X, Requested: Y" }` |
+| `400` | Άδειο cart, ή στο cart υπάρχει item με quantity > stock (stale cart), ή λάθος `paymentMethod` value | `{ "message": "Not enough stock for ... Available: X, Requested: Y" }` |
+| `403` | Η `shippingAddressId` δεν ανήκει στον user | `{ "message": "Address does not belong to user" }` |
+| `404` | Δεν βρέθηκε διεύθυνση/χρήστης | `{ "message": "Address not found" }` |
 | `409` | Race condition: άλλο checkout άλλαξε το stock την ίδια στιγμή | `{ "message": "Stock changed during checkout. Please review your cart and try again." }` |
 
 Σε `409`, ο frontend πρέπει να επανα-φέρει το cart (`GET /api/cart/{userId}`) και να ζητήσει επιβεβαίωση από τον χρήστη πριν επανα-υποβληθεί ο checkout.
+
+> ⚠️ **Breaking change**: παλιά τα `shippingAddressId` και `paymentMethod` περνούσαν ως query params. Τώρα στέλνονται ως JSON body. Επίσης το `paymentMethod` είναι enum — μη-έγκυρες τιμές επιστρέφουν `400`.
 
 ---
 

@@ -40,6 +40,7 @@ public class WishlistService {
     /**
      * Λήψη wishlist χρήστη
      */
+    @Transactional(readOnly = true)
     public List<WishlistItemResponse> getUserWishlist(Long userId) {
         return wishlistItemRepository.findByUserId(userId)
                 .stream()
@@ -84,6 +85,7 @@ public class WishlistService {
     /**
      * Έλεγχος αν προϊόν είναι στα αγαπημένα
      */
+    @Transactional(readOnly = true)
     public Boolean isInWishlist(Long userId, Long productId) {
         return wishlistItemRepository.findByUserIdAndProductId(userId, productId).isPresent();
     }
