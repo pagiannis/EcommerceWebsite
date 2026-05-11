@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MdOutlineEmail } from "react-icons/md";
+import { Mail } from "lucide-react";
 
 export default function NewsletterBanner() {
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ export default function NewsletterBanner() {
             className="flex w-full flex-col gap-3 sm:w-auto"
           >
             <div className="relative">
-              <MdOutlineEmail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="email"
                 value={email}

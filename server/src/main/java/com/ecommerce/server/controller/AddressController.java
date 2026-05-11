@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users/{userId}/addresses")
 @RequiredArgsConstructor
+@PreAuthorize("#userId == authentication.principal.id")
 public class AddressController {
 
     private final AddressService addressService;
@@ -33,13 +35,13 @@ public class AddressController {
     public ResponseEntity<AddressResponse> updateAddress(@PathVariable Long userId,
                                                          @PathVariable Long addressId,
                                                          @Valid @RequestBody AddressRequest request) {
-        return ResponseEntity.ok(addressService.updateAddress(addressId, request));
+        return ResponseEntity.ok(addressService.updateAddress(userId, addressId, request));
     }
 
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long userId,
                                               @PathVariable Long addressId) {
-        addressService.deleteAddress(addressId);
+        addressService.deleteAddress(userId, addressId);
         return ResponseEntity.noContent().build();
     }
 

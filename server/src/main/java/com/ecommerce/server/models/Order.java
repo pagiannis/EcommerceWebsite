@@ -1,8 +1,10 @@
 package com.ecommerce.server.models;
 
 import com.ecommerce.server.models.enums.OrderStatus;
+import com.ecommerce.server.models.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,9 +51,12 @@ public class Order {
     @JoinColumn(name = "shipping_address_id")
     private Address shippingAddress;
 
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 

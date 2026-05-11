@@ -11,13 +11,15 @@ public record UserRegistrationRequest(
         String email,
 
         @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "Password must be at least 6 characters long")
+        @Size(min = 8, message = "Password must be at least 8 characters long")
         String password,
 
         @NotBlank(message = "First name is required")
+        @Size(max = 100, message = "First name must not exceed 100 characters")
         String firstName,
 
         @NotBlank(message = "Last name is required")
+        @Size(max = 100, message = "Last name must not exceed 100 characters")
         String lastName,
 
         @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid and contain 10 to 15 digits")

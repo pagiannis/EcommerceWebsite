@@ -7,10 +7,15 @@ import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.User;
 import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
+
 import com.ecommerce.server.repository.CartItemRepository;
 import com.ecommerce.server.repository.ProductVariantRepository;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,7 @@ public class CartService {
 
 
     // Λήψη καλαθιού χρήστη
+    @Transactional(readOnly = true)
     public List<CartItemResponse> getUserCart(Long userId) {
         return cartItemRepository.findByUserId(userId)
                 .stream()
@@ -37,10 +43,10 @@ public class CartService {
      @Transactional
      public CartItemResponse addToCart(Long userId, CartItemRequest request) {
          User user = userRepository.findById(userId)
-                 .orElseThrow(() -> new RuntimeException("User not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
          ProductVariant variant = productVariantRepository.findById(request.variantId())
-                 .orElseThrow(() -> new RuntimeException("Variant not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
 
          // Έλεγχος αν η ζητούμενη ποσότητα είναι διαθέσιμη
          if (request.quantity() <= 0) {
@@ -75,18 +81,14 @@ public class CartService {
          return convertToResponse(cartItemRepository.save(cartItem));
      }
 
-     // Ενημέρωση ποσότητας
+     // Ενημέρωση ποσότητας. Ο controller επιβάλλει @Min(1) στο quantity,
+     // οπότε εδώ δεν χρειάζεται extra έλεγχος για quantity <= 0.
      @Transactional
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
-                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
+         requireCartItemOwner(cartItem);
 
-         if (quantity <= 0) {
-             cartItemRepository.delete(cartItem);
-             throw new BadRequestException("Quantity must be greater than 0");
-         }
-
-         // Έλεγχος αν η νέα ποσότητα υπερβαίνει το stock
          ProductVariant variant = cartItem.getVariant();
          if (quantity > variant.getStockQuantity()) {
              throw new BadRequestException("Requested quantity exceeds available stock. Available: " + variant.getStockQuantity());
@@ -100,7 +102,8 @@ public class CartService {
     @Transactional
     public void removeFromCart(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
+        requireCartItemOwner(cartItem);
         cartItemRepository.delete(cartItem);
     }
 
@@ -108,6 +111,28 @@ public class CartService {
     @Transactional
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);
+    }
+
+    private void requireCartItemOwner(CartItem cartItem) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!cartItem.getUser().getEmail().equals(email)) {
+            throw new AccessDeniedException("Access denied");
+        }
+    }
+
+    /**
+     * Ownership check για χρήση από @PreAuthorize SpEL:
+     * @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
+     */
+    @Transactional(readOnly = true)
+    public boolean isCartItemOwner(Long cartItemId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
+            return false;
+        }
+        return cartItemRepository.findById(cartItemId)
+                .map(ci -> ci.getUser().getId().equals(user.getId()))
+                .orElse(false);
     }
 
     // Μετατροπή CartItem Entity σε CartItemResponse DTO

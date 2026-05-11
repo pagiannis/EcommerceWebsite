@@ -10,6 +10,7 @@ import com.ecommerce.server.models.enums.Size;
 import com.ecommerce.server.service.ProductService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -59,13 +60,18 @@ public class ProductController {
     }
 
     @GetMapping("/autocomplete")
-    public ResponseEntity<List<ProductSuggestionResponse>> autocomplete(@RequestParam String query) {
+    public ResponseEntity<List<ProductSuggestionResponse>> autocomplete(
+            @RequestParam @NotBlank
+            @jakarta.validation.constraints.Size(min = 1, max = 100, message = "query length must be 1–100")
+            String query) {
         return ResponseEntity.ok(productService.autocomplete(query));
     }
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductResponse>> searchProducts(
-            @RequestParam String query,
+            @RequestParam @NotBlank
+            @jakarta.validation.constraints.Size(min = 2, max = 100, message = "query length must be 2–100")
+            String query,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "9") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(productService.searchProducts(query, PageRequest.of(page, size)));

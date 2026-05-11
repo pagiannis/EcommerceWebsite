@@ -1,19 +1,12 @@
 package com.ecommerce.server.dto.request;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import com.ecommerce.server.models.enums.PaymentMethod;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 
 public record CheckoutRequest(
         @NotNull(message = "Shipping address ID is required")
         Long shippingAddressId,
 
-        @NotBlank(message = "Payment method is required")
-        String paymentMethod,
-
-        @NotEmpty(message = "Checkout items cannot be empty")
-        @Valid
-        List<CartItemRequest> items
+        @NotNull(message = "Payment method is required")
+        PaymentMethod paymentMethod
 ) {}

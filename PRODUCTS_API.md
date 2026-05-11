@@ -4,9 +4,20 @@ Base URL: `http://localhost:8080`
 
 ---
 
+## Permissions
+
+| Σύμβολο | Σημασία |
+|---|---|
+| 🌐 | Public — δεν απαιτεί login |
+| 🔒 | Απαιτεί login (SESSION cookie) |
+| 👤 | Απαιτεί login + ο `userId` πρέπει να είναι ο logged-in user |
+| 🔑 | Μόνο ADMIN |
+
+---
+
 ## Endpoints
 
-### 1. `GET /api/products` — Λίστα προϊόντων με φίλτρα
+### 1. 🌐 `GET /api/products` — Λίστα προϊόντων με φίλτρα
 
 Επιστρέφει σελιδοποιημένα αποτελέσματα. Όλα τα params είναι προαιρετικά.
 
@@ -125,7 +136,7 @@ GET /api/products?category=men&page=0&size=9&minPrice=30&maxPrice=150&colors=BLA
 
 ---
 
-### 2. `GET /api/products/{id}` — Ένα προϊόν
+### 2. 🌐 `GET /api/products/{id}` — Ένα προϊόν
 
 ```
 GET /api/products/1
@@ -135,7 +146,7 @@ GET /api/products/1
 
 ---
 
-### 3. `GET /api/products/search` — Αναζήτηση
+### 3. 🌐 `GET /api/products/search` — Αναζήτηση
 
 | Param | Τύπος | Default | Περιγραφή |
 |---|---|---|---|
@@ -152,7 +163,7 @@ GET /api/products/search?query=nike&page=0&size=9
 
 ---
 
-### 4. `GET /api/products/autocomplete` — Προτάσεις αναζήτησης
+### 4. 🌐 `GET /api/products/autocomplete` — Προτάσεις αναζήτησης
 
 Για το search dropdown. Επιστρέφει έως 8 αποτελέσματα.
 
@@ -175,7 +186,7 @@ GET /api/products/autocomplete?query=sh
 
 ---
 
-### 5. `GET /api/reviews/product/{productId}` — Reviews προϊόντος με φίλτρα
+### 5. 🌐 `GET /api/reviews/product/{productId}` — Reviews προϊόντος με φίλτρα
 
 Επιστρέφει τα reviews ενός προϊόντος. Υποστηρίζει φιλτράρισμα ανά rating και ταξινόμηση. Όλα τα params είναι προαιρετικά.
 
@@ -231,7 +242,7 @@ GET /api/reviews/product/21?sort=OLDEST&minRating=4
 
 ---
 
-### 6. `POST /api/reviews/user/{userId}` — Δημιουργία review
+### 6. 👤 `POST /api/reviews/user/{userId}` — Δημιουργία review
 
 #### Request Body
 
@@ -253,17 +264,19 @@ GET /api/reviews/product/21?sort=OLDEST&minRating=4
 
 ---
 
-### 7. `DELETE /api/reviews/{reviewId}` — Διαγραφή review
+### 7. 👤 `DELETE /api/reviews/{reviewId}` — Διαγραφή review
 
 ```
 DELETE /api/reviews/5
 ```
 
+Μόνο ο συγγραφέας του review μπορεί να το σβήσει (αλλιώς `403 Forbidden`).
+
 Επιστρέφει `204 No Content`.
 
 ---
 
-### 8. `GET /api/app-reviews` — App reviews (testimonials)
+### 8. 🌐 `GET /api/app-reviews` — App reviews (testimonials)
 
 Επιστρέφει όλα τα approved app reviews για το homepage testimonials section.
 
@@ -288,7 +301,7 @@ GET /api/app-reviews
 
 ---
 
-### 9. `POST /api/app-reviews/user/{userId}` — Υποβολή app review
+### 9. 👤 `POST /api/app-reviews/user/{userId}` — Υποβολή app review
 
 #### Request Body
 
@@ -319,9 +332,7 @@ GET /api/products?topSelling=true&size=8
 
 ## Addresses
 
-> 🔒 Όλα τα address endpoints απαιτούν login (SESSION cookie).
-
-### `GET /api/users/{userId}/addresses` — Λίστα διευθύνσεων
+### 👤 `GET /api/users/{userId}/addresses` — Λίστα διευθύνσεων
 
 ```
 GET /api/users/1/addresses
@@ -352,7 +363,7 @@ GET /api/users/1/addresses
 
 ---
 
-### `POST /api/users/{userId}/addresses` — Προσθήκη διεύθυνσης
+### 👤 `POST /api/users/{userId}/addresses` — Προσθήκη διεύθυνσης
 
 ```
 POST /api/users/1/addresses
@@ -382,7 +393,7 @@ POST /api/users/1/addresses
 
 ---
 
-### `PUT /api/users/{userId}/addresses/{addressId}` — Επεξεργασία διεύθυνσης
+### 👤 `PUT /api/users/{userId}/addresses/{addressId}` — Επεξεργασία διεύθυνσης
 
 ```
 PUT /api/users/1/addresses/2
@@ -392,7 +403,7 @@ Request body ίδιο με το POST. Επιστρέφει `200 OK` με το ε
 
 ---
 
-### `DELETE /api/users/{userId}/addresses/{addressId}` — Διαγραφή διεύθυνσης
+### 👤 `DELETE /api/users/{userId}/addresses/{addressId}` — Διαγραφή διεύθυνσης
 
 ```
 DELETE /api/users/1/addresses/2
@@ -402,7 +413,7 @@ DELETE /api/users/1/addresses/2
 
 ---
 
-### `PATCH /api/users/{userId}/addresses/{addressId}/default` — Ορισμός ως προεπιλεγμένη
+### 👤 `PATCH /api/users/{userId}/addresses/{addressId}/default` — Ορισμός ως προεπιλεγμένη
 
 ```
 PATCH /api/users/1/addresses/2/default
@@ -413,8 +424,6 @@ PATCH /api/users/1/addresses/2/default
 ---
 
 ## Cart
-
-> ⚠️ **Προσωρινό API** — Μετά την υλοποίηση του authentication, το `userId` στο URL θα αφαιρεθεί και ο χρήστης θα αναγνωρίζεται αυτόματα από το JWT token. Η δομή του request/response θα παραμείνει ίδια.
 
 ### Βήμα 1 — Βρες το variantId
 
@@ -436,7 +445,7 @@ GET /api/products/{productId}/variants
 
 ---
 
-### 10. `POST /api/cart/{userId}` — Προσθήκη στο cart
+### 10. 👤 `POST /api/cart/{userId}` — Προσθήκη στο cart
 
 ```json
 {
@@ -449,7 +458,7 @@ GET /api/products/{productId}/variants
 
 ---
 
-### 11. `GET /api/cart/{userId}` — Προβολή cart
+### 11. 👤 `GET /api/cart/{userId}` — Προβολή cart
 
 ```
 GET /api/cart/1
@@ -457,7 +466,7 @@ GET /api/cart/1
 
 ---
 
-### 12. `PUT /api/cart/{cartItemId}?quantity=3` — Αλλαγή ποσότητας
+### 12. 🔒 `PUT /api/cart/{cartItemId}?quantity=3` — Αλλαγή ποσότητας
 
 ```
 PUT /api/cart/7?quantity=3
@@ -467,13 +476,125 @@ PUT /api/cart/7?quantity=3
 
 ---
 
-### 13. `DELETE /api/cart/{cartItemId}` — Αφαίρεση από cart
+### 13. 🔒 `DELETE /api/cart/{cartItemId}` — Αφαίρεση από cart
 
 ```
 DELETE /api/cart/7
 ```
 
 Επιστρέφει `204 No Content`.
+
+---
+
+## Auth
+
+### 🌐 `POST /api/users/login` — Login
+
+```json
+{ "email": "user@example.com", "password": "mypassword" }
+```
+
+Επιστρέφει `UserResponse` + set-cookie `SESSION=...`.
+
+---
+
+### 🌐 `POST /api/users/register` — Register
+
+```json
+{ "email": "user@example.com", "password": "mypassword", "firstName": "John", "lastName": "Doe", "phone": "6912345678" }
+```
+
+Επιστρέφει `201 Created` με `UserResponse`.
+
+---
+
+### 🌐 `POST /api/users/logout` — Logout
+
+Επιστρέφει `204 No Content`. Το SESSION cookie ακυρώνεται.
+
+> **Rate limiting:** Τα `/login` και `/register` έχουν per-IP rate limit (10/min για login, 50/hr για register). Αν ξεπεραστεί, επιστρέφεται `429 Too Many Requests` με body:
+> ```json
+> { "status": 429, "error": "Too Many Requests", "message": "Too many login attempts. Please try again later." }
+> ```
+
+---
+
+### 👤 `GET /api/users/{id}` — Προφίλ χρήστη
+
+### 👤 `PUT /api/users/{id}` — Ενημέρωση προφίλ
+
+```json
+{ "email": "new@example.com", "firstName": "John", "lastName": "Doe", "phone": "6912345678", "password": "newpassword" }
+```
+
+Όλα τα πεδία προαιρετικά. Επιστρέφει `UserResponse`.
+
+---
+
+### 👤 `DELETE /api/users/{id}` — Διαγραφή λογαριασμού
+
+Επιστρέφει `204 No Content`.
+
+---
+
+## Orders
+
+### 👤 `GET /api/orders/user/{userId}` — Παραγγελίες χρήστη
+
+### 👤 `GET /api/orders/{orderId}` — Λεπτομέρειες παραγγελίας
+
+### 👤 `POST /api/orders/user/{userId}/checkout` — Ολοκλήρωση αγοράς
+
+```
+POST /api/orders/user/1/checkout
+Content-Type: application/json
+```
+
+#### Request Body
+
+```json
+{
+  "shippingAddressId": 1,
+  "paymentMethod": "CARD"
+}
+```
+
+| Πεδίο | Τύπος | Required | Περιγραφή |
+|---|---|---|---|
+| `shippingAddressId` | Long | ✅ | ID διεύθυνσης αποστολής (πρέπει να ανήκει στον logged-in user) |
+| `paymentMethod` | enum | ✅ | `CARD`, `PAYPAL`, ή `CASH_ON_DELIVERY` |
+
+Επιστρέφει `201 Created` με `OrderResponse`.
+
+#### Πιθανά error responses
+
+| Status | Πότε | Body |
+|---|---|---|
+| `400` | Άδειο cart, ή στο cart υπάρχει item με quantity > stock (stale cart), ή λάθος `paymentMethod` value | `{ "message": "Not enough stock for ... Available: X, Requested: Y" }` |
+| `403` | Η `shippingAddressId` δεν ανήκει στον user | `{ "message": "Address does not belong to user" }` |
+| `404` | Δεν βρέθηκε διεύθυνση/χρήστης | `{ "message": "Address not found" }` |
+| `409` | Race condition: άλλο checkout άλλαξε το stock την ίδια στιγμή | `{ "message": "Stock changed during checkout. Please review your cart and try again." }` |
+
+Σε `409`, ο frontend πρέπει να επανα-φέρει το cart (`GET /api/cart/{userId}`) και να ζητήσει επιβεβαίωση από τον χρήστη πριν επανα-υποβληθεί ο checkout.
+
+> ⚠️ **Breaking change**: παλιά τα `shippingAddressId` και `paymentMethod` περνούσαν ως query params. Τώρα στέλνονται ως JSON body. Επίσης το `paymentMethod` είναι enum — μη-έγκυρες τιμές επιστρέφουν `400`.
+
+---
+
+### 👤 `POST /api/orders/{orderId}/reorder` — Επανάληψη παραγγελίας
+
+```
+POST /api/orders/5/reorder?userId=1
+```
+
+Προσθέτει τα items της παλιάς παραγγελίας στο cart. Επιστρέφει `200 OK`:
+
+```json
+{
+  "message": "Items added to cart",
+  "skipped": ["Classic Blue Jeans (out of stock)"]
+}
+```
 
 ---
 

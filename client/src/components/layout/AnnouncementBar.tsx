@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 
 export default function AnnouncementBar() {
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const [visible, setVisible] = useState(true);
-  if (!visible) return null;
+  if (isLoggedIn() || !visible) return null;
   return (
     <div className="bg-brand-black py-2 text-sm text-white">
       <div className="relative mx-auto max-w-7xl px-4 text-center">
         Sign up and get 20% off to your first order.{" "}
-        <Link to="/shop" className="font-semibold underline hover:no-underline">
+        <Link
+          to="/register"
+          className="font-semibold underline hover:no-underline"
+        >
           Sign Up Now
         </Link>
         <button

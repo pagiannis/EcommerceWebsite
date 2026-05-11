@@ -1,32 +1,28 @@
-import { RiDeleteBin5Fill } from "react-icons/ri";
+import { Trash2 } from "lucide-react";
 import type { CartItem as CartItemType } from "../../types/cartItem";
-import type { Size } from "../../types/size";
 import QuantityStepper from "../ui/QuantityStepper";
+import { useRemoveFromCart, useUpdateCartQuantity } from "../../hooks/useCart";
 
 interface CartItemProps {
   item: CartItemType;
-  onRemove: (productId: string, color: string, size: Size) => void;
-  onQuantityChange: (
-    productId: string,
-    color: string,
-    size: Size,
-    qty: number,
-  ) => void;
 }
 
-export default function CartItem({
-  item,
-  onRemove,
-  onQuantityChange,
-}: CartItemProps) {
+export default function CartItem({ item }: CartItemProps) {
+  const { mutate: remove, isPending: removing } = useRemoveFromCart();
+  const { mutate: updateQty, isPending: updating } = useUpdateCartQuantity();
+
   return (
     <div className="flex gap-4 rounded-2xl border border-gray-200 p-4">
       <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-gray">
-        <img
-          src={item.product.images[0]}
-          alt={item.product.name}
-          className="h-full w-full object-cover"
-        />
+        {item.product.images[0] ? (
+          <img
+            src={item.product.images[0]}
+            alt={item.product.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="h-full w-full" />
+        )}
       </div>
       <div className="flex flex-1 flex-col justify-between">
         <div className="flex items-start justify-between">
@@ -44,12 +40,17 @@ export default function CartItem({
           <button
             type="button"
             onClick={() =>
-              onRemove(item.product.id, item.selectedColor, item.selectedSize)
+              remove({
+                productId: item.product.id,
+                color: item.selectedColor,
+                size: item.selectedSize,
+              })
             }
-            className="text-brand-red hover:opacity-70"
+            disabled={removing}
+            className="text-brand-red hover:opacity-70 disabled:opacity-40"
             aria-label="Remove item"
           >
-            <RiDeleteBin5Fill className="h-5 w-5" />
+            <Trash2 className="h-5 w-5" />
           </button>
         </div>
         <div className="flex items-center justify-between">
@@ -57,13 +58,14 @@ export default function CartItem({
           <QuantityStepper
             value={item.quantity}
             onChange={(qty) =>
-              onQuantityChange(
-                item.product.id,
-                item.selectedColor,
-                item.selectedSize,
+              updateQty({
+                productId: item.product.id,
+                color: item.selectedColor,
+                size: item.selectedSize,
                 qty,
-              )
+              })
             }
+            disabled={updating}
             min={0}
           />
         </div>

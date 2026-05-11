@@ -9,7 +9,10 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating) {
         Sort jpaSort = switch (sort != null ? sort : "LATEST") {
             case "OLDEST"        -> Sort.by(Sort.Direction.ASC,  "createdAt");
@@ -51,6 +55,7 @@ public class ReviewService {
     /**
      * Λήψη reviews χρήστη
      */
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getUserReviews(Long userId) {
         return reviewRepository.findByUserId(userId)
                 .stream()
@@ -86,7 +91,8 @@ public class ReviewService {
     }
 
     /**
-     * Διαγραφή κριτικής
+     * Διαγραφή κριτικής. Ο ownership check γίνεται declarative στο controller
+     * μέσω @PreAuthorize("@reviewService.isReviewOwner(#reviewId)").
      */
     @Transactional
     public void deleteReview(Long reviewId) {
@@ -96,8 +102,22 @@ public class ReviewService {
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
 
-        // Ενημέρωση rating
         updateProductRating(productId);
+    }
+
+    /**
+     * Ownership check για χρήση από @PreAuthorize SpEL:
+     * @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
+     */
+    @Transactional(readOnly = true)
+    public boolean isReviewOwner(Long reviewId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
+            return false;
+        }
+        return reviewRepository.findById(reviewId)
+                .map(r -> r.getUser().getId().equals(user.getId()))
+                .orElse(false);
     }
 
     /**

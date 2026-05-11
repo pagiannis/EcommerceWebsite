@@ -1,8 +1,8 @@
-import versaceLogo from "../../assets/VersaceLogo.png";
-import zaraLogo from "../../assets/ZaraLogo.png";
-import gucciLogo from "../../assets/GucciLogo.png";
-import pradaLogo from "../../assets/PradaLogo.png";
-import calvinKleinLogo from "../../assets/CalvinKleinLogo.png";
+import versaceLogo from "../../assets/VersaceLogo.webp";
+import zaraLogo from "../../assets/ZaraLogo.webp";
+import gucciLogo from "../../assets/GucciLogo.webp";
+import pradaLogo from "../../assets/PradaLogo.webp";
+import calvinKleinLogo from "../../assets/CalvinKleinLogo.webp";
 
 const brandLogos = [
   { name: "Versace", src: versaceLogo },

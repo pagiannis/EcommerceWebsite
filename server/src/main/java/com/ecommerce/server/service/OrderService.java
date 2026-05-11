@@ -4,15 +4,20 @@ import com.ecommerce.server.dto.response.OrderResponse;
 import com.ecommerce.server.dto.response.OrderItemResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.OrderStatus;
+import com.ecommerce.server.models.enums.PaymentMethod;
 import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
+import com.ecommerce.server.security.AuthUser;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,6 +49,7 @@ public class OrderService {
     /**
      * Λήψη παραγγελιών χρήστη
      */
+    @Transactional(readOnly = true)
     public List<OrderResponse> getUserOrders(Long userId) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
@@ -54,9 +60,10 @@ public class OrderService {
     /**
      * Λήψη λεπτομερειών παραγγελίας
      */
+    @Transactional(readOnly = true)
     public OrderResponse getOrderDetail(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         return convertToResponse(order);
     }
 
@@ -65,20 +72,24 @@ public class OrderService {
      * ⭐ CRITICAL: Snapshot pattern - αποθηκεύουμε τα δεδομένα που ήταν τότε
      */
     @Transactional
-    public OrderResponse createOrder(Long userId, Long shippingAddressId, String paymentMethod) {
+    public OrderResponse createOrder(Long userId, Long shippingAddressId, PaymentMethod paymentMethod) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Address shippingAddress = addressRepository.findById(shippingAddressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
-        // Λήψη άδεώ καλαθιού
+        // Η διεύθυνση πρέπει να ανήκει στον ίδιο τον user — αλλιώς ο attacker θα
+        // μπορούσε να στείλει αντικείμενα σε διεύθυνση τρίτου.
+        if (!shippingAddress.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Address does not belong to user");
+        }
+
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
         if (cartItems.isEmpty()) {
             throw new BadRequestException("Cart is empty");
         }
 
-        // Υπολογισμός τιμών
         BigDecimal subtotal = cartItems.stream()
                 .map(item -> item.getVariant().getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -88,8 +99,8 @@ public class OrderService {
         BigDecimal shippingFee = BigDecimal.valueOf(5.00);
         BigDecimal total = subtotal.add(tax).add(shippingFee);
 
-        // Δημιουργία Order
-        String orderNumber = "ORD-" + System.currentTimeMillis();
+        // Order number με UUID για collision-free generation σε concurrent requests.
+        String orderNumber = "ORD-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
         Order order = Order.builder()
                 .orderNumber(orderNumber)
                 .user(user)
@@ -104,30 +115,41 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Δημιουργία OrderItems (SNAPSHOTS - αποθηκεύουμε τι ήταν τότε)
+        List<OrderItem> orderItems = new ArrayList<>(cartItems.size());
+        List<ProductVariant> variantsToUpdate = new ArrayList<>(cartItems.size());
+
         for (CartItem cartItem : cartItems) {
-            Product product = cartItem.getVariant().getProduct();
-            OrderItem orderItem = OrderItem.builder()
+            ProductVariant variant = cartItem.getVariant();
+            Product product = variant.getProduct();
+
+            if (cartItem.getQuantity() > variant.getStockQuantity()) {
+                throw new BadRequestException(
+                        "Not enough stock for " + product.getName() +
+                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
+                                "Available: " + variant.getStockQuantity() +
+                                ", Requested: " + cartItem.getQuantity()
+                );
+            }
+
+            orderItems.add(OrderItem.builder()
                     .order(savedOrder)
                     .product(product)
-                    .variant(cartItem.getVariant())
-                    .productName(product.getName())           // SNAPSHOT
-                    .priceAtPurchase(product.getPrice())      // SNAPSHOT - τιμή τώρα
-                    .selectedColor(cartItem.getVariant().getColor().toString())  // SNAPSHOT
-                    .selectedSize(cartItem.getVariant().getSize().toString())    // SNAPSHOT
+                    .variant(variant)
+                    .productName(product.getName())
+                    .priceAtPurchase(product.getPrice())
+                    .selectedColor(variant.getColor().toString())
+                    .selectedSize(variant.getSize().toString())
                     .quantity(cartItem.getQuantity())
                     .subtotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                    .build();
+                    .build());
 
-            orderItemRepository.save(orderItem);
-
-            // Ενημέρωση stock (μείωση)
-            ProductVariant variant = cartItem.getVariant();
             variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
-            productVariantRepository.save(variant);
+            variantsToUpdate.add(variant);
         }
 
-        // Αποκαθάρισή καλαθιού
+        orderItemRepository.saveAll(orderItems);
+        productVariantRepository.saveAll(variantsToUpdate);
+
         cartItemRepository.deleteByUserId(userId);
 
         return convertToResponse(savedOrder);
@@ -139,7 +161,7 @@ public class OrderService {
     @Transactional
     public List<String> reorder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         List<String> skipped = new java.util.ArrayList<>();
 
@@ -154,26 +176,41 @@ public class OrderService {
                 continue;
             }
             int quantity = Math.min(item.getQuantity(), available);
-            try {
-                cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
-                        .ifPresentOrElse(
-                                existing -> {
-                                    existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
-                                    cartItemRepository.save(existing);
-                                },
-                                () -> cartItemRepository.save(
-                                        com.ecommerce.server.models.CartItem.builder()
-                                                .user(order.getUser())
-                                                .variant(item.getVariant())
-                                                .quantity(quantity)
-                                                .build()
-                                )
-                        );
-            } catch (Exception e) {
-                skipped.add(item.getProductName() + " (" + e.getMessage() + ")");
-            }
+            // Τα expected fail cases (variant null, out of stock) πιάνονται πριν το save.
+            // Αν σπάσει το save παρ' όλα αυτά, αφήνουμε το exception να γίνει propagate
+            // ώστε το transaction να κάνει rollback — ένα catch εδώ θα οδηγούσε σε
+            // UnexpectedRollbackException στο commit.
+            cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
+                    .ifPresentOrElse(
+                            existing -> {
+                                existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
+                                cartItemRepository.save(existing);
+                            },
+                            () -> cartItemRepository.save(
+                                    com.ecommerce.server.models.CartItem.builder()
+                                            .user(order.getUser())
+                                            .variant(item.getVariant())
+                                            .quantity(quantity)
+                                            .build()
+                            )
+                    );
         }
         return skipped;
+    }
+
+    /**
+     * Ownership check για χρήση από @PreAuthorize SpEL:
+     * @PreAuthorize("@orderService.isOrderOwner(#orderId)")
+     */
+    @Transactional(readOnly = true)
+    public boolean isOrderOwner(Long orderId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
+            return false;
+        }
+        return orderRepository.findById(orderId)
+                .map(o -> o.getUser().getId().equals(user.getId()))
+                .orElse(false);
     }
 
     /**
@@ -182,7 +219,7 @@ public class OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         order.setStatus(newStatus);
         return convertToResponse(orderRepository.save(order));
     }
@@ -190,6 +227,7 @@ public class OrderService {
     /**
      * Λήψη παραγγελιών κατά κατάσταση
      */
+    @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByStatus(OrderStatus status) {
         return orderRepository.findByStatus(status)
                 .stream()

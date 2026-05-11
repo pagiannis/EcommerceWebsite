@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import type { Product } from '../../types/product';
 import type { Size } from '../../types/size';
-import { useCartStore } from '../../store/cartStore';
+import { useAddToCart } from '../../hooks/useCart';
 import StarRating from '../ui/StarRating';
 import Badge from '../ui/Badge';
 import QuantityStepper from '../ui/QuantityStepper';
@@ -11,23 +12,47 @@ interface ProductInfoProps {
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-  const addItem = useCartStore((s) => s.addItem);
+  const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [sizeError, setSizeError] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const availableSizes = new Set(
+    product.variants
+      .filter((v) => v.colorHex === selectedColor && v.stockQuantity > 0)
+      .map((v) => v.size)
+  );
+
+  const selectedVariant = selectedSize
+    ? product.variants.find((v) => v.colorHex === selectedColor && v.size === selectedSize)
+    : undefined;
+
+  const isOutOfStock = !!selectedVariant && selectedVariant.stockQuantity === 0;
+
+  function handleColorSelect(color: string) {
+    setSelectedColor(color);
+    if (selectedSize && !availableSizes.has(selectedSize)) {
+      setSelectedSize(null);
+    }
+  }
+
   function handleAddToCart() {
     if (!selectedSize) {
       setSizeError(true);
       return;
     }
-    for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedColor, selectedSize);
-    }
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    if (!selectedVariant || isOutOfStock) return;
+    addToCart(
+      { product, color: selectedColor, size: selectedSize, variantId: selectedVariant.id, qty: quantity },
+      {
+        onSuccess: () => {
+          setAdded(true);
+          setTimeout(() => setAdded(false), 2000);
+        },
+      }
+    );
   }
 
   return (
@@ -60,7 +85,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             <button
               key={color}
               type="button"
-              onClick={() => setSelectedColor(color)}
+              onClick={() => handleColorSelect(color)}
               style={{ backgroundColor: color }}
               className={`h-9 w-9 rounded-full border-2 transition ${
                 selectedColor === color ? 'border-brand-black scale-110' : 'border-transparent'
@@ -76,20 +101,26 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div>
         <h3 className="mb-3 text-sm font-semibold text-gray-900">Choose Size</h3>
         <div className="flex flex-wrap gap-2">
-          {product.sizes.map(size => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => { setSelectedSize(size); setSizeError(false); }}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
-                selectedSize === size
-                  ? 'bg-brand-black text-white'
-                  : 'bg-brand-gray text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {size}
-            </button>
-          ))}
+          {product.sizes.map(size => {
+            const available = availableSizes.has(size);
+            return (
+              <button
+                key={size}
+                type="button"
+                disabled={!available}
+                onClick={() => { setSelectedSize(size); setSizeError(false); }}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                  !available
+                    ? 'cursor-not-allowed bg-gray-100 text-gray-400 line-through'
+                    : selectedSize === size
+                      ? 'bg-brand-black text-white'
+                      : 'bg-brand-gray text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {size}
+              </button>
+            );
+          })}
         </div>
         {sizeError && (
           <p className="mt-2 text-xs text-brand-red">Please select a size before adding to cart.</p>
@@ -99,15 +130,33 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <hr className="my-5 border-gray-200" />
 
       <div className="flex items-center gap-4">
-        <QuantityStepper value={quantity} onChange={setQuantity} />
+        <QuantityStepper value={quantity} onChange={setQuantity} disabled={addingToCart} />
         <button
           type="button"
           onClick={handleAddToCart}
+          disabled={isOutOfStock || addingToCart}
           className={`flex-1 rounded-full py-3 text-sm font-semibold text-white transition ${
-            added ? 'bg-green-600' : 'bg-brand-black hover:bg-gray-800'
+            added
+              ? 'bg-green-600'
+              : isOutOfStock
+                ? 'cursor-not-allowed bg-gray-400'
+                : addingToCart
+                  ? 'cursor-wait bg-gray-600'
+                  : 'bg-brand-black hover:bg-gray-800'
           }`}
         >
-          {added ? '✓ Added to Cart' : 'Add to Cart'}
+          {added ? (
+            '✓ Added to Cart'
+          ) : addingToCart ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Adding...
+            </span>
+          ) : isOutOfStock ? (
+            'Out of Stock'
+          ) : (
+            'Add to Cart'
+          )}
         </button>
       </div>
     </div>

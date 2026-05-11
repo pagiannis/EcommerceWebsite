@@ -39,4 +39,7 @@ public class ProductVariant {
 
     @Column(unique = true)
     private String sku;
+
+    @Version
+    private Long version;
 }

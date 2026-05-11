@@ -9,8 +9,7 @@ import ColorFilter from "./ColorFilter";
 import SizeFilter from "./SizeFilter";
 import PriceRangeSlider from "./PriceRangeSlider";
 import FilterIcon from "../ui/FilterIcon";
-import { IoClose } from "react-icons/io5";
-import { IoIosArrowForward } from "react-icons/io";
+import { X, ChevronRight } from "lucide-react";
 
 interface FilterContentProps {
   filters: FilterState;
@@ -64,7 +63,7 @@ export default function FilterContent({
             aria-label="Close filters"
             className="text-gray-400 hover:text-black"
           >
-            <IoClose className="h-5 w-5" />
+            <X className="h-5 w-5" />
           </button>
         ) : (
           <FilterIcon className="h-5 w-5 text-gray-400" />
@@ -85,7 +84,7 @@ export default function FilterContent({
                 }`}
               >
                 {t.label}
-                <IoIosArrowForward className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </li>
           ))}
@@ -136,7 +135,7 @@ export default function FilterContent({
                 }`}
               >
                 {s.label}
-                <IoIosArrowForward className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </li>
           ))}

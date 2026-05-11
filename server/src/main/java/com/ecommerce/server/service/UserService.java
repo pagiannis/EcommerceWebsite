@@ -5,8 +5,10 @@ import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,12 +16,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -30,28 +34,35 @@ public class UserService implements UserDetailsService {
     // ένα UserDetails object που το Spring Security χρησιμοποιεί για
     // να συγκρίνει τον κωδικό και να φτιάξει το Authentication object.
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-        return new org.springframework.security.core.userdetails.User(
+        // AuthUser αντί για default Spring User: εκθέτει το id ώστε το
+        // @PreAuthorize("#userId == authentication.principal.id") να δουλεύει.
+        return new AuthUser(
+                user.getId(),
                 user.getEmail(),
-                user.getPasswordHash(),                                    // το hashed password για σύγκριση με BCrypt
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())) // π.χ. ROLE_USER ή ROLE_ADMIN
+                user.getPasswordHash(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return toResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
@@ -60,7 +71,7 @@ public class UserService implements UserDetailsService {
 
     public UserResponse registerUser(UserRegistrationRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already in use: " + request.email());
+            throw new ConflictException("Email already in use: " + request.email());
         }
 
         User user = User.builder()
@@ -80,7 +91,7 @@ public class UserService implements UserDetailsService {
 
         if (request.email() != null && !request.email().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
-                throw new IllegalArgumentException("Email already in use: " + request.email());
+                throw new ConflictException("Email already in use: " + request.email());
             }
             user.setEmail(request.email());
         }

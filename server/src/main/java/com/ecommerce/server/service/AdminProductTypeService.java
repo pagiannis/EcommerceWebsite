@@ -6,15 +6,18 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.ProductTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminProductTypeService {
 
     private final ProductTypeRepository productTypeRepository;
 
+    @Transactional(readOnly = true)
     public List<ProductType> getAllProductTypes() {
         return productTypeRepository.findAll();
     }

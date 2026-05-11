@@ -18,12 +18,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -91,7 +93,7 @@ public class ProductService {
     }
 
     public List<ProductSuggestionResponse> autocomplete(String query) {
-        return productRepository.findTop8ByNameContainingIgnoreCase(query)
+        return productRepository.findTop8ByWordPrefix(query, PageRequest.of(0, 8))
                 .stream()
                 .map(p -> new ProductSuggestionResponse(
                         p.getId(),

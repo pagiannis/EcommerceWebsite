@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,8 +19,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -29,16 +28,6 @@ public class UserController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletRequest httpRequest) {
@@ -47,6 +36,14 @@ public class UserController {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
+
+        // Session fixation protection: αν υπάρχει ήδη session, την ακυρώνουμε ώστε
+        // ο authenticated user να πάρει νέο session ID (αλλιώς ένας attacker που
+        // έδωσε γνωστό session ID στο θύμα θα μοιραζόταν το authenticated session).
+        HttpSession existing = httpRequest.getSession(false);
+        if (existing != null) {
+            existing.invalidate();
+        }
 
         // Αποθηκεύει το αποτέλεσμα του authentication στο SecurityContext (in-memory για το τρέχον request).
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -79,13 +76,21 @@ public class UserController {
         return new ResponseEntity<>(userService.registerUser(request), HttpStatus.CREATED);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
     @PutMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
                                                    @Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();

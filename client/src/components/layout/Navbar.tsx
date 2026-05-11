@@ -1,12 +1,10 @@
 import { useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
-import { LuShoppingCart } from "react-icons/lu";
-import { FaChevronDown, FaRegUserCircle } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { IoMenu } from "react-icons/io5";
+import { ShoppingCart, ChevronDown, Search, Menu } from "lucide-react";
 import ShopMegaMenu, { megaMenu } from "./ShopMegaMenu";
 import NavbarSearch from "./NavbarSearch";
+import UserDropdown from "./UserDropdown";
 
 const brandsList = [
   { slug: "nike", label: "Nike" },
@@ -47,7 +45,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
           >
-            <IoMenu className="h-6 w-6" />
+            <Menu className="h-6 w-6" />
           </button>
         )}
 
@@ -89,7 +87,7 @@ export default function Navbar() {
               className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black"
             >
               Brands
-              <FaChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3 w-3" />
             </button>
 
             {brandsOpen && (
@@ -134,19 +132,17 @@ export default function Navbar() {
               onClick={() => setSearchOpen(true)}
               aria-label="Open search"
             >
-              <IoIosSearch className="h-6 w-6" />
+              <Search className="h-6 w-6" />
             </button>
-            <Link to="/cart" className="relative">
-              <LuShoppingCart className="h-6 w-6" />
+            <Link to="/cart" className="relative inline-flex items-center">
+              <ShoppingCart className="h-6 w-6" />
               {totalItems > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-black text-[10px] font-bold text-white">
                   {totalItems}
                 </span>
               )}
             </Link>
-            <Link to="/account">
-              <FaRegUserCircle className="h-6 w-6" />
-            </Link>
+            <UserDropdown />
           </div>
         )}
       </div>

@@ -6,15 +6,18 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminBrandService {
 
     private final BrandRepository brandRepository;
 
+    @Transactional(readOnly = true)
     public List<Brand> getAllBrands() {
         return brandRepository.findAll();
     }
