@@ -14,7 +14,7 @@ export default function AccountPage() {
         Personal Information
       </h1>
 
-      <div className="max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
         <dl className="divide-y divide-gray-100">
           <InfoRow label="Name" value={`${user.firstName} ${user.lastName}`} />
           <InfoRow label="Email" value={user.email} />
@@ -29,8 +29,8 @@ export default function AccountPage() {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center">
-      <dt className="w-36 shrink-0 text-sm text-gray-500">{label}</dt>
-      <dd className="text-sm font-medium text-gray-900">{value}</dd>
+      <dt className="text-sm text-gray-500 sm:w-1/2">{label}</dt>
+      <dd className="text-sm font-medium text-gray-900 sm:w-1/2">{value}</dd>
     </div>
   );
 }

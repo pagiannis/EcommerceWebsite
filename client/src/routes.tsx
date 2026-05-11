@@ -24,19 +24,19 @@ const router = createBrowserRouter([
       { path: "shop", element: <ShopPage /> },
       { path: "product/:productId", element: <ProductDetailPage /> },
       { path: "cart", element: <CartPage /> },
-      {
-        path: "account",
-        element: (
-          <ProtectedRoute>
-            <AccountLayout />
-          </ProtectedRoute>
-        ),
-        children: [
-          { index: true, element: <AccountPage /> },
-          { path: "orders", element: <OrdersPage /> },
-          { path: "wishlist", element: <WishlistPage /> },
-        ],
-      },
+    ],
+  },
+  {
+    path: "account",
+    element: (
+      <ProtectedRoute>
+        <AccountLayout />
+      </ProtectedRoute>
+    ),
+    children: [ 
+      { index: true, element: <AccountPage /> },
+      { path: "orders", element: <OrdersPage /> },
+      { path: "wishlist", element: <WishlistPage /> },
     ],
   },
   { path: "/login", element: <LoginPage /> },
