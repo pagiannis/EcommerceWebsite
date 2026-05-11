@@ -39,13 +39,15 @@ export default function AccountLayout() {
                 {label}
               </NavLink>
             ))}
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-gray-400 hover:bg-gray-50 hover:text-brand-black transition-colors lg:mt-2"
-            >
-              Sign out
-            </button>
+            <div className="lg:border-t lg:border-gray-200 lg:mt-2 lg:pt-2">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="whitespace-nowrap px-3 py-2 text-left text-sm text-gray-400 hover:text-brand-black underline-offset-2 underline lg:no-underline lg:hover:underline transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
           </nav>
         </aside>
 
