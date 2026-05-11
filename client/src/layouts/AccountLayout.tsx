@@ -1,4 +1,10 @@
-import { Link, NavLink, Outlet, ScrollRestoration, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  ScrollRestoration,
+  useNavigate,
+} from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 
@@ -65,7 +71,7 @@ export default function AccountLayout() {
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="whitespace-nowrap px-3 py-2 text-left text-sm text-gray-400 hover:text-brand-black underline-offset-2 underline lg:no-underline lg:hover:underline transition-colors"
+                    className="whitespace-nowrap px-3 py-2 text-left text-sm text-gray-400 hover:text-brand-black underline-offset-2 underline lg:hover:underline transition-colors"
                   >
                     Sign out
                   </button>
