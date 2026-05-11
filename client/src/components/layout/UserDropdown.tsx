@@ -52,10 +52,10 @@ export default function UserDropdown() {
               <Link to="/account" className={linkClass} onClick={() => setOpen(false)}>
                 My Account
               </Link>
-              <Link to="/orders" className={linkClass} onClick={() => setOpen(false)}>
+              <Link to="/account/orders" className={linkClass} onClick={() => setOpen(false)}>
                 My Orders
               </Link>
-              <Link to="/wishlist" className={linkClass} onClick={() => setOpen(false)}>
+              <Link to="/account/wishlist" className={linkClass} onClick={() => setOpen(false)}>
                 Wishlist
               </Link>
               <div className="mx-4 mt-1 border-t border-gray-200" />
