@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser, useUpdateUserMutation } from "../hooks/useAccount";
 import { profileSchema, type ProfileValues } from "../schemas/profileSchema";
 import AccountSkeleton from "../components/account/AccountSkeleton";
+import { Loader2 } from "lucide-react";
 
 export default function AccountPage() {
   const { data: user, isError, isLoading } = useUser();
@@ -114,9 +115,16 @@ export default function AccountPage() {
               <button
                 type="submit"
                 disabled={!isDirty || updateMutation.isPending}
-                className="rounded-full bg-brand-black px-6 py-2.5 text-sm font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center rounded-full bg-brand-black px-6 py-2.5 text-sm font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {updateMutation.isPending ? "Saving..." : "Save changes"}
+                {updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save changes"
+                )}
               </button>
             </div>
           </form>
