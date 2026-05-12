@@ -31,3 +31,8 @@ export async function register(payload: RegisterPayload): Promise<UserResponse> 
 export async function logout(): Promise<void> {
   await apiClient.post("/users/logout");
 }
+
+export async function getUser(id: number): Promise<UserResponse> {
+  const { data } = await apiClient.get<UserResponse>(`/users/${id}`);
+  return data;
+}
