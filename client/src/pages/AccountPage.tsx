@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useUser, useUpdateUserMutation } from "../hooks/useAuth";
+import { useUser, useUpdateUserMutation } from "../hooks/useAccount";
 import { profileSchema, type ProfileValues } from "../schemas/profileSchema";
 import AccountSkeleton from "../components/account/AccountSkeleton";
 

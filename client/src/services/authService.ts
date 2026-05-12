@@ -1,14 +1,5 @@
 import apiClient from "./apiClient";
-
-export interface UserResponse {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  role: "USER" | "ADMIN";
-  createdAt: string;
-}
+import type { UserResponse } from "./accountService";
 
 export interface RegisterPayload {
   email: string;
@@ -30,21 +21,4 @@ export async function register(payload: RegisterPayload): Promise<UserResponse> 
 
 export async function logout(): Promise<void> {
   await apiClient.post("/users/logout");
-}
-
-export async function getUser(id: number): Promise<UserResponse> {
-  const { data } = await apiClient.get<UserResponse>(`/users/${id}`);
-  return data;
-}
-
-export interface UpdateUserPayload {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-}
-
-export async function updateUser(id: number, payload: UpdateUserPayload): Promise<UserResponse> {
-  const { data } = await apiClient.put<UserResponse>(`/users/${id}`, payload);
-  return data;
 }
