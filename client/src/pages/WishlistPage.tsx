@@ -1,11 +1,11 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
-import ProductCard from "../components/product/ProductCard";
+import WishlistCard from "../components/wishlist/WishlistCard";
 import ProductCardSkeleton from "../components/product/ProductCardSkeleton";
 
 export default function WishlistPage() {
-  const { data: products, isLoading, isError } = useWishlist();
+  const { data: items, isLoading, isError } = useWishlist();
 
   if (isError) {
     return (
@@ -27,7 +27,7 @@ export default function WishlistPage() {
             <ProductCardSkeleton key={i} />
           ))}
         </div>
-      ) : !products || products.length === 0 ? (
+      ) : !items || items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Heart className="h-12 w-12 text-gray-200" />
           <h2 className="mt-4 text-base font-semibold text-gray-900">
@@ -45,8 +45,8 @@ export default function WishlistPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {items.map((item) => (
+            <WishlistCard key={item.id} item={item} />
           ))}
         </div>
       )}

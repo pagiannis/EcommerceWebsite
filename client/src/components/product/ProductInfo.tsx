@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import type { Product } from '../../types/product';
 import type { Size } from '../../types/size';
 import { useAddToCart } from '../../hooks/useCart';
+import { useAuthStore } from '../../store/authStore';
+import { useToggleWishlist } from '../../hooks/useWishlist';
 import StarRating from '../ui/StarRating';
 import Badge from '../ui/Badge';
 import QuantityStepper from '../ui/QuantityStepper';
@@ -13,6 +15,8 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
   const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
+  const isLoggedIn = useAuthStore((s) => s.user !== null);
+  const { isWishlisted, toggle: toggleWishlist, isPending: togglingWishlist } = useToggleWishlist(product.id);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -158,6 +162,19 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             'Add to Cart'
           )}
         </button>
+        {isLoggedIn && (
+          <button
+            type="button"
+            onClick={toggleWishlist}
+            disabled={togglingWishlist}
+            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            className="flex flex-shrink-0 items-center justify-center rounded-full border border-gray-200 p-3 transition hover:border-brand-black disabled:opacity-40"
+          >
+            <Heart
+              className={`h-5 w-5 transition ${isWishlisted ? 'fill-brand-red text-brand-red' : 'text-gray-700'}`}
+            />
+          </button>
+        )}
       </div>
     </div>
   );

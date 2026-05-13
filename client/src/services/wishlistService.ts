@@ -1,8 +1,24 @@
 import apiClient from "./apiClient";
-import type { Product } from "../types/product";
-import { type ProductResponse, mapApiProduct } from "./productsService";
 
-export async function getWishlist(userId: number): Promise<Product[]> {
-  const { data } = await apiClient.get<ProductResponse[]>(`/users/${userId}/wishlist`);
-  return data.map(mapApiProduct);
+export interface WishlistItemResponse {
+  id: number;
+  productId: number;
+  productName: string;
+  imageUrl: string;
+  brand: string;
+  price: number;
+  addedAt: string;
+}
+
+export async function getWishlist(userId: number): Promise<WishlistItemResponse[]> {
+  const { data } = await apiClient.get<WishlistItemResponse[]>(`/users/${userId}/wishlist`);
+  return data;
+}
+
+export async function addToWishlist(userId: number, productId: number): Promise<void> {
+  await apiClient.post(`/users/${userId}/wishlist/${productId}`);
+}
+
+export async function removeFromWishlist(userId: number, productId: number): Promise<void> {
+  await apiClient.delete(`/users/${userId}/wishlist/${productId}`);
 }
