@@ -1,7 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useOrders } from "../hooks/useOrders";
-import type { OrderStatus, PaymentMethod } from "../services/ordersService";
+import type { OrderStatus } from "../services/ordersService";
 import OrdersSkeleton from "../components/orders/OrdersSkeleton";
 import { COLOR_ENUM_TO_HEX } from "../services/productsService";
 import { SIZE_FROM_API } from "../services/productsService";
@@ -20,12 +20,6 @@ const STATUS_CLASS: Record<OrderStatus, string> = {
   SHIPPED: "bg-purple-50 text-purple-700",
   DELIVERED: "bg-green-50 text-green-700",
   CANCELLED: "bg-red-50 text-red-700",
-};
-
-const PAYMENT_LABEL: Record<PaymentMethod, string> = {
-  CARD: "Card",
-  PAYPAL: "PayPal",
-  CASH_ON_DELIVERY: "Cash on Delivery",
 };
 
 export default function OrdersPage() {
@@ -70,7 +64,7 @@ export default function OrdersPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Order #{order.id}</p>
+                  <p className="text-sm font-semibold text-gray-900">{order.orderNumber}</p>
                   <p className="mt-0.5 text-xs text-gray-400">
                     {new Date(order.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
@@ -92,15 +86,7 @@ export default function OrdersPage() {
                   const sizeLabel = SIZE_FROM_API[item.size] ?? item.size;
                   return (
                     <li key={item.id} className="flex items-center gap-4 py-3">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.productName}
-                          className="h-14 w-14 flex-shrink-0 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="h-14 w-14 flex-shrink-0 rounded-lg bg-gray-100" />
-                      )}
+                      <div className="h-14 w-14 flex-shrink-0 rounded-lg bg-gray-100" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-gray-900">
                           {item.productName}
@@ -126,9 +112,11 @@ export default function OrdersPage() {
               </ul>
 
               <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
-                <p className="text-xs text-gray-400">{PAYMENT_LABEL[order.paymentMethod]}</p>
+                <p className="text-xs text-gray-400">
+                  Subtotal ${order.subtotal.toFixed(2)} · Tax ${order.tax.toFixed(2)} · Shipping ${order.shippingFee.toFixed(2)}
+                </p>
                 <p className="text-sm font-semibold text-gray-900">
-                  Total: ${order.totalAmount.toFixed(2)}
+                  Total: ${order.total.toFixed(2)}
                 </p>
               </div>
             </div>

@@ -1,7 +1,6 @@
 import apiClient from "./apiClient";
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-export type PaymentMethod = "CARD" | "PAYPAL" | "CASH_ON_DELIVERY";
 
 export interface OrderItemResponse {
   id: number;
@@ -9,25 +8,19 @@ export interface OrderItemResponse {
   color: string;
   size: string;
   quantity: number;
-  unitPrice: number;
+  priceAtPurchase: number;
   subtotal: number;
-  imageUrl?: string;
-}
-
-export interface OrderAddressResponse {
-  street: string;
-  city: string;
-  zipCode: string;
-  country: string;
 }
 
 export interface OrderResponse {
   id: number;
+  orderNumber: string;
   status: OrderStatus;
   createdAt: string;
-  totalAmount: number;
-  paymentMethod: PaymentMethod;
-  shippingAddress: OrderAddressResponse;
+  subtotal: number;
+  tax: number;
+  shippingFee: number;
+  total: number;
   items: OrderItemResponse[];
 }
 
