@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../store/authStore";
-import { getOrders } from "../services/ordersService";
+import { getWishlist } from "../services/wishlistService";
 
-export function useOrders() {
+export function useWishlist() {
   const userId = useAuthStore((s) => s.user?.id);
   return useQuery({
-    queryKey: ["users", userId, "orders"],
-    queryFn: () => getOrders(userId!),
+    queryKey: ["users", userId, "wishlist"],
+    queryFn: () => getWishlist(userId!),
     enabled: userId !== undefined,
   });
 }
