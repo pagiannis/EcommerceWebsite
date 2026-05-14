@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import AccountPage from "./pages/AccountPage";
 import OrdersPage from "./pages/OrdersPage";
 import WishlistPage from "./pages/WishlistPage";
@@ -24,6 +25,14 @@ const router = createBrowserRouter([
       { path: "shop", element: <ShopPage /> },
       { path: "product/:productId", element: <ProductDetailPage /> },
       { path: "cart", element: <CartPage /> },
+      {
+        path: "checkout",
+        element: (
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {
