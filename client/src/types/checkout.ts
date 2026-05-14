@@ -20,5 +20,6 @@ export interface PaymentData {
 
 export interface CheckoutData {
   shipping: ShippingData | null;
+  addressId: number | null;
   payment: PaymentData | null;
 }

@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("shipping");
   const [checkoutData, setCheckoutData] = useState<CheckoutData>({
     shipping: null,
+    addressId: null,
     payment: null,
   });
 
@@ -45,8 +46,8 @@ export default function CheckoutPage() {
 
   const activeIndex = STEPS.findIndex((s) => s.key === step);
 
-  function handleShippingSubmit(data: ShippingData) {
-    setCheckoutData((prev) => ({ ...prev, shipping: data }));
+  function handleShippingSubmit(data: ShippingData, addressId: number) {
+    setCheckoutData((prev) => ({ ...prev, shipping: data, addressId }));
     setStep("payment");
   }
 
