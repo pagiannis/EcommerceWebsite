@@ -78,7 +78,7 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
             <address className="not-italic space-y-0.5 text-sm text-gray-600">
               <p>{shipping.firstName} {shipping.lastName}</p>
               <p>{shipping.address}</p>
-              <p>{shipping.city}{shipping.state ? `, ${shipping.state}` : ""} {shipping.zip}</p>
+              <p>{shipping.city} {shipping.zip}</p>
               <p>{shipping.country}</p>
               <p className="mt-2 text-gray-400">{shipping.email}</p>
               {shipping.phone && <p className="text-gray-400">{shipping.phone}</p>}

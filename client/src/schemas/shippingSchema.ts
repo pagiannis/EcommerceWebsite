@@ -10,7 +10,6 @@ export const shippingSchema = z.object({
   ),
   address: z.string().min(5, "Enter a valid street address"),
   city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State / province is required"),
   zip: z.string().min(1, "ZIP / postal code is required"),
   country: z.string().min(1, "Country is required"),
 });

@@ -41,7 +41,6 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
       phone: "",
       address: "",
       city: "",
-      state: "",
       zip: "",
       country: "",
     },
@@ -64,7 +63,6 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
       phone: user?.phone ?? "",
       address: defaultAddr?.street ?? "",
       city: defaultAddr?.city ?? "",
-      state: "",
       zip: defaultAddr?.postalCode ?? "",
       country: defaultAddr?.country ?? "",
     });
@@ -154,18 +152,12 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
             {...register("address")}
           />
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               label="City"
               autoComplete="address-level2"
               error={errors.city?.message}
               {...register("city")}
-            />
-            <FormField
-              label="State / Province"
-              autoComplete="address-level1"
-              error={errors.state?.message}
-              {...register("state")}
             />
             <FormField
               label="ZIP / Postal code"
