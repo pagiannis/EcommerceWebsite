@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 import AccountLayout from "./layouts/AccountLayout";
+import CheckoutLayout from "./layouts/CheckoutLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
@@ -25,15 +26,16 @@ const router = createBrowserRouter([
       { path: "shop", element: <ShopPage /> },
       { path: "product/:productId", element: <ProductDetailPage /> },
       { path: "cart", element: <CartPage /> },
-      {
-        path: "checkout",
-        element: (
-          <ProtectedRoute>
-            <CheckoutPage />
-          </ProtectedRoute>
-        ),
-      },
     ],
+  },
+  {
+    path: "checkout",
+    element: (
+      <ProtectedRoute>
+        <CheckoutLayout />
+      </ProtectedRoute>
+    ),
+    children: [{ index: true, element: <CheckoutPage /> }],
   },
   {
     path: "account",
