@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,10 @@ import { shippingSchema } from "../../schemas/shippingSchema";
 import FormField from "../ui/FormField";
 import { useAuthStore } from "../../store/authStore";
 import { createAddress } from "../../services/addressService";
+import type { AddressResponse } from "../../services/addressService";
+import { useAddresses } from "../../hooks/useAddresses";
 import type { ShippingData } from "../../types/checkout";
+import ShippingStepSkeleton from "./ShippingStepSkeleton";
 
 type FormValues = z.infer<typeof shippingSchema>;
 
@@ -19,6 +22,10 @@ interface Props {
 export default function ShippingStep({ defaultValues, onSubmit }: Props) {
   const user = useAuthStore((s) => s.user);
   const [serverError, setServerError] = useState<string | null>(null);
+  // track the pre-filled default address so we can skip POST if unchanged
+  const prefilled = useRef<AddressResponse | null>(null);
+
+  const { data: addresses, isLoading: addressesLoading } = useAddresses();
 
   const {
     register,
@@ -41,26 +48,45 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
   });
 
   useEffect(() => {
+    // Coming back from a later step — restore exactly what the user entered
     if (defaultValues) {
       reset(defaultValues);
-    } else if (user) {
-      reset({
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        email: user.email ?? "",
-        phone: user.phone ?? "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "",
-      });
+      return;
     }
-  }, [defaultValues, user, reset]);
+
+    const defaultAddr = addresses?.find((a) => a.isDefault) ?? addresses?.[0] ?? null;
+    prefilled.current = defaultAddr;
+
+    reset({
+      firstName: user?.firstName ?? "",
+      lastName: user?.lastName ?? "",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      address: defaultAddr?.street ?? "",
+      city: defaultAddr?.city ?? "",
+      state: "",
+      zip: defaultAddr?.postalCode ?? "",
+      country: defaultAddr?.country ?? "",
+    });
+  }, [defaultValues, addresses, user, reset]);
 
   async function onFormSubmit(values: FormValues) {
     if (!user) return;
     setServerError(null);
+
+    const addr = prefilled.current;
+    const addressUnchanged =
+      addr !== null &&
+      values.address === addr.street &&
+      values.city === addr.city &&
+      values.zip === addr.postalCode &&
+      values.country === addr.country;
+
+    if (addressUnchanged) {
+      onSubmit(values, addr.id);
+      return;
+    }
+
     try {
       const saved = await createAddress(user.id, {
         street: values.address,
@@ -75,7 +101,12 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
     }
   }
 
+  if (addressesLoading) {
+    return <ShippingStepSkeleton />;
+  }
+
   return (
+    // eslint-disable-next-line react-hooks/refs
     <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
       <div className="rounded-2xl border border-gray-200 p-8">
         <h2 className="mb-6 text-xl font-bold text-gray-900">Shipping Address</h2>

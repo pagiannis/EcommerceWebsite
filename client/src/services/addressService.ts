@@ -17,6 +17,13 @@ interface CreateAddressPayload {
   isDefault: boolean;
 }
 
+export async function getAddresses(userId: number): Promise<AddressResponse[]> {
+  const { data } = await apiClient.get<AddressResponse[]>(
+    `/users/${userId}/addresses`
+  );
+  return data;
+}
+
 export async function createAddress(
   userId: number,
   payload: CreateAddressPayload
