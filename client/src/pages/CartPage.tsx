@@ -1,4 +1,4 @@
-import { Loader2, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -6,6 +6,7 @@ import { useServerCartSync } from '../hooks/useCart';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import CartItem from '../components/cart/CartItem';
 import OrderSummary from '../components/cart/OrderSummary';
+import CartSkeleton from '../components/cart/CartSkeleton';
 
 export default function CartPage() {
   const user = useAuthStore((s) => s.user);
@@ -15,8 +16,12 @@ export default function CartPage() {
 
   if (user && isLoading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
+        <Breadcrumb items={[{ label: 'Home', to: '/' }, { label: 'Cart' }]} />
+        <h1 className="font-display mb-8 text-4xl font-extrabold uppercase tracking-tight text-brand-black">
+          Your Cart
+        </h1>
+        <CartSkeleton />
       </div>
     );
   }
