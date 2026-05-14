@@ -7,6 +7,9 @@ import PaymentStep from "../components/checkout/PaymentStep";
 import ReviewStep from "../components/checkout/ReviewStep";
 import ConfirmationStep from "../components/checkout/ConfirmationStep";
 import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "../store/authStore";
+import { createOrder } from "../services/ordersService";
+import type { OrderResponse } from "../services/ordersService";
 import type { CheckoutData, ShippingData, PaymentData } from "../types/checkout";
 
 type Step = "shipping" | "payment" | "review" | "confirmation";
@@ -17,6 +20,11 @@ const STEPS: { key: Step; label: string }[] = [
   { key: "review", label: "Review" },
 ];
 
+const PAYMENT_METHOD_MAP = {
+  card: "CARD",
+  paypal: "PAYPAL",
+} as const;
+
 export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("shipping");
   const [checkoutData, setCheckoutData] = useState<CheckoutData>({
@@ -24,8 +32,11 @@ export default function CheckoutPage() {
     addressId: null,
     payment: null,
   });
+  const [order, setOrder] = useState<OrderResponse | null>(null);
 
+  const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
+  const clearCart = useCartStore((s) => s.clearCart);
 
   if (items.length === 0 && step !== "confirmation") {
     return (
@@ -61,8 +72,13 @@ export default function CheckoutPage() {
     else if (step === "review") setStep("payment");
   }
 
-  function handlePlaceOrder() {
-    // Step 5: will call createOrder API here
+  async function handlePlaceOrder() {
+    const placed = await createOrder(user!.id, {
+      shippingAddressId: checkoutData.addressId!,
+      paymentMethod: PAYMENT_METHOD_MAP[checkoutData.payment!.method],
+    });
+    setOrder(placed);
+    clearCart();
     setStep("confirmation");
   }
 
@@ -138,7 +154,7 @@ export default function CheckoutPage() {
           onPlaceOrder={handlePlaceOrder}
         />
       )}
-      {step === "confirmation" && <ConfirmationStep />}
+      {step === "confirmation" && order && <ConfirmationStep order={order} />}
     </div>
   );
 }

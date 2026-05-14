@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import { CreditCard, Loader2, Wallet } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 import type { CheckoutData } from "../../types/checkout";
@@ -11,6 +12,7 @@ interface Props {
 
 export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props) {
   const [isPlacing, setIsPlacing] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal);
 
@@ -18,8 +20,14 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
 
   async function handlePlaceOrder() {
     setIsPlacing(true);
+    setServerError(null);
     try {
       await onPlaceOrder();
+    } catch (err) {
+      const msg = isAxiosError(err)
+        ? (err.response?.data?.message ?? "Failed to place order. Please try again.")
+        : "Failed to place order. Please try again.";
+      setServerError(msg);
     } finally {
       setIsPlacing(false);
     }
@@ -117,6 +125,10 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
           </div>
         </div>
       </div>
+
+      {serverError && (
+        <p className="text-sm text-brand-red">{serverError}</p>
+      )}
 
       <div className="flex justify-between">
         <button
