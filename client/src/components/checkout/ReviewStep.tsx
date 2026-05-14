@@ -36,7 +36,7 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
   return (
     <div className="space-y-4">
       {/* Items */}
-      <div className="rounded-2xl border border-gray-200 p-8">
+      <div className="rounded-2xl border border-gray-200 p-5 sm:p-8">
         <h2 className="mb-6 text-xl font-bold text-gray-900">Order Items</h2>
         <ul className="divide-y divide-gray-100">
           {items.map((item) => (
@@ -72,7 +72,7 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
 
       {/* Shipping & Payment */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 p-6">
+        <div className="rounded-2xl border border-gray-200 p-4 sm:p-6">
           <h3 className="mb-3 text-sm font-bold text-gray-900">Shipping Address</h3>
           {shipping && (
             <address className="not-italic space-y-0.5 text-sm text-gray-600">
@@ -109,7 +109,7 @@ export default function ReviewStep({ checkoutData, onBack, onPlaceOrder }: Props
       </div>
 
       {/* Total + actions */}
-      <div className="rounded-2xl border border-gray-200 p-6">
+      <div className="rounded-2xl border border-gray-200 p-4 sm:p-6">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-gray-600">
             <span>Subtotal</span>

@@ -106,7 +106,7 @@ export default function ShippingStep({ defaultValues, onSubmit }: Props) {
   return (
     // eslint-disable-next-line react-hooks/refs
     <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
-      <div className="rounded-2xl border border-gray-200 p-8">
+      <div className="rounded-2xl border border-gray-200 p-5 sm:p-8">
         <h2 className="mb-6 text-xl font-bold text-gray-900">Shipping Address</h2>
 
         <div className="space-y-4">

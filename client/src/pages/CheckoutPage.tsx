@@ -105,7 +105,7 @@ export default function CheckoutPage() {
               <div key={key} className="flex items-center">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                       done || active
                         ? "bg-brand-black text-white"
                         : "bg-gray-200 text-gray-500"
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
                     {done ? <Check className="h-4 w-4" /> : i + 1}
                   </div>
                   <span
-                    className={`text-sm font-semibold ${
+                    className={`hidden text-sm font-semibold sm:inline ${
                       active ? "text-brand-black" : done ? "text-gray-500" : "text-gray-400"
                     }`}
                   >
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
                 </div>
                 {i < STEPS.length - 1 && (
                   <div
-                    className={`mx-4 h-px w-12 sm:w-20 ${
+                    className={`mx-2 h-px w-8 sm:mx-4 sm:w-20 ${
                       done ? "bg-brand-black" : "bg-gray-200"
                     }`}
                   />

@@ -41,7 +41,7 @@ export default function PaymentStep({ defaultValues, onSubmit, onBack }: Props) 
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
-      <div className="rounded-2xl border border-gray-200 p-8">
+      <div className="rounded-2xl border border-gray-200 p-5 sm:p-8">
         <h2 className="mb-6 text-xl font-bold text-gray-900">Payment Method</h2>
 
         {/* Method selector */}
@@ -56,7 +56,7 @@ export default function PaymentStep({ defaultValues, onSubmit, onBack }: Props) 
               key={value}
               type="button"
               onClick={() => setValue("method", value, { shouldValidate: true })}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+              className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-xs font-semibold transition-colors sm:gap-3 sm:px-4 sm:text-sm ${
                 method === value
                   ? "border-brand-black bg-brand-black text-white"
                   : "border-gray-200 text-gray-700 hover:border-gray-400"
