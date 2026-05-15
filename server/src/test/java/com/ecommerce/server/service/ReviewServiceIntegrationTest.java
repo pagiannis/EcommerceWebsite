@@ -1,6 +1,7 @@
 package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.ReviewRequest;
+import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
@@ -13,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -118,5 +120,40 @@ class ReviewServiceIntegrationTest {
         // rating = (5+3)/2 = 4.0
         assertThat(productRepository.findById(testProduct.getId()).orElseThrow()
                 .getRating()).isEqualTo(4.0);
+    }
+
+    // ====================================================================
+    //   getProductReviews / getUserReviews — N+1 (bug #10)
+    // ====================================================================
+
+    @Test
+    @DisplayName("getProductReviews: επιστρέφει mapped responses με όνομα user (JOIN FETCH user)")
+    void getProductReviews_includesUserNameWithoutLazyError() {
+        reviewService.createReview(testUser.getId(),
+                new ReviewRequest(testProduct.getId(), 5, "first"));
+        reviewService.createReview(testUser.getId(),
+                new ReviewRequest(testProduct.getId(), 4, "second"));
+
+        List<ReviewResponse> results = reviewService.getProductReviews(
+                testProduct.getId(), "LATEST", null);
+
+        assertThat(results).hasSize(2);
+        // Αν το JOIN FETCH δεν δουλεύει, το userName θα ήταν null ή θα έσπαγε
+        // σε LazyInitializationException έξω από session — επιβεβαιώνουμε ότι
+        // έρχεται γεμάτο και απευθείας στο DTO.
+        assertThat(results.get(0).userName()).isEqualTo("Review Tester");
+        assertThat(results.get(1).userName()).isEqualTo("Review Tester");
+    }
+
+    @Test
+    @DisplayName("getUserReviews: επιστρέφει mapped responses με productId (JOIN FETCH product)")
+    void getUserReviews_includesProductIdWithoutLazyError() {
+        reviewService.createReview(testUser.getId(),
+                new ReviewRequest(testProduct.getId(), 5, "ok"));
+
+        List<ReviewResponse> results = reviewService.getUserReviews(testUser.getId());
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).productId()).isEqualTo(testProduct.getId());
     }
 }
