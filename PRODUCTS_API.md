@@ -188,9 +188,7 @@ GET /api/products/autocomplete?query=sh
 
 ### 5. 🌐 `GET /api/reviews/product/{productId}` — Reviews προϊόντος με φίλτρα
 
-Επιστρέφει **paginated** τα reviews ενός προϊόντος. Υποστηρίζει φιλτράρισμα ανά rating και ταξινόμηση. Όλα τα params είναι προαιρετικά.
-
-> ⚠️ **Breaking change**: παλιά επέστρεφε `[...]`. Τώρα επιστρέφει `Page<ReviewResponse>` με το ίδιο shape που χρησιμοποιεί ήδη το `GET /api/products`.
+Επιστρέφει τα reviews ενός προϊόντος. Υποστηρίζει φιλτράρισμα ανά rating και ταξινόμηση. Όλα τα params είναι προαιρετικά.
 
 #### Query Parameters
 
@@ -198,8 +196,6 @@ GET /api/products/autocomplete?query=sh
 |---|---|---|---|
 | `sort` | enum | `LATEST` | Ταξινόμηση αποτελεσμάτων |
 | `minRating` | int | `0` (=όλα) | Ελάχιστο rating (1–5) |
-| `page` | int | `0` | Αριθμός σελίδας (ξεκινά από 0) |
-| `size` | int | `10` | Reviews ανά σελίδα (max 100) |
 
 #### Τιμές Enums
 
@@ -208,11 +204,8 @@ GET /api/products/autocomplete?query=sh
 #### Παραδείγματα
 
 ```
-# Πρώτη σελίδα reviews (default: νεότερα πρώτα, 10 ανά σελίδα)
+# Όλα τα reviews (default: νεότερα πρώτα)
 GET /api/reviews/product/21
-
-# Δεύτερη σελίδα
-GET /api/reviews/product/21?page=1
 
 # Μόνο reviews με rating >= 3
 GET /api/reviews/product/21?minRating=3
@@ -220,39 +213,31 @@ GET /api/reviews/product/21?minRating=3
 # Ταξινομημένα από υψηλότερο rating
 GET /api/reviews/product/21?sort=HIGHEST_RATING
 
-# Συνδυασμός: rating >= 4, παλαιότερα πρώτα, σελίδα 0 με 20 reviews
-GET /api/reviews/product/21?sort=OLDEST&minRating=4&page=0&size=20
+# Συνδυασμός: rating >= 4, παλαιότερα πρώτα
+GET /api/reviews/product/21?sort=OLDEST&minRating=4
 ```
 
 #### Response
 
 ```json
-{
-  "content": [
-    {
-      "id": 5,
-      "productId": 21,
-      "userName": "Alice Johnson",
-      "rating": 5,
-      "comment": "Great fit and super comfortable. Will definitely order again.",
-      "createdAt": "2026-03-10 14:22:00"
-    },
-    {
-      "id": 12,
-      "productId": 21,
-      "userName": "Bob Smith",
-      "rating": 4,
-      "comment": "Nice product overall. Sizing is accurate.",
-      "createdAt": "2026-02-05 09:11:00"
-    }
-  ],
-  "totalElements": 247,
-  "totalPages": 25,
-  "number": 0,
-  "size": 10,
-  "first": true,
-  "last": false
-}
+[
+  {
+    "id": 5,
+    "productId": 21,
+    "userName": "Alice Johnson",
+    "rating": 5,
+    "comment": "Great fit and super comfortable. Will definitely order again.",
+    "createdAt": "2026-03-10 14:22:00"
+  },
+  {
+    "id": 12,
+    "productId": 21,
+    "userName": "Bob Smith",
+    "rating": 4,
+    "comment": "Nice product overall. Sizing is accurate.",
+    "createdAt": "2026-02-05 09:11:00"
+  }
+]
 ```
 
 ---
