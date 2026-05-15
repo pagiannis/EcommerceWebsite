@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
+import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
 import com.ecommerce.server.models.enums.ProductSort;
@@ -46,6 +47,13 @@ public class ProductController {
             @RequestParam(required = false) String productTypeName,
             @RequestParam(required = false) ProductSort sort,
             @RequestParam(required = false) @Min(1) @Max(5) Double minRating) {
+
+        // Cross-field check: αλλιώς για minPrice=100&maxPrice=50 ο user
+        // παίρνει κενά αποτελέσματα ("δεν βρέθηκαν προϊόντα") αντί για
+        // καθαρό error που λέει ότι το input είναι λάθος.
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+            throw new BadRequestException("minPrice must be less than or equal to maxPrice");
+        }
 
         return ResponseEntity.ok(productService.getFilteredProducts(
                 category, minPrice, maxPrice, colors, filterSizes, dressStyle,

@@ -648,6 +648,7 @@ POST /api/orders/5/reorder?userId=1
 - `size < 1` ή `size > 100`
 - `minPrice < 0`
 - `minRating < 1` ή `minRating > 5`
+- `minPrice > maxPrice` → επιστρέφεται απλό 400 με message `"minPrice must be less than or equal to maxPrice"` (αντί για το παλιό confusing "κανένα αποτέλεσμα")
 
 ---
 
