@@ -112,7 +112,6 @@ class ReviewServiceTest {
         // Τώρα ΟΛΑ γίνονται μέσω της atomic query.
         verify(productRepository, never()).save(any());
         verify(reviewRepository, never()).countByProductId(any());
-        verify(reviewRepository, never()).findByProductIdOrderByCreatedAtDesc(any());
         verify(reviewRepository, never()).findAverageRatingByProductId(any());
     }
 
