@@ -90,6 +90,22 @@ public class OrderService {
             throw new BadRequestException("Cart is empty");
         }
 
+        // Validate stock ΠΡΩΤΑ για όλα τα cart items πριν αγγίξουμε τη βάση.
+        // Αν αποτύχει, δεν έχει γίνει κανένα write — άρα δεν χρειαζόμαστε
+        // transactional rollback για ξεγραμμένο Order.
+        for (CartItem cartItem : cartItems) {
+            ProductVariant variant = cartItem.getVariant();
+            if (cartItem.getQuantity() > variant.getStockQuantity()) {
+                Product product = variant.getProduct();
+                throw new BadRequestException(
+                        "Not enough stock for " + product.getName() +
+                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
+                                "Available: " + variant.getStockQuantity() +
+                                ", Requested: " + cartItem.getQuantity()
+                );
+            }
+        }
+
         BigDecimal subtotal = cartItems.stream()
                 .map(item -> item.getVariant().getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -121,15 +137,6 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
             ProductVariant variant = cartItem.getVariant();
             Product product = variant.getProduct();
-
-            if (cartItem.getQuantity() > variant.getStockQuantity()) {
-                throw new BadRequestException(
-                        "Not enough stock for " + product.getName() +
-                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
-                                "Available: " + variant.getStockQuantity() +
-                                ", Requested: " + cartItem.getQuantity()
-                );
-            }
 
             orderItems.add(OrderItem.builder()
                     .order(savedOrder)

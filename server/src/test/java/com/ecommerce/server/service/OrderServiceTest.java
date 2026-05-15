@@ -240,7 +240,6 @@ class OrderServiceTest {
         when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(ownerAddress));
         when(cartItemRepository.findByUserId(OWNER_ID)).thenReturn(List.of(item));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         assertThatThrownBy(() -> orderService.createOrder(OWNER_ID, 10L, PaymentMethod.CARD))
                 .isInstanceOf(BadRequestException.class)
@@ -249,7 +248,9 @@ class OrderServiceTest {
                 .hasMessageContaining("Available: 10")
                 .hasMessageContaining("Requested: 15");
 
-        // Το stock δεν μειώθηκε, δεν αποθηκεύτηκαν order items, δεν καθαρίστηκε το cart
+        // Stock validation γίνεται ΠΡΙΝ οποιοδήποτε write: ούτε Order γράφεται,
+        // ούτε stock μειώνεται, ούτε καθαρίζει το cart. Όχι rollback overhead.
+        verify(orderRepository, never()).save(any());
         verify(productVariantRepository, never()).saveAll(anyList());
         verify(orderItemRepository, never()).saveAll(anyList());
         verify(cartItemRepository, never()).deleteByUserId(any());

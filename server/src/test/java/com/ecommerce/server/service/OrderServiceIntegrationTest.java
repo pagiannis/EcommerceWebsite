@@ -1,6 +1,7 @@
 package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.response.OrderResponse;
+import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration Test για το OrderService (Critical Component).
@@ -149,5 +151,34 @@ class OrderServiceIntegrationTest {
         // ASSERT 4: Έλεγχος ότι το καλάθι άδειασε μετά το checkout
         List<CartItem> currentCart = cartItemRepository.findByUserId(testUser.getId());
         assertThat(currentCart).isEmpty();
+    }
+
+    /**
+     * Regression για το #3: η validation γίνεται ΠΡΙΝ οποιοδήποτε write.
+     * Πετάει BadRequestException → ο GlobalExceptionHandler το μεταφράζει σε HTTP 400.
+     * Επιβεβαιώνουμε ότι το cart παραμένει ως έχει και το stock δεν μειώθηκε,
+     * ώστε ο χρήστης να μπορεί να ξαναπροσπαθήσει διορθώνοντας την ποσότητα.
+     */
+    @Test
+    @DisplayName("createOrder: insufficient stock → BadRequest, cart και stock μένουν ως έχουν")
+    void createOrder_insufficientStock_cartAndStockUnchanged() {
+        // Cart ζητάει 50, stock=10
+        cartItemRepository.save(CartItem.builder()
+                .user(testUser).variant(testVariant).quantity(50).build());
+
+        assertThatThrownBy(() -> orderService.createOrder(
+                testUser.getId(), testAddress.getId(), PaymentMethod.CARD))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Available: 10")
+                .hasMessageContaining("Requested: 50");
+
+        // Stock δεν μειώθηκε
+        ProductVariant refreshed = productVariantRepository.findById(testVariant.getId()).orElseThrow();
+        assertThat(refreshed.getStockQuantity()).isEqualTo(10);
+
+        // Cart δεν άδειασε — ο χρήστης μπορεί να ξαναπροσπαθήσει
+        List<CartItem> currentCart = cartItemRepository.findByUserId(testUser.getId());
+        assertThat(currentCart).hasSize(1);
+        assertThat(currentCart.get(0).getQuantity()).isEqualTo(50);
     }
 }
