@@ -208,6 +208,8 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             System.out.println("✅ Database already has orders. Skipping order initialization.");
         }
+
+        seedFake1234Orders();
     }
 
     // ── Review seeding ───────────────────────────────────────────────────────
@@ -290,7 +292,8 @@ public class DataInitializer implements CommandLineRunner {
                 if (o % 2 == 0 && !otherProducts.isEmpty()) {
                     items.add(otherProducts.get((u + o) % otherProducts.size()));
                 }
-                createMockOrder(user, items, ++orderSeq, o % 2 == 0 ? 2 : 1);
+                createMockOrder(user, items, ++orderSeq, o % 2 == 0 ? 2 : 1,
+                        OrderStatus.DELIVERED, "ORD-SEED-");
             }
         }
 
@@ -298,14 +301,58 @@ public class DataInitializer implements CommandLineRunner {
         for (int i = 0; i < topProducts.size(); i++) {
             for (int r = 0; r < 3; r++) {
                 User user = users.get((i + r) % users.size());
-                createMockOrder(user, List.of(topProducts.get(i)), ++orderSeq, 3);
+                createMockOrder(user, List.of(topProducts.get(i)), ++orderSeq, 3,
+                        OrderStatus.DELIVERED, "ORD-SEED-");
             }
         }
 
         System.out.println("✅ Seeded " + orderSeq + " orders!");
     }
 
-    private void createMockOrder(User user, List<Product> products, int seq, int quantity) {
+    private void seedFake1234Orders() {
+        User fakeUser = userRepository.findByEmail("fake1234@gmail.com").orElse(null);
+        if (fakeUser == null) {
+            System.out.println("⚠️  User fake1234@gmail.com not found. Skipping fake1234 orders.");
+            return;
+        }
+
+        if (!orderRepository.findByUserIdOrderByCreatedAtDesc(fakeUser.getId()).isEmpty()) {
+            System.out.println("✅ fake1234@gmail.com already has orders. Skipping.");
+            return;
+        }
+
+        List<Product> allProducts = productRepository.findAllWithVariants();
+        if (allProducts.isEmpty()) {
+            System.out.println("⚠️  No products available. Skipping fake1234 orders.");
+            return;
+        }
+
+        System.out.println("🚀 Seeding orders for fake1234@gmail.com...");
+
+        OrderStatus[] statuses = {
+            OrderStatus.DELIVERED,
+            OrderStatus.DELIVERED,
+            OrderStatus.SHIPPED,
+            OrderStatus.PROCESSING,
+            OrderStatus.PENDING
+        };
+
+        int seq = 0;
+        for (OrderStatus status : statuses) {
+            List<Product> items = new ArrayList<>();
+            items.add(allProducts.get(seq % allProducts.size()));
+            items.add(allProducts.get((seq + 7) % allProducts.size()));
+            if (seq % 2 == 0) {
+                items.add(allProducts.get((seq + 13) % allProducts.size()));
+            }
+            createMockOrder(fakeUser, items, ++seq, 1 + (seq % 3), status, "ORD-FAKE-");
+        }
+
+        System.out.println("✅ Seeded " + seq + " orders for fake1234@gmail.com!");
+    }
+
+    private void createMockOrder(User user, List<Product> products, int seq, int quantity,
+                                 OrderStatus status, String orderNumberPrefix) {
         BigDecimal subtotal = products.stream()
                 .map(p -> p.getPrice().multiply(BigDecimal.valueOf(quantity)))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -314,9 +361,9 @@ public class DataInitializer implements CommandLineRunner {
         BigDecimal total    = subtotal.add(tax).add(shipping);
 
         Order order = orderRepository.save(Order.builder()
-                .orderNumber("ORD-SEED-" + String.format("%04d", seq))
+                .orderNumber(orderNumberPrefix + String.format("%04d", seq))
                 .user(user)
-                .status(OrderStatus.DELIVERED)
+                .status(status)
                 .subtotal(subtotal)
                 .tax(tax)
                 .shippingFee(shipping)
