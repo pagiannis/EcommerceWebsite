@@ -120,18 +120,16 @@ public class ReviewService {
                 .orElse(false);
     }
 
-    /**
-     * Ενημέρωση μέσου rating προϊόντος
-     */
+
     private void updateProductRating(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Double avgRating = reviewRepository.findAverageRatingByProductId(productId);
-        List<Review> reviews = reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
+        long reviewCount = reviewRepository.countByProductId(productId);
 
-        product.setRating(avgRating != null ? avgRating : 0.0);
-        product.setReviewCount(reviews.size());
+        product.setRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+        product.setReviewCount((int) reviewCount);
         product.setUpdatedAt(java.time.LocalDateTime.now());
 
         productRepository.save(product);

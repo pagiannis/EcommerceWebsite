@@ -239,7 +239,7 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
-            long count = reviewRepository.findByProductIdOrderByCreatedAtDesc(product.getId()).size();
+            long count = reviewRepository.countByProductId(product.getId());
             product.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
             product.setReviewCount((int) count);
             productRepository.save(product);

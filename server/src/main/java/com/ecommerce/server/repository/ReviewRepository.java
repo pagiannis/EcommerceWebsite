@@ -15,6 +15,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByProductIdAndRatingGreaterThanEqual(Long productId, Integer minRating, Sort sort);
 
+    // SELECT COUNT(*) — δεν φορτώνει τα Review entities στη μνήμη.
+    long countByProductId(Long productId);
+
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
     Double findAverageRatingByProductId(@Param("productId") Long productId);
 }
