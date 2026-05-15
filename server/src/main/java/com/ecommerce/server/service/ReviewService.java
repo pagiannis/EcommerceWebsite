@@ -121,10 +121,8 @@ public class ReviewService {
         }
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
-     */
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
     @Transactional(readOnly = true)
     public boolean isReviewOwner(Long reviewId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

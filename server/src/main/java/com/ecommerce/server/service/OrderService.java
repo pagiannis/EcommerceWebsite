@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,14 +107,21 @@ public class OrderService {
             }
         }
 
+        // Όλοι οι υπολογισμοί στρογγυλοποιούνται σε 2 δεκαδικά με HALF_UP.
+        // Αλλιώς το API θα μπορούσε να επιστρέψει 26.989000000000002 ή
+        // ασυνέπεια με τη βάση που έχει column scale=2 (Hibernate auto-rounds
+        // με banker's rounding που είναι confusing για financial data).
         BigDecimal subtotal = cartItems.stream()
                 .map(item -> item.getVariant().getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.10)); // 10% VAT
-        BigDecimal shippingFee = BigDecimal.valueOf(5.00);
-        BigDecimal total = subtotal.add(tax).add(shippingFee);
+        BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, RoundingMode.HALF_UP); // 10% VAT
+        BigDecimal shippingFee = BigDecimal.valueOf(5.00).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = subtotal.add(tax).add(shippingFee)
+                .setScale(2, RoundingMode.HALF_UP);
 
         // Order number με UUID για collision-free generation σε concurrent requests.
         String orderNumber = "ORD-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
@@ -226,10 +234,8 @@ public class OrderService {
         return skipped;
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@orderService.isOrderOwner(#orderId)")
-     */
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@orderService.isOrderOwner(#orderId)")
     @Transactional(readOnly = true)
     public boolean isOrderOwner(Long orderId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

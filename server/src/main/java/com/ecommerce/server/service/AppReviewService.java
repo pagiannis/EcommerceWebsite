@@ -35,7 +35,8 @@ public class AppReviewService {
     }
 
     /**
-     * Λήψη όλων των εγκεκριμένων reviews
+     * Λήψη όλων των εγκεκριμένων reviews. Bounded από το manual approval
+     * του admin — δεν χρειάζεται pagination σε ρεαλιστικά volumes.
      */
     @Transactional(readOnly = true)
     public List<AppReviewResponse> getApprovedReviews() {
@@ -52,7 +53,7 @@ public class AppReviewService {
      */
     @Transactional(readOnly = true)
     public List<AppReviewResponse> getAllReviews() {
-        return appReviewRepository.findAll()
+        return appReviewRepository.findAllWithUser()
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());

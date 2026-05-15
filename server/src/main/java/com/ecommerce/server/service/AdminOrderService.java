@@ -4,8 +4,11 @@ import com.ecommerce.server.dto.response.OrderItemResponse;
 import com.ecommerce.server.dto.response.OrderResponse;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.models.Order;
+import com.ecommerce.server.models.OrderItem;
+import com.ecommerce.server.models.ProductVariant;
 import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.repository.OrderRepository;
+import com.ecommerce.server.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +25,7 @@ import java.util.List;
 public class AdminOrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     // Paginated για να μην φορτώνεται όλη η βάση orders σε ένα admin call —
     // ίδιο pattern με το ProductController.
@@ -41,6 +46,25 @@ public class AdminOrderService {
     public OrderResponse updateOrderStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // Stock restore όταν μια παραγγελία ακυρώνεται. Idempotent:
+        // αν ήταν ήδη CANCELLED, δεν ξανα-επιστρέφουμε stock.
+        // Αν το variant έχει διαγραφεί στο μεταξύ (variant == null),
+        // skip — δεν υπάρχει stock counter για να ενημερωθεί.
+        if (status == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
+            List<ProductVariant> toRestore = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                ProductVariant variant = item.getVariant();
+                if (variant != null) {
+                    variant.setStockQuantity(variant.getStockQuantity() + item.getQuantity());
+                    toRestore.add(variant);
+                }
+            }
+            if (!toRestore.isEmpty()) {
+                productVariantRepository.saveAll(toRestore);
+            }
+        }
+
         order.setStatus(status);
         return toResponse(orderRepository.save(order));
     }

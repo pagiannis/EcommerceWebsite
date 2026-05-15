@@ -130,10 +130,8 @@ public class CartService {
         }
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
-     */
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
     @Transactional(readOnly = true)
     public boolean isCartItemOwner(Long cartItemId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
