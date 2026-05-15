@@ -120,8 +120,12 @@ public class CartService {
     }
 
     private void requireCartItemOwner(CartItem cartItem) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cartItem.getUser().getEmail().equals(email)) {
+        // Σύγκριση με id αντί email: αν ο user αλλάξει email όσο είναι
+        // logged-in, η session κρατά το παλιό όνομα — με email-based check
+        // θα έπαιρνε 403 για τα δικά του cart items. Το id δεν αλλάζει.
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)
+                || !cartItem.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Access denied");
         }
     }

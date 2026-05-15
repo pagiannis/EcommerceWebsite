@@ -35,6 +35,7 @@ public class ReviewController {
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("#userId == authentication.principal.id")
     public ResponseEntity<List<ReviewResponse>> getUserReviews(@PathVariable Long userId) {
         return ResponseEntity.ok(reviewService.getUserReviews(userId));
     }
