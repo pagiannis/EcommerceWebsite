@@ -10,9 +10,6 @@ import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.security.AuthUser;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -40,8 +37,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating,
-                                                  int page, int size) {
+    public List<ReviewResponse> getProductReviews(Long productId, String sort, Integer minRating) {
         Sort jpaSort = switch (sort != null ? sort : "LATEST") {
             case "OLDEST"        -> Sort.by(Sort.Direction.ASC,  "createdAt");
             case "HIGHEST_RATING"-> Sort.by(Sort.Direction.DESC, "rating");
@@ -50,10 +46,11 @@ public class ReviewService {
         };
 
         int effectiveMin = (minRating != null && minRating > 0) ? minRating : 0;
-        Pageable pageable = PageRequest.of(page, size, jpaSort);
 
-        return reviewRepository.findByProductIdAndRatingGreaterThanEqual(productId, effectiveMin, pageable)
-                .map(this::convertToResponse);
+        return reviewRepository.findByProductIdAndRatingGreaterThanEqual(productId, effectiveMin, jpaSort)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     /**

@@ -4,14 +4,10 @@ import com.ecommerce.server.dto.request.ReviewRequest;
 import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.service.ReviewService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,19 +15,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
-@Validated
 public class ReviewController {
 
     private final ReviewService reviewService;
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<Page<ReviewResponse>> getProductReviews(
+    public ResponseEntity<List<ReviewResponse>> getProductReviews(
             @PathVariable Long productId,
             @RequestParam(required = false) String sort,
-            @RequestParam(required = false) Integer minRating,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(reviewService.getProductReviews(productId, sort, minRating, page, size));
+            @RequestParam(required = false) Integer minRating) {
+        return ResponseEntity.ok(reviewService.getProductReviews(productId, sort, minRating));
     }
 
     @GetMapping("/user/{userId}")
