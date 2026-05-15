@@ -1,14 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CartItem } from '../types/cartItem';
-import type { Product } from '../types/product';
+import type { CartItem, CartProduct } from '../types/cartItem';
 import type { Size } from '../types/size';
 
 interface CartState {
   items: CartItem[];
   totalItems: number;
   subtotal: number;
-  addItem: (product: Product, color: string, size: Size, variantId: number, qty?: number) => void;
+  addItem: (product: CartProduct, color: string, size: Size, variantId: number, qty?: number) => void;
   removeItem: (productId: string, color: string, size: Size) => void;
   updateQuantity: (productId: string, color: string, size: Size, qty: number) => void;
   setCartItemId: (variantId: number, cartItemId: number) => void;
