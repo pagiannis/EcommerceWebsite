@@ -81,13 +81,19 @@ public class CartService {
          return convertToResponse(cartItemRepository.save(cartItem));
      }
 
-     // Ενημέρωση ποσότητας. Ο controller επιβάλλει @Min(1) στο quantity,
-     // οπότε εδώ δεν χρειάζεται extra έλεγχος για quantity <= 0.
+     // Παρότι ο controller επιβάλλει @Min(1), κρατάμε
+     // και service-level guard ώστε η μέθοδος να είναι ασφαλής σε όποιον
+     // καλεστή — άλλο service, scheduled job ή μελλοντικό endpoint χωρίς
+     // bean validation. Ίδιο pattern με το addToCart παραπάνω.
      @Transactional
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
                  .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
          requireCartItemOwner(cartItem);
+
+         if (quantity <= 0) {
+             throw new BadRequestException("Quantity must be greater than 0");
+         }
 
          ProductVariant variant = cartItem.getVariant();
          if (quantity > variant.getStockQuantity()) {
