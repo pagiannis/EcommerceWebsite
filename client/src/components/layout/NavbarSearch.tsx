@@ -10,6 +10,22 @@ interface NavbarSearchProps {
   onClose: () => void;
 }
 
+function AutocompleteResults({ query, onSelect }: { query: string; onSelect: (id: number) => void }) {
+  const { data: suggestions = [], isFetching } = useQuery<AutocompleteItem[]>({
+    queryKey: ["autocomplete", query],
+    queryFn: () => fetchAutocomplete(query),
+    staleTime: 1000 * 30,
+  });
+
+  return (
+    <AutocompleteDropdown
+      items={suggestions}
+      onSelect={onSelect}
+      noResults={!isFetching && suggestions.length === 0}
+    />
+  );
+}
+
 export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps) {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
@@ -26,16 +42,10 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
     if (searchOpen) setTimeout(() => mobileInputRef.current?.focus(), 50);
   }, [searchOpen]);
 
-  const { data: suggestions, isFetching } = useQuery<AutocompleteItem[]>({
-    queryKey: ["autocomplete", debouncedQuery],
-    queryFn: () => fetchAutocomplete(debouncedQuery),
-    enabled: debouncedQuery.trim().length >= 2,
-    staleTime: 1000 * 30,
-  });
-
-  const queryReady = showDropdown && debouncedQuery.trim().length >= 2 && inputValue === debouncedQuery;
-  const visibleSuggestions = queryReady ? (suggestions ?? []) : [];
-  const showNoResults = queryReady && !isFetching && visibleSuggestions.length === 0;
+  const activeQuery =
+    showDropdown && debouncedQuery.trim().length >= 2 && inputValue === debouncedQuery
+      ? debouncedQuery
+      : null;
 
   function handleInputChange(value: string) {
     setInputValue(value);
@@ -88,7 +98,7 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
                 className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
               />
             </form>
-            <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} noResults={showNoResults} />
+            {activeQuery && <AutocompleteResults query={activeQuery} onSelect={handleSuggestionSelect} />}
           </div>
           <button type="button" onClick={handleClose} aria-label="Close search">
             <X className="h-6 w-6" />
@@ -104,7 +114,7 @@ export default function NavbarSearch({ searchOpen, onClose }: NavbarSearchProps)
             {...sharedInputProps}
             className="w-full rounded-full bg-brand-gray py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-black"
           />
-          <AutocompleteDropdown items={visibleSuggestions} onSelect={handleSuggestionSelect} noResults={showNoResults} />
+          {activeQuery && <AutocompleteResults query={activeQuery} onSelect={handleSuggestionSelect} />}
         </form>
       </div>
     </>
