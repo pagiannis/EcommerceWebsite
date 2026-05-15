@@ -152,6 +152,8 @@ public class OrderService {
 
         cartItemRepository.deleteByUserId(userId);
 
+        savedOrder.setItems(orderItems);
+
         return convertToResponse(savedOrder);
     }
 
