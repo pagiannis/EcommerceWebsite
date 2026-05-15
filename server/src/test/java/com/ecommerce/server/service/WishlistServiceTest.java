@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -221,7 +222,7 @@ class WishlistServiceTest {
     // ---------- moveToCart ----------
 
     @Test
-    @DisplayName("moveToCart: success → προσθέτει στο cart και διαγράφει από wishlist")
+    @DisplayName("moveToCart: success → ένα φόρτωμα wishlist item, addToCart, delete")
     void moveToCart_success_addsToCartAndRemovesFromWishlist() {
         CartItemResponse cartResponse = new CartItemResponse(
                 1L, VARIANT_ID, "Test Product", "BLACK", "M",
@@ -237,6 +238,9 @@ class WishlistServiceTest {
         assertThat(response).isEqualTo(cartResponse);
         verify(cartService).addToCart(eq(USER_ID), any(CartItemRequest.class));
         verify(wishlistItemRepository).delete(existingItem);
+        // Regression guard: το wishlist item πρέπει να φορτωθεί ΜΟΝΟ ΜΙΑ φορά.
+        // Παλιά γινόταν 2 SELECTs (orElseThrow + removeFromWishlist).
+        verify(wishlistItemRepository, times(1)).findByUserIdAndProductId(USER_ID, PRODUCT_ID);
     }
 
     @Test

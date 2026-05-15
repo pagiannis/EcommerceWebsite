@@ -91,15 +91,21 @@ public class WishlistService {
     }
 
     /**
-     * Μεταφορά προϊόντος από wishlist στο καλάθι
+     * Μεταφορά προϊόντος από wishlist στο καλάθι. Φορτώνουμε το WishlistItem
+     * μία φορά και το κρατάμε για να το διαγράψουμε direct αργότερα —
+     * αποφεύγουμε το να ξανα-query-άρουμε μέσω της removeFromWishlist.
+     *
+     * Σημ.: αν το addToCart πετάξει (π.χ. stock), το exception bubble-up και
+     * το @Transactional κάνει rollback. Το wishlist item δεν διαγράφεται,
+     * οπότε ο χρήστης μπορεί να ξαναπροσπαθήσει χωρίς να χάσει την αγαπημένη.
      */
     @Transactional
     public CartItemResponse moveToCart(Long userId, Long productId, Long variantId, int quantity) {
-        wishlistItemRepository.findByUserIdAndProductId(userId, productId)
+        WishlistItem wishlistItem = wishlistItemRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wishlist item not found"));
 
         CartItemResponse response = cartService.addToCart(userId, new CartItemRequest(variantId, quantity));
-        removeFromWishlist(userId, productId);
+        wishlistItemRepository.delete(wishlistItem);
         return response;
     }
 
