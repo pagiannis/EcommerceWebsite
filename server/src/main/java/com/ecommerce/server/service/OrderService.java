@@ -26,25 +26,33 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
+    // Fallbacks αν τα settings στη βάση λείπουν (π.χ. fresh deploy χωρίς seed).
+    // Το checkout δεν πρέπει ποτέ να σπάσει επειδή ο admin ξέχασε να σώσει tax rate.
+    private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.10");      // 10% VAT
+    private static final BigDecimal DEFAULT_SHIPPING_FEE = new BigDecimal("5.00");  // $5
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final SettingService settingService;
 
     public OrderService(OrderRepository orderRepository,
                        OrderItemRepository orderItemRepository,
                        CartItemRepository cartItemRepository,
                        ProductVariantRepository productVariantRepository,
                        UserRepository userRepository,
-                       AddressRepository addressRepository) {
+                       AddressRepository addressRepository,
+                       SettingService settingService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.productVariantRepository = productVariantRepository;
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
+        this.settingService = settingService;
     }
 
     /**
@@ -107,6 +115,11 @@ public class OrderService {
             }
         }
 
+        // Tax rate και shipping fee διαβάζονται από τα app_settings ώστε ο
+        // admin να μπορεί να τα αλλάξει χωρίς redeploy. Fallbacks αν λείπουν.
+        BigDecimal taxRate = settingService.getDecimal(SettingService.TAX_RATE_KEY, DEFAULT_TAX_RATE);
+        BigDecimal shippingFeeValue = settingService.getDecimal(SettingService.SHIPPING_FEE_KEY, DEFAULT_SHIPPING_FEE);
+
         // Όλοι οι υπολογισμοί στρογγυλοποιούνται σε 2 δεκαδικά με HALF_UP.
         // Αλλιώς το API θα μπορούσε να επιστρέψει 26.989000000000002 ή
         // ασυνέπεια με τη βάση που έχει column scale=2 (Hibernate auto-rounds
@@ -117,9 +130,8 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, RoundingMode.HALF_UP); // 10% VAT
-        BigDecimal shippingFee = BigDecimal.valueOf(5.00).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal tax = subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal shippingFee = shippingFeeValue.setScale(2, RoundingMode.HALF_UP);
         BigDecimal total = subtotal.add(tax).add(shippingFee)
                 .setScale(2, RoundingMode.HALF_UP);
 

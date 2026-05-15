@@ -62,6 +62,7 @@ class OrderServiceTest {
     @Mock private ProductVariantRepository productVariantRepository;
     @Mock private UserRepository userRepository;
     @Mock private AddressRepository addressRepository;
+    @Mock private SettingService settingService;
 
     @InjectMocks
     private OrderService orderService;
@@ -99,6 +100,13 @@ class OrderServiceTest {
         AuthUser principal = new AuthUser(OWNER_ID, OWNER_EMAIL, "HASH", List.of());
         Authentication auth = new UsernamePasswordAuthenticationToken(principal, "HASH", List.of());
         SecurityContextHolder.setContext(new SecurityContextImpl(auth));
+
+        // SettingService stub: γύρνα τα fallbacks που περνάει ο OrderService.
+        // lenient() γιατί όχι όλα τα tests καλούν createOrder.
+        org.mockito.Mockito.lenient()
+                .when(settingService.getDecimal(org.mockito.ArgumentMatchers.any(String.class),
+                        org.mockito.ArgumentMatchers.any(java.math.BigDecimal.class)))
+                .thenAnswer(inv -> inv.getArgument(1));
     }
 
     @AfterEach

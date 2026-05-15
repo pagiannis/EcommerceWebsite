@@ -655,6 +655,27 @@ POST /api/orders/5/reorder?userId=1
 
 Όλα αποδέχονται `page` (min 0) και `size` (1–100). Validation 400 αν έξω από όρια.
 
+### Settings — runtime-configurable τιμές (tax, shipping κλπ.)
+
+Τα `tax rate` και `shipping fee` δεν είναι hardcoded — αποθηκεύονται στο `app_settings` table και ο admin μπορεί να τα αλλάξει χωρίς redeploy.
+
+**`GET /api/admin/settings`** — λίστα όλων των settings:
+```json
+[
+  { "key": "order.tax.rate",     "value": "0.10", "description": "VAT rate ...",  "updatedAt": "..." },
+  { "key": "order.shipping.fee", "value": "5.00", "description": "Flat shipping", "updatedAt": "..." }
+]
+```
+
+**`PUT /api/admin/settings/{key}`** — update:
+```json
+{ "value": "0.13", "description": "VAT αυξήθηκε σε 13%" }
+```
+
+Επιστρέφει το ενημερωμένο `SettingResponse`. Το `SettingService` invalidate-άρει το internal cache, οπότε η **επόμενη** παραγγελία βλέπει τη νέα τιμή.
+
+**Fallbacks:** αν για κάποιο λόγο το setting λείπει από τη βάση, το checkout χρησιμοποιεί hardcoded defaults (`0.10` για tax, `5.00` για shipping) — δεν σπάει ποτέ.
+
 ### Delete endpoints με dependency check
 
 Τα παρακάτω επιστρέφουν `409 Conflict` (αντί για γενικό 500 από FK violation) αν υπάρχουν associated products:

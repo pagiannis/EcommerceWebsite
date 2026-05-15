@@ -40,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AppReviewRepository     appReviewRepository;
     private final OrderRepository         orderRepository;
     private final OrderItemRepository     orderItemRepository;
+    private final AppSettingRepository    appSettingRepository;
     private final PasswordEncoder         passwordEncoder;
 
     private static final Size[] ALL_SIZES = {
@@ -69,6 +70,8 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        seedDefaultSettings();
+
         if (productRepository.count() == 0) {
             System.out.println("🚀 Initializing database with mock data...");
 
@@ -477,6 +480,28 @@ public class DataInitializer implements CommandLineRunner {
                         color, size, (int) (Math.random() * 50) + 10, sku
                 ));
             }
+        }
+    }
+
+    /**
+     * Σπέρνει default τιμές για tax rate και shipping fee αν δεν υπάρχουν.
+     * Idempotent: δεν αντικαθιστά existing settings — έτσι ο admin που έχει
+     * αλλάξει τιμές δεν θα τις χάσει σε κάθε restart.
+     */
+    private void seedDefaultSettings() {
+        if (!appSettingRepository.existsById(SettingService.TAX_RATE_KEY)) {
+            appSettingRepository.save(AppSetting.builder()
+                    .key(SettingService.TAX_RATE_KEY)
+                    .value("0.10")
+                    .description("VAT rate applied to order subtotal (e.g. 0.10 = 10%)")
+                    .build());
+        }
+        if (!appSettingRepository.existsById(SettingService.SHIPPING_FEE_KEY)) {
+            appSettingRepository.save(AppSetting.builder()
+                    .key(SettingService.SHIPPING_FEE_KEY)
+                    .value("5.00")
+                    .description("Flat shipping fee added to every order")
+                    .build());
         }
     }
 }
