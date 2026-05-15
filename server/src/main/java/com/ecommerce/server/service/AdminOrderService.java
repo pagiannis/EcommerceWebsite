@@ -7,6 +7,8 @@ import com.ecommerce.server.models.Order;
 import com.ecommerce.server.models.enums.OrderStatus;
 import com.ecommerce.server.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +21,14 @@ public class AdminOrderService {
 
     private final OrderRepository orderRepository;
 
+    // Paginated για να μην φορτώνεται όλη η βάση orders σε ένα admin call —
+    // ίδιο pattern με το ProductController.
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders(OrderStatus status) {
-        List<Order> orders = status != null
-                ? orderRepository.findByStatus(status)
-                : orderRepository.findAll();
-        return orders.stream().map(this::toResponse).toList();
+    public Page<OrderResponse> getAllOrders(OrderStatus status, Pageable pageable) {
+        Page<Order> orders = status != null
+                ? orderRepository.findByStatus(status, pageable)
+                : orderRepository.findAll(pageable);
+        return orders.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)

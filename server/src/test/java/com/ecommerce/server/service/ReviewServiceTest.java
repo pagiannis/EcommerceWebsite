@@ -10,6 +10,8 @@ import com.ecommerce.server.models.enums.Role;
 import com.ecommerce.server.repository.ProductRepository;
 import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
+import com.ecommerce.server.security.AuthUser;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +19,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +78,17 @@ class ReviewServiceTest {
                 .id(PRODUCT_ID)
                 .name("Test Product")
                 .build();
+
+        // Η deleteReview κάνει service-level ownership guard — στήνουμε
+        // authenticated user στο SecurityContext όπως και τα CartServiceTest.
+        AuthUser principal = new AuthUser(USER_ID, "reviewer@test.com", "HASH", List.of());
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, "HASH", List.of());
+        SecurityContextHolder.setContext(new SecurityContextImpl(auth));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     // ====================================================================
@@ -173,6 +192,22 @@ class ReviewServiceTest {
 
         assertThatThrownBy(() -> reviewService.deleteReview(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(reviewRepository, never()).delete(any());
+        verify(productRepository, never()).recalculateRatingAndCount(any());
+    }
+
+    @Test
+    @DisplayName("deleteReview: review άλλου user → AccessDenied (service-level guard #11)")
+    void deleteReview_notOwner_throwsAccessDenied() {
+        User otherUser = User.builder().id(99L).email("intruder@test.com").build();
+        Review othersReview = Review.builder()
+                .id(7L).user(otherUser).product(testProduct).rating(1).build();
+
+        when(reviewRepository.findById(7L)).thenReturn(Optional.of(othersReview));
+
+        assertThatThrownBy(() -> reviewService.deleteReview(7L))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(reviewRepository, never()).delete(any());
         verify(productRepository, never()).recalculateRatingAndCount(any());

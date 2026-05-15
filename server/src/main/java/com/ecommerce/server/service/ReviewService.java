@@ -11,6 +11,7 @@ import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.security.AuthUser;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -91,18 +92,30 @@ public class ReviewService {
     }
 
     /**
-     * Διαγραφή κριτικής. Ο ownership check γίνεται declarative στο controller
-     * μέσω @PreAuthorize("@reviewService.isReviewOwner(#reviewId)").
+     * Διαγραφή κριτικής. Ο controller έχει @PreAuthorize για ownership, αλλά
+     * κρατάμε και service-level guard ως defense in depth — ίδιο pattern με
+     * το requireCartItemOwner στο CartService. Αν κληθεί από άλλο service
+     * ή scheduler χωρίς bean validation, πάλι αρνούμαστε.
      */
     @Transactional
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
+        requireReviewOwner(review);
+
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
 
         updateProductRating(productId);
+    }
+
+    private void requireReviewOwner(Review review) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)
+                || !review.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
     }
 
     /**

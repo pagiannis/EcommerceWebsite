@@ -5,11 +5,17 @@ import com.ecommerce.server.dto.response.ReviewResponse;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
+import com.ecommerce.server.security.AuthUser;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +69,17 @@ class ReviewServiceIntegrationTest {
                 .rating(0.0)
                 .reviewCount(0)
                 .build());
+
+        // deleteReview έχει service-level ownership guard — στήνουμε
+        // authenticated user, καθαρίζουμε στο @AfterEach.
+        AuthUser principal = new AuthUser(testUser.getId(), testUser.getEmail(), "HASH", List.of());
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, "HASH", List.of());
+        SecurityContextHolder.setContext(new SecurityContextImpl(auth));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

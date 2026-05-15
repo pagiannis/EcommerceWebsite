@@ -42,6 +42,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     long countByCategoryId(Long categoryId);
 
+    long countByBrandId(Long brandId);
+
+    long countByProductTypeId(Long productTypeId);
+
     // Atomic recalculation από τη βάση — αποφεύγει race condition που είχε
     // το παλιό pattern "fetch product → set field → save". Το UPDATE παίρνει
     // row lock στο product, οπότε δύο concurrent reviews σειριοποιούνται:
