@@ -46,6 +46,19 @@ public class AppReviewService {
     }
 
     /**
+     * Admin view: ΟΛΕΣ οι κριτικές (και unapproved) ώστε ο admin να μπορεί
+     * να τις εγκρίνει. Διαφέρει από το getApprovedReviews() που είναι για
+     * το public testimonials section του homepage.
+     */
+    @Transactional(readOnly = true)
+    public List<AppReviewResponse> getAllReviews() {
+        return appReviewRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Λήψη reviews χρήστη
      */
     @Transactional(readOnly = true)

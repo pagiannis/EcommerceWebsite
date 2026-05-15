@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -44,6 +45,12 @@ public class AdminOrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    // Ίδιο format με το OrderService — αλλιώς frontend που expect-άρει
+    // "yyyy-MM-dd HH:mm:ss" σπάει στις admin views όπου το toString()
+    // επέστρεφε ISO 8601 με 'T'.
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private OrderResponse toResponse(Order order) {
         List<OrderItemResponse> items = order.getItems().stream()
                 .map(item -> new OrderItemResponse(
@@ -64,7 +71,7 @@ public class AdminOrderService {
                 order.getTax(),
                 order.getShippingFee(),
                 order.getTotal(),
-                order.getCreatedAt().toString(),
+                order.getCreatedAt().format(DATE_FORMATTER),
                 items
         );
     }

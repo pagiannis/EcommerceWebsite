@@ -104,6 +104,15 @@ public class WishlistService {
         WishlistItem wishlistItem = wishlistItemRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wishlist item not found"));
 
+        // Επιβεβαίωση ότι το variantId ανήκει στο productId της wishlist.
+        // Αλλιώς ο user θα μπορούσε να καλέσει moveToCart(productX, variantY)
+        // και να βάλει στο cart οποιοδήποτε variant ασχέτως wishlist.
+        boolean variantBelongsToProduct = wishlistItem.getProduct().getVariants().stream()
+                .anyMatch(v -> v.getId().equals(variantId));
+        if (!variantBelongsToProduct) {
+            throw new BadRequestException("Variant does not belong to the wishlist product");
+        }
+
         CartItemResponse response = cartService.addToCart(userId, new CartItemRequest(variantId, quantity));
         wishlistItemRepository.delete(wishlistItem);
         return response;
