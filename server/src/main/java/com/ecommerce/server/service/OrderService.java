@@ -199,20 +199,29 @@ public class OrderService {
             // Αν σπάσει το save παρ' όλα αυτά, αφήνουμε το exception να γίνει propagate
             // ώστε το transaction να κάνει rollback — ένα catch εδώ θα οδηγούσε σε
             // UnexpectedRollbackException στο commit.
-            cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
-                    .ifPresentOrElse(
-                            existing -> {
-                                existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
-                                cartItemRepository.save(existing);
-                            },
-                            () -> cartItemRepository.save(
-                                    com.ecommerce.server.models.CartItem.builder()
-                                            .user(order.getUser())
-                                            .variant(item.getVariant())
-                                            .quantity(quantity)
-                                            .build()
-                            )
-                    );
+            var existingOpt = cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId());
+            if (existingOpt.isPresent()) {
+                CartItem existing = existingOpt.get();
+                // Αν η υπάρχουσα ποσότητα ήδη φτάνει/ξεπερνά το διαθέσιμο, το
+                // reorder ΔΕΝ μειώνει σιωπηρά — απλά skip το item. Συνέπεια
+                // με τον γενικό κανόνα του cart: ποτέ δεν χάνεις ποσότητα
+                // χωρίς ρητή ενέργεια του χρήστη.
+                if (existing.getQuantity() >= available) {
+                    skipped.add(item.getProductName() + " (already at max in cart)");
+                    continue;
+                }
+                int newQuantity = Math.min(existing.getQuantity() + quantity, available);
+                existing.setQuantity(newQuantity);
+                cartItemRepository.save(existing);
+            } else {
+                cartItemRepository.save(
+                        com.ecommerce.server.models.CartItem.builder()
+                                .user(order.getUser())
+                                .variant(item.getVariant())
+                                .quantity(quantity)
+                                .build()
+                );
+            }
         }
         return skipped;
     }

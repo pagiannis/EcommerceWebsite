@@ -52,7 +52,7 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             String path = request.getRequestURI();
-            String ip = request.getRemoteAddr();
+            String ip = resolveClientIp(request);
 
             if (LOGIN_PATH.equals(path)) {
                 if (!tryConsume(loginBuckets, ip, this::newLoginBucket)) {
@@ -96,5 +96,32 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                 "{\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"%s\",\"timestamp\":\"%s\"}",
                 message, LocalDateTime.now()
         ));
+    }
+
+    /**
+     * Επιστρέφει την πραγματική client IP. Πίσω από reverse proxy / load
+     * balancer, το request.getRemoteAddr() γυρίζει την IP του proxy —
+     * αυτό θα έκανε όλους τους users να μοιράζονται το ίδιο bucket.
+     *
+     * Διαβάζουμε X-Forwarded-For (comma-separated chain από proxies)
+     * και κρατάμε το πρώτο entry, που είναι η original client IP.
+     * Fallback σε X-Real-IP (που στέλνει το Nginx) και τέλος σε
+     * getRemoteAddr() για local dev χωρίς proxy.
+     *
+     * Σημ.: αυτά τα headers μπορούν να γίνουν spoofed από κακόβουλο
+     * client αν δεν υπάρχει proxy να τα ξανα-γράφει. Σε production
+     * πρέπει ο proxy (Nginx/CloudFront) να τα setάρει αξιόπιστα.
+     */
+    private String resolveClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            int comma = xff.indexOf(',');
+            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp.trim();
+        }
+        return request.getRemoteAddr();
     }
 }

@@ -336,6 +336,28 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("reorder: υπάρχουσα ποσότητα ≥ stock → skip, ΔΕΝ μειώνει σιωπηρά το cart")
+    void reorder_existingQuantityAlreadyAtOrAboveStock_skipsWithoutReducing() {
+        // Σενάριο: ο χρήστης έχει ήδη 8 στο cart, stock=5 (κάποιος άλλος αγόρασε).
+        // Παλιά: cart πήγαινε σε 5 (σιωπηρή μείωση). Τώρα: skip + cart αμετάβλητο.
+        variant.setStockQuantity(5);
+        CartItem existing = CartItem.builder().user(owner).variant(variant).quantity(8).build();
+        OrderItem oi = OrderItem.builder()
+                .productName("Black T-shirt").variant(variant).quantity(3).build();
+        Order order = Order.builder().id(1L).user(owner).items(List.of(oi)).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(cartItemRepository.findByUserIdAndVariantId(OWNER_ID, variant.getId()))
+                .thenReturn(Optional.of(existing));
+
+        List<String> skipped = orderService.reorder(1L, OWNER_ID);
+
+        assertThat(skipped).containsExactly("Black T-shirt (already at max in cart)");
+        assertThat(existing.getQuantity()).isEqualTo(8); // αμετάβλητο — όχι σιωπηρή μείωση
+        verify(cartItemRepository, never()).save(any(CartItem.class));
+    }
+
+    @Test
     @DisplayName("reorder: άγνωστο order → ResourceNotFoundException")
     void reorder_orderNotFound_throws() {
         when(orderRepository.findById(999L)).thenReturn(Optional.empty());

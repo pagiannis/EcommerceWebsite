@@ -144,22 +144,23 @@ class ReviewServiceIntegrationTest {
     // ====================================================================
 
     @Test
-    @DisplayName("getProductReviews: επιστρέφει mapped responses με όνομα user (JOIN FETCH user)")
+    @DisplayName("getProductReviews: επιστρέφει paginated mapped responses με όνομα user (JOIN FETCH user)")
     void getProductReviews_includesUserNameWithoutLazyError() {
         reviewService.createReview(testUser.getId(),
                 new ReviewRequest(testProduct.getId(), 5, "first"));
         reviewService.createReview(testUser.getId(),
                 new ReviewRequest(testProduct.getId(), 4, "second"));
 
-        List<ReviewResponse> results = reviewService.getProductReviews(
-                testProduct.getId(), "LATEST", null);
+        var page = reviewService.getProductReviews(
+                testProduct.getId(), "LATEST", null, 0, 10);
 
-        assertThat(results).hasSize(2);
+        assertThat(page.getTotalElements()).isEqualTo(2);
+        assertThat(page.getContent()).hasSize(2);
         // Αν το JOIN FETCH δεν δουλεύει, το userName θα ήταν null ή θα έσπαγε
         // σε LazyInitializationException έξω από session — επιβεβαιώνουμε ότι
         // έρχεται γεμάτο και απευθείας στο DTO.
-        assertThat(results.get(0).userName()).isEqualTo("Review Tester");
-        assertThat(results.get(1).userName()).isEqualTo("Review Tester");
+        assertThat(page.getContent().get(0).userName()).isEqualTo("Review Tester");
+        assertThat(page.getContent().get(1).userName()).isEqualTo("Review Tester");
     }
 
     @Test
@@ -172,5 +173,26 @@ class ReviewServiceIntegrationTest {
 
         assertThat(results).hasSize(1);
         assertThat(results.get(0).productId()).isEqualTo(testProduct.getId());
+    }
+
+    @Test
+    @DisplayName("getProductReviews: 5 reviews, size=2 → 3 pages, σωστά totalElements/totalPages")
+    void getProductReviews_paginationMetadataIsCorrect() {
+        for (int i = 0; i < 5; i++) {
+            reviewService.createReview(testUser.getId(),
+                    new ReviewRequest(testProduct.getId(), 5, "r" + i));
+        }
+
+        var page0 = reviewService.getProductReviews(testProduct.getId(), "LATEST", null, 0, 2);
+        var page2 = reviewService.getProductReviews(testProduct.getId(), "LATEST", null, 2, 2);
+
+        assertThat(page0.getTotalElements()).isEqualTo(5);
+        assertThat(page0.getTotalPages()).isEqualTo(3);
+        assertThat(page0.getContent()).hasSize(2);
+        assertThat(page0.isFirst()).isTrue();
+        assertThat(page0.isLast()).isFalse();
+
+        assertThat(page2.getContent()).hasSize(1); // τελευταία σελίδα έχει 1 review
+        assertThat(page2.isLast()).isTrue();
     }
 }
