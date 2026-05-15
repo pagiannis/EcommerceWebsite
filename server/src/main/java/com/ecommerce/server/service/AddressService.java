@@ -88,13 +88,16 @@ public class AddressService {
         return address;
     }
 
-    // Αφαιρεί το default flag από όλες τις διευθύνσεις του χρήστη
+    // Αφαιρεί το default flag από ΟΛΕΣ τις default διευθύνσεις του χρήστη.
+    // Δουλεύει σωστά ακόμη κι αν για κάποιο λόγο υπάρχουν >1 default
+    // εγγραφές στη βάση — δεν σπάει με IncorrectResultSizeDataAccessException.
     private void clearDefault(Long userId) {
-        addressRepository.findByUserIdAndIsDefaultTrue(userId)
-                .ifPresent(a -> {
-                    a.setDefault(false);
-                    addressRepository.save(a);
-                });
+        List<Address> defaults = addressRepository.findByUserIdAndIsDefaultTrue(userId);
+        if (defaults.isEmpty()) return;
+        for (Address a : defaults) {
+            a.setDefault(false);
+        }
+        addressRepository.saveAll(defaults);
     }
 
     private AddressResponse toResponse(Address address) {

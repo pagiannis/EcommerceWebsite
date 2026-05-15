@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -138,7 +139,7 @@ class AddressServiceTest {
 
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
         when(addressRepository.findByUserIdAndIsDefaultTrue(USER_ID))
-                .thenReturn(Optional.empty());
+                .thenReturn(List.of());
         when(addressRepository.save(any(Address.class))).thenAnswer(inv -> {
             Address a = inv.getArgument(0);
             a.setId(100L);
@@ -168,15 +169,16 @@ class AddressServiceTest {
 
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
         when(addressRepository.findByUserIdAndIsDefaultTrue(USER_ID))
-                .thenReturn(Optional.of(oldDefault));
+                .thenReturn(List.of(oldDefault));
+        when(addressRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
         when(addressRepository.save(any(Address.class))).thenAnswer(inv -> inv.getArgument(0));
 
         addressService.addAddress(USER_ID, defaultReq);
 
-        // Επιβεβαιώνουμε ότι η παλιά default έγινε false και ότι αποθηκεύτηκε
+        // Η παλιά default έγινε false ΚΑΙ αποθηκεύτηκε μαζικά (saveAll)
         assertThat(oldDefault.isDefault()).isFalse();
-        // save καλείται 2 φορές: 1) για να καθαρίσει την παλιά, 2) για τη νέα
-        verify(addressRepository, times(2)).save(any(Address.class));
+        verify(addressRepository).saveAll(anyList());     // για το cleanup
+        verify(addressRepository).save(any(Address.class)); // για τη νέα
     }
 
     // ---------- updateAddress ----------
@@ -264,7 +266,8 @@ class AddressServiceTest {
 
         when(addressRepository.findById(ADDRESS_ID)).thenReturn(Optional.of(existingAddress));
         when(addressRepository.findByUserIdAndIsDefaultTrue(USER_ID))
-                .thenReturn(Optional.of(oldDefault));
+                .thenReturn(List.of(oldDefault));
+        when(addressRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
         when(addressRepository.save(any(Address.class))).thenAnswer(inv -> inv.getArgument(0));
 
         AddressResponse response = addressService.setDefault(USER_ID, ADDRESS_ID);
@@ -282,5 +285,30 @@ class AddressServiceTest {
 
         assertThatThrownBy(() -> addressService.setDefault(USER_ID, ADDRESS_ID))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    // Regression test: αν στη βάση υπάρχουν >1 default διευθύνσεις (π.χ. λόγω
+    // χειροκίνητης αλλαγής ή race condition), το clearDefault πρέπει να τις
+    // καθαρίζει ΟΛΕΣ — όχι να σπάει με IncorrectResultSizeDataAccessException.
+    @Test
+    @DisplayName("setDefault: καθαρίζει ΟΛΕΣ τις υπάρχουσες default (regression για NonUniqueResult)")
+    void setDefault_multipleExistingDefaults_clearsAll() {
+        Address oldDefault1 = Address.builder()
+                .id(50L).user(testUser).isDefault(true)
+                .street("Old1").city("Old1").postalCode("00000").country("Greece").build();
+        Address oldDefault2 = Address.builder()
+                .id(51L).user(testUser).isDefault(true)
+                .street("Old2").city("Old2").postalCode("00001").country("Greece").build();
+
+        when(addressRepository.findById(ADDRESS_ID)).thenReturn(Optional.of(existingAddress));
+        when(addressRepository.findByUserIdAndIsDefaultTrue(USER_ID))
+                .thenReturn(List.of(oldDefault1, oldDefault2));
+        when(addressRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+        when(addressRepository.save(any(Address.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        addressService.setDefault(USER_ID, ADDRESS_ID);
+
+        assertThat(oldDefault1.isDefault()).isFalse();
+        assertThat(oldDefault2.isDefault()).isFalse();
     }
 }
