@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,9 +31,14 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests για το ReviewService.
  *
- * Εστιάζει στη λογική του updateProductRating που τρέχει σε create/delete review:
- *  - στρογγυλοποίηση στο 1 δεκαδικό (αλλιώς UI δείχνει 4.333333...)
- *  - χρήση COUNT αντί να φορτώνουμε όλα τα Review entities στη μνήμη
+ * Μετά την atomic recalculation, η rating/count λογική γίνεται στη βάση
+ * (ProductRepository.recalculateRatingAndCount). Άρα εδώ ελέγχουμε:
+ *  - το service καλεί τη σωστή atomic query μετά από create/delete
+ *  - δεν ξαναγυρίζει στο παλιό fetch-set-save pattern (regression)
+ *  - failure modes (user/product/review not found)
+ *
+ * Η ίδια η rounding/count λογική επαληθεύεται σε integration επίπεδο
+ * (βλ. ReviewServiceIntegrationTest).
  */
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {
@@ -69,12 +73,12 @@ class ReviewServiceTest {
     }
 
     // ====================================================================
-    //   createReview — happy path + rating snapshot
+    //   createReview
     // ====================================================================
 
     @Test
-    @DisplayName("createReview: αποθηκεύει review και ενημερώνει product rating στρογγυλοποιημένο στο 1 δεκαδικό")
-    void createReview_persistsAndUpdatesRoundedRating() {
+    @DisplayName("createReview: αποθηκεύει review και ζητάει atomic recalc του product rating")
+    void createReview_persistsAndTriggersRecalculation() {
         ReviewRequest request = new ReviewRequest(PRODUCT_ID, 5, "Great");
 
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -85,70 +89,31 @@ class ReviewServiceTest {
             r.setCreatedAt(LocalDateTime.now());
             return r;
         });
-        // Στο updateProductRating
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProduct));
-        when(reviewRepository.findAverageRatingByProductId(PRODUCT_ID)).thenReturn(4.333333);
-        when(reviewRepository.countByProductId(PRODUCT_ID)).thenReturn(3L);
 
         ReviewResponse response = reviewService.createReview(USER_ID, request);
 
         assertThat(response.id()).isEqualTo(42L);
         assertThat(response.rating()).isEqualTo(5);
-        assertThat(testProduct.getRating()).isEqualTo(4.3); // ΟΧΙ 4.333333
-        assertThat(testProduct.getReviewCount()).isEqualTo(3);
-    }
-
-    // ====================================================================
-    //   updateProductRating (μέσω createReview) — bug fixes #8, #9
-    // ====================================================================
-
-    @Test
-    @DisplayName("updateProductRating: avg 4.05 → στρογγυλεύεται στο 4.1 (HALF_UP)")
-    void updateProductRating_roundsAverageToOneDecimal() {
-        ReviewRequest request = new ReviewRequest(PRODUCT_ID, 4, "ok");
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProduct));
-        when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(reviewRepository.findAverageRatingByProductId(PRODUCT_ID)).thenReturn(4.05);
-        when(reviewRepository.countByProductId(PRODUCT_ID)).thenReturn(20L);
-
-        reviewService.createReview(USER_ID, request);
-
-        // Math.round(4.05 * 10.0) / 10.0 = 41/10.0 = 4.1
-        assertThat(testProduct.getRating()).isEqualTo(4.1);
+        verify(productRepository).recalculateRatingAndCount(PRODUCT_ID);
     }
 
     @Test
-    @DisplayName("updateProductRating: null average (πρώτο/καθαρό προϊόν) → rating γίνεται 0.0")
-    void updateProductRating_nullAverage_defaultsToZero() {
-        ReviewRequest request = new ReviewRequest(PRODUCT_ID, 1, "");
+    @DisplayName("createReview: regression — ΔΕΝ ξαναγυρνά σε fetch/set/save στο Product")
+    void createReview_doesNotUseOldFetchSetSavePattern() {
+        ReviewRequest request = new ReviewRequest(PRODUCT_ID, 4, "");
+
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
         when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProduct));
         when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(reviewRepository.findAverageRatingByProductId(PRODUCT_ID)).thenReturn(null);
-        when(reviewRepository.countByProductId(PRODUCT_ID)).thenReturn(0L);
 
         reviewService.createReview(USER_ID, request);
 
-        assertThat(testProduct.getRating()).isEqualTo(0.0);
-        assertThat(testProduct.getReviewCount()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("updateProductRating: χρησιμοποιεί count(), όχι load-all (memory regression)")
-    void updateProductRating_usesCount_notFindAll() {
-        ReviewRequest request = new ReviewRequest(PRODUCT_ID, 5, "x");
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProduct));
-        when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(reviewRepository.findAverageRatingByProductId(PRODUCT_ID)).thenReturn(5.0);
-        when(reviewRepository.countByProductId(PRODUCT_ID)).thenReturn(1L);
-
-        reviewService.createReview(USER_ID, request);
-
-        verify(reviewRepository).countByProductId(PRODUCT_ID);
-        // ΠΟΤΕ δεν φορτώνουμε τη λίστα των reviews μόνο για να τη μετρήσουμε
+        // Το παλιό pattern έκανε save() στο product και count στα reviews.
+        // Τώρα ΟΛΑ γίνονται μέσω της atomic query.
+        verify(productRepository, never()).save(any());
+        verify(reviewRepository, never()).countByProductId(any());
         verify(reviewRepository, never()).findByProductIdOrderByCreatedAtDesc(any());
+        verify(reviewRepository, never()).findAverageRatingByProductId(any());
     }
 
     // ====================================================================
@@ -166,6 +131,7 @@ class ReviewServiceTest {
                 .hasMessageContaining("User not found");
 
         verify(reviewRepository, never()).save(any());
+        verify(productRepository, never()).recalculateRatingAndCount(any());
     }
 
     @Test
@@ -180,29 +146,36 @@ class ReviewServiceTest {
                 .hasMessageContaining("Product not found");
 
         verify(reviewRepository, never()).save(any());
+        verify(productRepository, never()).recalculateRatingAndCount(any());
     }
 
     // ====================================================================
-    //   deleteReview — και αυτή καλεί updateProductRating
+    //   deleteReview — και αυτή πρέπει να triggerάρει recalculation
     // ====================================================================
 
     @Test
-    @DisplayName("deleteReview: διαγράφει review και ξανά-υπολογίζει στρογγυλοποιημένο rating")
-    void deleteReview_recalculatesRoundedRating() {
+    @DisplayName("deleteReview: διαγράφει review και triggerάρει atomic recalc")
+    void deleteReview_triggersRecalculation() {
         Review review = Review.builder()
                 .id(7L).user(testUser).product(testProduct).rating(2).build();
 
         when(reviewRepository.findById(7L)).thenReturn(Optional.of(review));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProduct));
-        when(reviewRepository.findAverageRatingByProductId(PRODUCT_ID)).thenReturn(3.6666);
-        when(reviewRepository.countByProductId(PRODUCT_ID)).thenReturn(6L);
 
         reviewService.deleteReview(7L);
 
         verify(reviewRepository).delete(review);
-        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-        verify(productRepository).save(captor.capture());
-        assertThat(captor.getValue().getRating()).isEqualTo(3.7); // 3.6666 → 3.7
-        assertThat(captor.getValue().getReviewCount()).isEqualTo(6);
+        verify(productRepository).recalculateRatingAndCount(PRODUCT_ID);
+    }
+
+    @Test
+    @DisplayName("deleteReview: άγνωστο review → ResourceNotFoundException, δεν τρέχει recalc")
+    void deleteReview_notFound_throws() {
+        when(reviewRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reviewService.deleteReview(999L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(reviewRepository, never()).delete(any());
+        verify(productRepository, never()).recalculateRatingAndCount(any());
     }
 }

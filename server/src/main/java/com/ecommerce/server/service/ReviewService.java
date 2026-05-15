@@ -121,18 +121,15 @@ public class ReviewService {
     }
 
 
+    /**
+     * Ξανα-υπολογίζει το rating και reviewCount του product με ένα atomic
+     * UPDATE στη βάση. Αυτό αποφεύγει το race condition του παλιού pattern
+     * (fetch → set → save) όταν 2 χρήστες αφήνουν review ταυτόχρονα: το
+     * row lock σειριοποιεί τα UPDATEs και κάθε ένα βλέπει το committed
+     * insert του προηγούμενου.
+     */
     private void updateProductRating(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        Double avgRating = reviewRepository.findAverageRatingByProductId(productId);
-        long reviewCount = reviewRepository.countByProductId(productId);
-
-        product.setRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
-        product.setReviewCount((int) reviewCount);
-        product.setUpdatedAt(java.time.LocalDateTime.now());
-
-        productRepository.save(product);
+        productRepository.recalculateRatingAndCount(productId);
     }
 
     // Μετατροπή Review Entity σε ReviewResponse DTO
