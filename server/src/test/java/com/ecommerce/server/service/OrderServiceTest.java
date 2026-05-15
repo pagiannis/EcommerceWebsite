@@ -344,6 +344,20 @@ class OrderServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    @DisplayName("reorder: userId ≠ owner του order → AccessDenied, δεν αγγίζει το cart")
+    void reorder_userIdDoesNotMatchOrderOwner_throwsAccessDenied() {
+        Order order = Order.builder().id(1L).user(owner).items(List.of()).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        // Καλείται με userId άλλου χρήστη (admin / impersonation / bug-στο-caller)
+        assertThatThrownBy(() -> orderService.reorder(1L, OTHER_USER_ID))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("does not belong");
+
+        verify(cartItemRepository, never()).save(any());
+    }
+
     // ====================================================================
     //   getUserOrders / getOrderDetail / updateOrderStatus / getOrdersByStatus
     // ====================================================================

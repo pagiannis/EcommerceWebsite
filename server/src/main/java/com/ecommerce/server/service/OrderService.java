@@ -165,12 +165,22 @@ public class OrderService {
     }
 
     /**
-     * Επανάληψη παλιάς παραγγελίας — προσθέτει τα items στο καλάθι
+     * Επανάληψη παλιάς παραγγελίας — προσθέτει τα items στο καλάθι.
+     * Ο controller επιβάλλει ήδη ownership μέσω @PreAuthorize, αλλά κρατάμε
+     * service-level guard για defense in depth: αν η μέθοδος κληθεί από
+     * άλλο σημείο (scheduler, admin endpoint, future caller) με userId
+     * διαφορετικό από τον owner του order, αρνούμαστε αντί να βάλουμε
+     * σιωπηρά τα items στο λάθος cart. Ίδιο pattern με την createOrder
+     * για το shippingAddress.
      */
     @Transactional
     public List<String> reorder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Order does not belong to user");
+        }
 
         List<String> skipped = new java.util.ArrayList<>();
 
