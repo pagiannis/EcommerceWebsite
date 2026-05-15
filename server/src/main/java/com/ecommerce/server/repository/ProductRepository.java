@@ -1,5 +1,6 @@
 package com.ecommerce.server.repository;
 
+import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
@@ -19,12 +20,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    @Query(value = """
-        SELECT p FROM Product p 
-        WHERE LOWER(p.name) LIKE LOWER(CONCAT(:query, '%')) 
+    // Autocomplete projection: επιστρέφει απευθείας DTOs (id, name, firstImageUrl)
+    // χωρίς να φορτώνει Product/ProductImage entities. Το imageUrl παίρνεται
+    // με scalar subquery που γυρίζει μόνο την πρώτη εικόνα (displayOrder ASC),
+    // αποφεύγοντας το N+1 / batch fetch που είχε η παλιά υλοποίηση.
+    @Query("""
+        SELECT new com.ecommerce.server.dto.response.ProductSuggestionResponse(
+            p.id,
+            p.name,
+            (SELECT pi.imageUrl FROM ProductImage pi
+                WHERE pi.product = p
+                ORDER BY pi.displayOrder ASC
+                LIMIT 1)
+        )
+        FROM Product p
+        WHERE LOWER(p.name) LIKE LOWER(CONCAT(:query, '%'))
            OR LOWER(p.name) LIKE LOWER(CONCAT('% ', :query, '%'))
         """)
-    List<Product> findTop8ByWordPrefix(@Param("query") String query, Pageable pageable);
+    List<ProductSuggestionResponse> findTop8SuggestionsByWordPrefix(@Param("query") String query, Pageable pageable);
 
     long countByCategoryId(Long categoryId);
 

@@ -93,14 +93,9 @@ public class ProductService {
     }
 
     public List<ProductSuggestionResponse> autocomplete(String query) {
-        return productRepository.findTop8ByWordPrefix(query, PageRequest.of(0, 8))
-                .stream()
-                .map(p -> new ProductSuggestionResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getImages().isEmpty() ? null : p.getImages().get(0).getImageUrl()
-                ))
-                .toList();
+        // Single SQL: products + first image URL μέσω scalar subquery,
+        // χωρίς hydration των ProductImage entities (βλ. ProductRepository).
+        return productRepository.findTop8SuggestionsByWordPrefix(query, PageRequest.of(0, 8));
     }
 
     public ProductResponse getProductDetail(Long productId) {
