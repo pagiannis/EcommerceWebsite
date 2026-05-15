@@ -9,6 +9,7 @@ import com.ecommerce.server.repository.*;
 import com.ecommerce.server.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// Το seeding τρέχει σε normal εκκίνηση της εφαρμογής αλλά παρακάμπτεται
+// όταν το active profile είναι "test" (integration tests φτιάχνουν τα δικά
+// τους δεδομένα στα @BeforeEach και δεν θέλουν 64 προϊόντα + 256 reviews
+// + 44 orders να σπέρνονται σε κάθε context bootstrap).
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
