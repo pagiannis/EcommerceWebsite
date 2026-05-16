@@ -2,6 +2,8 @@ import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { WishlistItemResponse } from "../../services/wishlistService";
 import { useToggleWishlist } from "../../hooks/useWishlist";
+import StarRating from "../ui/StarRating";
+import Badge from "../ui/Badge";
 
 interface WishlistCardProps {
   item: WishlistItemResponse;
@@ -20,12 +22,23 @@ export default function WishlistCard({ item }: WishlistCardProps) {
             className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-        <div className="mt-3 space-y-0.5">
+        <div className="mt-3 space-y-1">
           <p className="text-xs text-gray-400">{item.brand}</p>
           <h3 className="font-semibold text-gray-900 group-hover:underline">
             {item.productName}
           </h3>
-          <p className="font-bold text-gray-900">${item.price.toFixed(2)}</p>
+          <StarRating rating={item.rating} />
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-gray-900">${item.price.toFixed(2)}</span>
+            {item.originalPrice && (
+              <span className="text-sm text-gray-400 line-through">
+                ${item.originalPrice.toFixed(2)}
+              </span>
+            )}
+            {item.discountPercent && (
+              <Badge label={`-${item.discountPercent}%`} variant="discount" />
+            )}
+          </div>
         </div>
       </Link>
 

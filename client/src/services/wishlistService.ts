@@ -7,6 +7,10 @@ export interface WishlistItemResponse {
   imageUrl: string;
   brand: string;
   price: number;
+  // null όταν το προϊόν δεν έχει έκπτωση
+  originalPrice: number | null;
+  discountPercent: number | null;
+  rating: number;
   addedAt: string;
 }
 

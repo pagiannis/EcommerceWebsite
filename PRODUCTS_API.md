@@ -494,6 +494,104 @@ DELETE /api/cart/7
 
 ---
 
+## Wishlist
+
+### 👤 `GET /api/users/{userId}/wishlist` — Λίστα αγαπημένων
+
+```
+GET /api/users/1/wishlist
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": 1,
+    "productId": 21,
+    "productName": "Premium Casual Shirt",
+    "imageUrl": "https://...",
+    "brand": "Calvin Klein",
+    "price": 80.00,
+    "originalPrice": 100.00,
+    "discountPercent": 20,
+    "rating": 4.5,
+    "addedAt": "2026-04-10 14:22:00"
+  },
+  {
+    "id": 2,
+    "productId": 47,
+    "productName": "Slim Fit Shorts",
+    "imageUrl": "https://...",
+    "brand": "Nike",
+    "price": 50.00,
+    "originalPrice": null,
+    "discountPercent": null,
+    "rating": 4.2,
+    "addedAt": "2026-04-08 09:11:00"
+  }
+]
+```
+
+| Πεδίο | Τύπος | Σημείωση |
+|---|---|---|
+| `price` | decimal | Τρέχουσα τιμή (πάντα set) |
+| `originalPrice` | decimal \| `null` | Αρχική τιμή πριν την έκπτωση — `null` αν δεν υπάρχει έκπτωση |
+| `discountPercent` | int \| `null` | Ποσοστό έκπτωσης — `null` αν δεν υπάρχει έκπτωση |
+| `rating` | double | Μέσος όρος rating του προϊόντος (`0.0` αν δεν έχει reviews) |
+
+> Frontend πρέπει να κάνει null check πριν δείξει το line-through price ή το discount badge — ίδιο pattern με το shop card.
+
+---
+
+### 👤 `POST /api/users/{userId}/wishlist/{productId}` — Προσθήκη στα αγαπημένα
+
+```
+POST /api/users/1/wishlist/21
+```
+
+Επιστρέφει `201 Created` με το νέο `WishlistItemResponse`. `400` αν το product υπάρχει ήδη στη wishlist.
+
+---
+
+### 👤 `DELETE /api/users/{userId}/wishlist/{productId}` — Αφαίρεση από αγαπημένα
+
+```
+DELETE /api/users/1/wishlist/21
+```
+
+Επιστρέφει `204 No Content`.
+
+---
+
+### 👤 `GET /api/users/{userId}/wishlist/{productId}` — Έλεγχος αν είναι στα αγαπημένα
+
+Επιστρέφει `true` ή `false` ως boolean.
+
+---
+
+### 👤 `POST /api/users/{userId}/wishlist/{productId}/move-to-cart` — Μεταφορά στο cart
+
+```
+POST /api/users/1/wishlist/21/move-to-cart?variantId=14&quantity=2
+```
+
+| Param | Τύπος | Required | Περιγραφή |
+|---|---|---|---|
+| `variantId` | Long | ✅ | ID του variant (πρέπει να ανήκει στο `productId`) |
+| `quantity` | int | ❌ (default `1`) | Ποσότητα |
+
+Επιστρέφει `200 OK` με το νέο `CartItemResponse`. Το wishlist item διαγράφεται.
+
+#### Πιθανά error responses
+
+| Status | Πότε | Body |
+|---|---|---|
+| `400` | Το `variantId` δεν ανήκει στο `productId` της wishlist, ή stock issue | `{ "message": "Variant does not belong to the wishlist product" }` |
+| `404` | Το product δεν είναι στη wishlist του user | `{ "message": "Wishlist item not found" }` |
+
+---
+
 ## Auth
 
 ### 🌐 `POST /api/users/login` — Login
