@@ -9,6 +9,13 @@ public record WishlistItemResponse(
         String imageUrl,
         String brand,
         BigDecimal price,
+        // originalPrice και discountPercent είναι nullable — αν δεν υπάρχει
+        // έκπτωση, έρχονται και τα δύο null. Frontend πρέπει να κάνει null
+        // check πριν δείξει το diagonal price / sale badge (ίδιο pattern με
+        // το shop card στο ProductResponse).
+        BigDecimal originalPrice,
+        Integer discountPercent,
+        Double rating,
         String addedAt
 ) {}
 

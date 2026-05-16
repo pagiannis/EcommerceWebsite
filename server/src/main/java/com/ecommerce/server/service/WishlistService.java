@@ -135,6 +135,9 @@ public class WishlistService {
                 imageUrl,
                 product.getBrand().getName(),
                 product.getPrice(),
+                product.getOriginalPrice(),   // null αν δεν υπάρχει έκπτωση
+                product.getDiscountPercent(), // null αν δεν υπάρχει έκπτωση
+                product.getRating(),
                 addedAt
         );
     }
