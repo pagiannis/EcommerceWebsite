@@ -1,6 +1,7 @@
 package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.response.OrderResponse;
+import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration Test για το OrderService (Critical Component).
@@ -149,5 +152,85 @@ class OrderServiceIntegrationTest {
         // ASSERT 4: Έλεγχος ότι το καλάθι άδειασε μετά το checkout
         List<CartItem> currentCart = cartItemRepository.findByUserId(testUser.getId());
         assertThat(currentCart).isEmpty();
+    }
+
+    /**
+     * Regression για το #3: η validation γίνεται ΠΡΙΝ οποιοδήποτε write.
+     * Πετάει BadRequestException → ο GlobalExceptionHandler το μεταφράζει σε HTTP 400.
+     * Επιβεβαιώνουμε ότι το cart παραμένει ως έχει και το stock δεν μειώθηκε,
+     * ώστε ο χρήστης να μπορεί να ξαναπροσπαθήσει διορθώνοντας την ποσότητα.
+     */
+    @Test
+    @DisplayName("createOrder: insufficient stock → BadRequest, cart και stock μένουν ως έχουν")
+    void createOrder_insufficientStock_cartAndStockUnchanged() {
+        // Cart ζητάει 50, stock=10
+        cartItemRepository.save(CartItem.builder()
+                .user(testUser).variant(testVariant).quantity(50).build());
+
+        assertThatThrownBy(() -> orderService.createOrder(
+                testUser.getId(), testAddress.getId(), PaymentMethod.CARD))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Available: 10")
+                .hasMessageContaining("Requested: 50");
+
+        // Stock δεν μειώθηκε
+        ProductVariant refreshed = productVariantRepository.findById(testVariant.getId()).orElseThrow();
+        assertThat(refreshed.getStockQuantity()).isEqualTo(10);
+
+        // Cart δεν άδειασε — ο χρήστης μπορεί να ξαναπροσπαθήσει
+        List<CartItem> currentCart = cartItemRepository.findByUserId(testUser.getId());
+        assertThat(currentCart).hasSize(1);
+        assertThat(currentCart.get(0).getQuantity()).isEqualTo(50);
+    }
+
+    @Test
+    @DisplayName("createOrder: άδειο cart → BadRequestException, καμία παραγγελία στη βάση")
+    void createOrder_emptyCart_throws() {
+        // Σκόπιμα ΔΕΝ προσθέτουμε cart item. Το cart είναι κενό.
+        long ordersBefore = orderRepository.count();
+
+        assertThatThrownBy(() -> orderService.createOrder(
+                testUser.getId(), testAddress.getId(), PaymentMethod.CARD))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Cart is empty");
+
+        // Καμία παραγγελία δεν γράφτηκε
+        assertThat(orderRepository.count()).isEqualTo(ordersBefore);
+    }
+
+    @Test
+    @DisplayName("createOrder: διεύθυνση άλλου user → AccessDenied (security guard με πραγματική βάση)")
+    void createOrder_foreignAddress_throwsAccessDenied() {
+        // Δημιουργία 2ου user + δικής του διεύθυνσης
+        User otherUser = userRepository.save(User.builder()
+                .email("intruder.target@test.com")
+                .passwordHash("hash")
+                .firstName("Intruder").lastName("Target")
+                .role(Role.USER)
+                .build());
+        Address foreignAddress = addressRepository.save(Address.builder()
+                .user(otherUser)
+                .street("Foreign 1").city("Athens").postalCode("12345").country("Greece")
+                .isDefault(true)
+                .build());
+
+        // Έχουμε valid cart item για να αποδείξουμε ότι ο guard τρέχει
+        // ΠΡΙΝ φτάσουμε στο cart/stock processing.
+        cartItemRepository.save(CartItem.builder()
+                .user(testUser).variant(testVariant).quantity(1).build());
+
+        long ordersBefore = orderRepository.count();
+
+        // testUser προσπαθεί να στείλει την παραγγελία του στη διεύθυνση του otherUser
+        assertThatThrownBy(() -> orderService.createOrder(
+                testUser.getId(), foreignAddress.getId(), PaymentMethod.CARD))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("Address does not belong");
+
+        // Καμία παραγγελία δεν γράφτηκε, stock αμετάβλητο, cart αμετάβλητο
+        assertThat(orderRepository.count()).isEqualTo(ordersBefore);
+        assertThat(productVariantRepository.findById(testVariant.getId()).orElseThrow()
+                .getStockQuantity()).isEqualTo(10);
+        assertThat(cartItemRepository.findByUserId(testUser.getId())).hasSize(1);
     }
 }

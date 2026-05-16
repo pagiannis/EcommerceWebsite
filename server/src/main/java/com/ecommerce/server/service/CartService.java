@@ -81,13 +81,19 @@ public class CartService {
          return convertToResponse(cartItemRepository.save(cartItem));
      }
 
-     // Ενημέρωση ποσότητας. Ο controller επιβάλλει @Min(1) στο quantity,
-     // οπότε εδώ δεν χρειάζεται extra έλεγχος για quantity <= 0.
+     // Παρότι ο controller επιβάλλει @Min(1), κρατάμε
+     // και service-level guard ώστε η μέθοδος να είναι ασφαλής σε όποιον
+     // καλεστή — άλλο service, scheduled job ή μελλοντικό endpoint χωρίς
+     // bean validation. Ίδιο pattern με το addToCart παραπάνω.
      @Transactional
      public CartItemResponse updateQuantity(Long cartItemId, Integer quantity) {
          CartItem cartItem = cartItemRepository.findById(cartItemId)
                  .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
          requireCartItemOwner(cartItem);
+
+         if (quantity <= 0) {
+             throw new BadRequestException("Quantity must be greater than 0");
+         }
 
          ProductVariant variant = cartItem.getVariant();
          if (quantity > variant.getStockQuantity()) {
@@ -114,16 +120,18 @@ public class CartService {
     }
 
     private void requireCartItemOwner(CartItem cartItem) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cartItem.getUser().getEmail().equals(email)) {
+        // Σύγκριση με id αντί email: αν ο user αλλάξει email όσο είναι
+        // logged-in, η session κρατά το παλιό όνομα — με email-based check
+        // θα έπαιρνε 403 για τα δικά του cart items. Το id δεν αλλάζει.
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)
+                || !cartItem.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Access denied");
         }
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
-     */
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@cartService.isCartItemOwner(#cartItemId)")
     @Transactional(readOnly = true)
     public boolean isCartItemOwner(Long cartItemId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

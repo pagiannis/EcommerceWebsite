@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,25 +26,33 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
+    // Fallbacks αν τα settings στη βάση λείπουν (π.χ. fresh deploy χωρίς seed).
+    // Το checkout δεν πρέπει ποτέ να σπάσει επειδή ο admin ξέχασε να σώσει tax rate.
+    private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.10");      // 10% VAT
+    private static final BigDecimal DEFAULT_SHIPPING_FEE = new BigDecimal("5.00");  // $5
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final SettingService settingService;
 
     public OrderService(OrderRepository orderRepository,
                        OrderItemRepository orderItemRepository,
                        CartItemRepository cartItemRepository,
                        ProductVariantRepository productVariantRepository,
                        UserRepository userRepository,
-                       AddressRepository addressRepository) {
+                       AddressRepository addressRepository,
+                       SettingService settingService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.productVariantRepository = productVariantRepository;
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
+        this.settingService = settingService;
     }
 
     /**
@@ -90,14 +99,41 @@ public class OrderService {
             throw new BadRequestException("Cart is empty");
         }
 
+        // Validate stock ΠΡΩΤΑ για όλα τα cart items πριν αγγίξουμε τη βάση.
+        // Αν αποτύχει, δεν έχει γίνει κανένα write — άρα δεν χρειαζόμαστε
+        // transactional rollback για ξεγραμμένο Order.
+        for (CartItem cartItem : cartItems) {
+            ProductVariant variant = cartItem.getVariant();
+            if (cartItem.getQuantity() > variant.getStockQuantity()) {
+                Product product = variant.getProduct();
+                throw new BadRequestException(
+                        "Not enough stock for " + product.getName() +
+                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
+                                "Available: " + variant.getStockQuantity() +
+                                ", Requested: " + cartItem.getQuantity()
+                );
+            }
+        }
+
+        // Tax rate και shipping fee διαβάζονται από τα app_settings ώστε ο
+        // admin να μπορεί να τα αλλάξει χωρίς redeploy. Fallbacks αν λείπουν.
+        BigDecimal taxRate = settingService.getDecimal(SettingService.TAX_RATE_KEY, DEFAULT_TAX_RATE);
+        BigDecimal shippingFeeValue = settingService.getDecimal(SettingService.SHIPPING_FEE_KEY, DEFAULT_SHIPPING_FEE);
+
+        // Όλοι οι υπολογισμοί στρογγυλοποιούνται σε 2 δεκαδικά με HALF_UP.
+        // Αλλιώς το API θα μπορούσε να επιστρέψει 26.989000000000002 ή
+        // ασυνέπεια με τη βάση που έχει column scale=2 (Hibernate auto-rounds
+        // με banker's rounding που είναι confusing για financial data).
         BigDecimal subtotal = cartItems.stream()
                 .map(item -> item.getVariant().getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.10)); // 10% VAT
-        BigDecimal shippingFee = BigDecimal.valueOf(5.00);
-        BigDecimal total = subtotal.add(tax).add(shippingFee);
+        BigDecimal tax = subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal shippingFee = shippingFeeValue.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = subtotal.add(tax).add(shippingFee)
+                .setScale(2, RoundingMode.HALF_UP);
 
         // Order number με UUID για collision-free generation σε concurrent requests.
         String orderNumber = "ORD-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
@@ -121,15 +157,6 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
             ProductVariant variant = cartItem.getVariant();
             Product product = variant.getProduct();
-
-            if (cartItem.getQuantity() > variant.getStockQuantity()) {
-                throw new BadRequestException(
-                        "Not enough stock for " + product.getName() +
-                                " (" + variant.getColor() + "/" + variant.getSize() + "). " +
-                                "Available: " + variant.getStockQuantity() +
-                                ", Requested: " + cartItem.getQuantity()
-                );
-            }
 
             orderItems.add(OrderItem.builder()
                     .order(savedOrder)
@@ -158,12 +185,22 @@ public class OrderService {
     }
 
     /**
-     * Επανάληψη παλιάς παραγγελίας — προσθέτει τα items στο καλάθι
+     * Επανάληψη παλιάς παραγγελίας — προσθέτει τα items στο καλάθι.
+     * Ο controller επιβάλλει ήδη ownership μέσω @PreAuthorize, αλλά κρατάμε
+     * service-level guard για defense in depth: αν η μέθοδος κληθεί από
+     * άλλο σημείο (scheduler, admin endpoint, future caller) με userId
+     * διαφορετικό από τον owner του order, αρνούμαστε αντί να βάλουμε
+     * σιωπηρά τα items στο λάθος cart. Ίδιο pattern με την createOrder
+     * για το shippingAddress.
      */
     @Transactional
     public List<String> reorder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Order does not belong to user");
+        }
 
         List<String> skipped = new java.util.ArrayList<>();
 
@@ -182,28 +219,35 @@ public class OrderService {
             // Αν σπάσει το save παρ' όλα αυτά, αφήνουμε το exception να γίνει propagate
             // ώστε το transaction να κάνει rollback — ένα catch εδώ θα οδηγούσε σε
             // UnexpectedRollbackException στο commit.
-            cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId())
-                    .ifPresentOrElse(
-                            existing -> {
-                                existing.setQuantity(Math.min(existing.getQuantity() + quantity, available));
-                                cartItemRepository.save(existing);
-                            },
-                            () -> cartItemRepository.save(
-                                    com.ecommerce.server.models.CartItem.builder()
-                                            .user(order.getUser())
-                                            .variant(item.getVariant())
-                                            .quantity(quantity)
-                                            .build()
-                            )
-                    );
+            var existingOpt = cartItemRepository.findByUserIdAndVariantId(userId, item.getVariant().getId());
+            if (existingOpt.isPresent()) {
+                CartItem existing = existingOpt.get();
+                // Αν η υπάρχουσα ποσότητα ήδη φτάνει/ξεπερνά το διαθέσιμο, το
+                // reorder ΔΕΝ μειώνει σιωπηρά — απλά skip το item. Συνέπεια
+                // με τον γενικό κανόνα του cart: ποτέ δεν χάνεις ποσότητα
+                // χωρίς ρητή ενέργεια του χρήστη.
+                if (existing.getQuantity() >= available) {
+                    skipped.add(item.getProductName() + " (already at max in cart)");
+                    continue;
+                }
+                int newQuantity = Math.min(existing.getQuantity() + quantity, available);
+                existing.setQuantity(newQuantity);
+                cartItemRepository.save(existing);
+            } else {
+                cartItemRepository.save(
+                        com.ecommerce.server.models.CartItem.builder()
+                                .user(order.getUser())
+                                .variant(item.getVariant())
+                                .quantity(quantity)
+                                .build()
+                );
+            }
         }
         return skipped;
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@orderService.isOrderOwner(#orderId)")
-     */
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@orderService.isOrderOwner(#orderId)")
     @Transactional(readOnly = true)
     public boolean isOrderOwner(Long orderId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

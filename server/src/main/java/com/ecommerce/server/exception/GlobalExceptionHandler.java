@@ -3,6 +3,7 @@ package com.ecommerce.server.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -73,6 +74,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(ObjectOptimisticLockingFailureException e) {
         return build(HttpStatus.CONFLICT, "Stock changed during checkout. Please review your cart and try again.");
+    }
+
+    // UNIQUE / FK violations από τη βάση. Π.χ. race condition στο registerUser:
+    // δύο requests περνούν το existsByEmail check πριν κάποιος κάνει commit,
+    // και ο 2ος save σπάει στο UNIQUE constraint του email. Χωρίς αυτό τον
+    // handler θα γινόταν 500 από το γενικό catch-all.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException e) {
+        log.warn("Data integrity violation: {}", e.getMostSpecificCause().getMessage());
+        return build(HttpStatus.CONFLICT, "Data conflict — possibly duplicate or invalid reference");
     }
 
     @ExceptionHandler(Exception.class)

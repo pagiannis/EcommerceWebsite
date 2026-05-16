@@ -9,6 +9,7 @@ import com.ecommerce.server.repository.*;
 import com.ecommerce.server.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// Το seeding τρέχει σε normal εκκίνηση της εφαρμογής αλλά παρακάμπτεται
+// όταν το active profile είναι "test" (integration tests φτιάχνουν τα δικά
+// τους δεδομένα στα @BeforeEach και δεν θέλουν 64 προϊόντα + 256 reviews
+// + 44 orders να σπέρνονται σε κάθε context bootstrap).
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
@@ -34,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AppReviewRepository     appReviewRepository;
     private final OrderRepository         orderRepository;
     private final OrderItemRepository     orderItemRepository;
+    private final AppSettingRepository    appSettingRepository;
     private final PasswordEncoder         passwordEncoder;
 
     private static final Size[] ALL_SIZES = {
@@ -63,6 +70,8 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        seedDefaultSettings();
+
         if (productRepository.count() == 0) {
             System.out.println("🚀 Initializing database with mock data...");
 
@@ -239,7 +248,7 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
-            long count = reviewRepository.findByProductIdOrderByCreatedAtDesc(product.getId()).size();
+            long count = reviewRepository.countByProductId(product.getId());
             product.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
             product.setReviewCount((int) count);
             productRepository.save(product);
@@ -471,6 +480,28 @@ public class DataInitializer implements CommandLineRunner {
                         color, size, (int) (Math.random() * 50) + 10, sku
                 ));
             }
+        }
+    }
+
+    /**
+     * Σπέρνει default τιμές για tax rate και shipping fee αν δεν υπάρχουν.
+     * Idempotent: δεν αντικαθιστά existing settings — έτσι ο admin που έχει
+     * αλλάξει τιμές δεν θα τις χάσει σε κάθε restart.
+     */
+    private void seedDefaultSettings() {
+        if (!appSettingRepository.existsById(SettingService.TAX_RATE_KEY)) {
+            appSettingRepository.save(AppSetting.builder()
+                    .key(SettingService.TAX_RATE_KEY)
+                    .value("0.10")
+                    .description("VAT rate applied to order subtotal (e.g. 0.10 = 10%)")
+                    .build());
+        }
+        if (!appSettingRepository.existsById(SettingService.SHIPPING_FEE_KEY)) {
+            appSettingRepository.save(AppSetting.builder()
+                    .key(SettingService.SHIPPING_FEE_KEY)
+                    .value("5.00")
+                    .description("Flat shipping fee added to every order")
+                    .build());
         }
     }
 }

@@ -17,7 +17,10 @@ public class AdminAppReviewController {
 
     @GetMapping
     public ResponseEntity<List<AppReviewResponse>> getAllReviews() {
-        return ResponseEntity.ok(appReviewService.getApprovedReviews());
+        // Admin βλέπει ΟΛΕΣ τις κριτικές (approved + pending) — αλλιώς
+        // δεν μπορεί να εγκρίνει νέες. Το public homepage testimonials
+        // section καλεί getApprovedReviews() μέσω άλλου endpoint.
+        return ResponseEntity.ok(appReviewService.getAllReviews());
     }
 
     @PatchMapping("/{id}/approve")

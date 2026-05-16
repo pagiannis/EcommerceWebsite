@@ -7,6 +7,7 @@ import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.ProductVariant;
 import java.time.LocalDateTime;
+import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AdminProductService {
     private final BrandRepository brandRepository;
     private final ProductTypeRepository productTypeRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final CartItemRepository cartItemRepository;
     private final ProductService productService;
 
     public ProductResponse createProduct(ProductRequest request) {
@@ -101,6 +103,17 @@ public class AdminProductService {
     public void deleteVariant(Long variantId) {
         if (!productVariantRepository.existsById(variantId))
             throw new ResourceNotFoundException("Variant not found");
+
+        // Block μόνο αν υπάρχει σε ενεργό cart κάποιου χρήστη — αλλιώς το
+        // FK constraint πετάει 500. Παλιά OrderItems έχουν snapshot fields
+        // (productName, priceAtPurchase, color, size) και επιβιώνουν χωρίς
+        // το variant: η reorder ήδη χειρίζεται variant==null.
+        long cartUsage = cartItemRepository.countByVariantId(variantId);
+        if (cartUsage > 0) {
+            throw new ConflictException(
+                    "Cannot delete variant: it is currently in " + cartUsage + " user cart(s)");
+        }
+
         productVariantRepository.deleteById(variantId);
     }
 

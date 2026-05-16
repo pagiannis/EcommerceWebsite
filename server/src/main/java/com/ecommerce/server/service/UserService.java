@@ -10,6 +10,8 @@ import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.security.AuthUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -49,10 +51,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)

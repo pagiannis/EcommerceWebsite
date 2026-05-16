@@ -1,5 +1,6 @@
 package com.ecommerce.server.repository;
 
+import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.enums.Color;
 import com.ecommerce.server.models.enums.DressStyle;
@@ -7,6 +8,7 @@ import com.ecommerce.server.models.enums.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,14 +21,53 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    @Query(value = """
-        SELECT p FROM Product p 
-        WHERE LOWER(p.name) LIKE LOWER(CONCAT(:query, '%')) 
+    // Autocomplete projection: επιστρέφει απευθείας DTOs (id, name, firstImageUrl)
+    // χωρίς να φορτώνει Product/ProductImage entities. Το imageUrl παίρνεται
+    // με scalar subquery που γυρίζει μόνο την πρώτη εικόνα (displayOrder ASC),
+    // αποφεύγοντας το N+1 / batch fetch που είχε η παλιά υλοποίηση.
+    @Query("""
+        SELECT new com.ecommerce.server.dto.response.ProductSuggestionResponse(
+            p.id,
+            p.name,
+            (SELECT pi.imageUrl FROM ProductImage pi
+                WHERE pi.product = p
+                ORDER BY pi.displayOrder ASC
+                LIMIT 1)
+        )
+        FROM Product p
+        WHERE LOWER(p.name) LIKE LOWER(CONCAT(:query, '%'))
            OR LOWER(p.name) LIKE LOWER(CONCAT('% ', :query, '%'))
         """)
-    List<Product> findTop8ByWordPrefix(@Param("query") String query, Pageable pageable);
+    List<ProductSuggestionResponse> findTop8SuggestionsByWordPrefix(@Param("query") String query, Pageable pageable);
 
     long countByCategoryId(Long categoryId);
+
+    long countByBrandId(Long brandId);
+
+    long countByProductTypeId(Long productTypeId);
+
+    // Atomic recalculation από τη βάση — αποφεύγει race condition που είχε
+    // το παλιό pattern "fetch product → set field → save". Το UPDATE παίρνει
+    // row lock στο product, οπότε δύο concurrent reviews σειριοποιούνται:
+    // το 2ο UPDATE βλέπει το committed insert του 1ου και υπολογίζει σωστά.
+    // ROUND(AVG(...) * 10) / 10.0 = ίδια στρογγυλοποίηση με Math.round στον DataInitializer.
+    //
+    // flushAutomatically=true: το pending INSERT review από το service ΠΡΕΠΕΙ να
+    //   φτάσει στη βάση πριν τρέξει αυτό το UPDATE, αλλιώς το COUNT/AVG το αγνοεί.
+    // clearAutomatically=true: ο επόμενος findById(product) θα ξαναδιαβάσει από
+    //   τη βάση αντί να επιστρέψει stale entity από τον persistence context.
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+        UPDATE Product p
+        SET p.rating = COALESCE(
+                (SELECT ROUND(AVG(r.rating) * 10) / 10.0 FROM Review r WHERE r.product = p),
+                0.0
+            ),
+            p.reviewCount = (SELECT COUNT(r) FROM Review r WHERE r.product = p),
+            p.updatedAt = CURRENT_TIMESTAMP
+        WHERE p.id = :productId
+        """)
+    void recalculateRatingAndCount(@Param("productId") Long productId);
 
     // ΜΟΝΟ για DataInitializer — φέρνει variants eagerly ώστε να μην κλείσει η session πριν τα χρειαστούμε
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants")

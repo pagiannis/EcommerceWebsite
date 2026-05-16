@@ -6,11 +6,17 @@ import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.models.*;
 import com.ecommerce.server.models.enums.*;
 import com.ecommerce.server.repository.*;
+import com.ecommerce.server.security.AuthUser;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,6 +149,63 @@ class CartServiceIntegrationTest {
         cartService.clearCart(testUser.getId());
 
         assertThat(cartService.getUserCart(testUser.getId())).isEmpty();
+        assertThat(cartItemRepository.findByUserId(testUser.getId())).isEmpty();
+    }
+
+    // Στήνει authenticated user στο SecurityContext — απαιτείται για τις
+    // updateQuantity / removeFromCart που τρέχουν ownership check μέσω
+    // requireCartItemOwner (διαβάζει το email από το SecurityContextHolder).
+    // Καθαρίζεται στο @AfterEach για να μη διαρρεύσει σε επόμενα tests.
+    private void authenticateAsTestUser() {
+        AuthUser principal = new AuthUser(testUser.getId(), testUser.getEmail(), "HASH", List.of());
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, "HASH", List.of());
+        SecurityContextHolder.setContext(new SecurityContextImpl(auth));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("updateQuantity: end-to-end → η νέα ποσότητα γράφεται στη βάση")
+    void updateQuantity_persistsToDatabase() {
+        authenticateAsTestUser();
+        CartItemResponse added = cartService.addToCart(
+                testUser.getId(), new CartItemRequest(testVariant.getId(), 1));
+
+        cartService.updateQuantity(added.id(), 4);
+
+        CartItem reloaded = cartItemRepository.findById(added.id()).orElseThrow();
+        assertThat(reloaded.getQuantity()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("updateQuantity: ξεπερνά το stock (5) → BadRequest, ποσότητα στη βάση αμετάβλητη")
+    void updateQuantity_exceedsStock_throwsAndQuantityUnchanged() {
+        authenticateAsTestUser();
+        CartItemResponse added = cartService.addToCart(
+                testUser.getId(), new CartItemRequest(testVariant.getId(), 2));
+
+        assertThatThrownBy(() -> cartService.updateQuantity(added.id(), 99))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Available: 5");
+
+        CartItem reloaded = cartItemRepository.findById(added.id()).orElseThrow();
+        assertThat(reloaded.getQuantity()).isEqualTo(2); // δεν άλλαξε
+    }
+
+    @Test
+    @DisplayName("removeFromCart: end-to-end → το cart item διαγράφεται από τη βάση")
+    void removeFromCart_deletesFromDatabase() {
+        authenticateAsTestUser();
+        CartItemResponse added = cartService.addToCart(
+                testUser.getId(), new CartItemRequest(testVariant.getId(), 1));
+        assertThat(cartItemRepository.findById(added.id())).isPresent();
+
+        cartService.removeFromCart(added.id());
+
+        assertThat(cartItemRepository.findById(added.id())).isEmpty();
         assertThat(cartItemRepository.findByUserId(testUser.getId())).isEmpty();
     }
 }

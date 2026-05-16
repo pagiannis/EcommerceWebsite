@@ -2,6 +2,8 @@ package com.ecommerce.server.repository;
 
 import com.ecommerce.server.models.Order;
 import com.ecommerce.server.models.enums.OrderStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -20,4 +22,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = "items")
     List<Order> findByStatus(OrderStatus status);
+
+    // Paged variant για admin endpoints — αποφεύγει load-all σε βάσεις
+    // με χιλιάδες orders. Χωρίς EntityGraph (collection fetch + pagination
+    // → in-memory paging warning). Τα items φορτώνονται lazy/batched.
+    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
 }

@@ -103,16 +103,18 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("autocomplete: επιστρέφει λίστα από ProductSuggestionResponse")
-    void autocomplete_returnsSuggestions() {
-        when(productRepository.findTop8ByWordPrefix(eq("coo"), any(Pageable.class)))
-                .thenReturn(List.of(testProduct));
+    @DisplayName("autocomplete: επιστρέφει το DTO projection από το repository χωρίς extra mapping")
+    void autocomplete_returnsSuggestionsFromProjection() {
+        ProductSuggestionResponse suggestion =
+                new ProductSuggestionResponse(100L, "Cool T-Shirt", "https://cdn/img/1.jpg");
+        when(productRepository.findTop8SuggestionsByWordPrefix(eq("coo"), any(Pageable.class)))
+                .thenReturn(List.of(suggestion));
 
         List<ProductSuggestionResponse> suggestions = productService.autocomplete("coo");
 
         assertThat(suggestions).hasSize(1);
         assertThat(suggestions.get(0).id()).isEqualTo(100L);
         assertThat(suggestions.get(0).name()).isEqualTo("Cool T-Shirt");
-        assertThat(suggestions.get(0).imageUrl()).isNull();
+        assertThat(suggestions.get(0).imageUrl()).isEqualTo("https://cdn/img/1.jpg");
     }
 }

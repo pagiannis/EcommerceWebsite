@@ -3,6 +3,7 @@ package com.ecommerce.server.service;
 import com.ecommerce.server.dto.request.CategoryRequest;
 import com.ecommerce.server.dto.response.CategoryResponse;
 import com.ecommerce.server.models.Category;
+import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.CategoryRepository;
 import com.ecommerce.server.repository.ProductRepository;
@@ -42,6 +43,14 @@ public class AdminCategoryService {
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id))
             throw new ResourceNotFoundException("Category not found");
+
+        // Όπως και στο deleteBrand — γυρνάμε 409 αντί για 500 από FK violation.
+        long productCount = productRepository.countByCategoryId(id);
+        if (productCount > 0) {
+            throw new ConflictException(
+                    "Cannot delete category: " + productCount + " product(s) still use it");
+        }
+
         categoryRepository.deleteById(id);
     }
 

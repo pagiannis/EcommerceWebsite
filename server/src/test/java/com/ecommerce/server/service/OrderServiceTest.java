@@ -62,6 +62,7 @@ class OrderServiceTest {
     @Mock private ProductVariantRepository productVariantRepository;
     @Mock private UserRepository userRepository;
     @Mock private AddressRepository addressRepository;
+    @Mock private SettingService settingService;
 
     @InjectMocks
     private OrderService orderService;
@@ -99,6 +100,13 @@ class OrderServiceTest {
         AuthUser principal = new AuthUser(OWNER_ID, OWNER_EMAIL, "HASH", List.of());
         Authentication auth = new UsernamePasswordAuthenticationToken(principal, "HASH", List.of());
         SecurityContextHolder.setContext(new SecurityContextImpl(auth));
+
+        // SettingService stub: γύρνα τα fallbacks που περνάει ο OrderService.
+        // lenient() γιατί όχι όλα τα tests καλούν createOrder.
+        org.mockito.Mockito.lenient()
+                .when(settingService.getDecimal(org.mockito.ArgumentMatchers.any(String.class),
+                        org.mockito.ArgumentMatchers.any(java.math.BigDecimal.class)))
+                .thenAnswer(inv -> inv.getArgument(1));
     }
 
     @AfterEach
@@ -240,7 +248,6 @@ class OrderServiceTest {
         when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(ownerAddress));
         when(cartItemRepository.findByUserId(OWNER_ID)).thenReturn(List.of(item));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         assertThatThrownBy(() -> orderService.createOrder(OWNER_ID, 10L, PaymentMethod.CARD))
                 .isInstanceOf(BadRequestException.class)
@@ -249,7 +256,9 @@ class OrderServiceTest {
                 .hasMessageContaining("Available: 10")
                 .hasMessageContaining("Requested: 15");
 
-        // Το stock δεν μειώθηκε, δεν αποθηκεύτηκαν order items, δεν καθαρίστηκε το cart
+        // Stock validation γίνεται ΠΡΙΝ οποιοδήποτε write: ούτε Order γράφεται,
+        // ούτε stock μειώνεται, ούτε καθαρίζει το cart. Όχι rollback overhead.
+        verify(orderRepository, never()).save(any());
         verify(productVariantRepository, never()).saveAll(anyList());
         verify(orderItemRepository, never()).saveAll(anyList());
         verify(cartItemRepository, never()).deleteByUserId(any());
@@ -335,12 +344,48 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("reorder: υπάρχουσα ποσότητα ≥ stock → skip, ΔΕΝ μειώνει σιωπηρά το cart")
+    void reorder_existingQuantityAlreadyAtOrAboveStock_skipsWithoutReducing() {
+        // Σενάριο: ο χρήστης έχει ήδη 8 στο cart, stock=5 (κάποιος άλλος αγόρασε).
+        // Παλιά: cart πήγαινε σε 5 (σιωπηρή μείωση). Τώρα: skip + cart αμετάβλητο.
+        variant.setStockQuantity(5);
+        CartItem existing = CartItem.builder().user(owner).variant(variant).quantity(8).build();
+        OrderItem oi = OrderItem.builder()
+                .productName("Black T-shirt").variant(variant).quantity(3).build();
+        Order order = Order.builder().id(1L).user(owner).items(List.of(oi)).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(cartItemRepository.findByUserIdAndVariantId(OWNER_ID, variant.getId()))
+                .thenReturn(Optional.of(existing));
+
+        List<String> skipped = orderService.reorder(1L, OWNER_ID);
+
+        assertThat(skipped).containsExactly("Black T-shirt (already at max in cart)");
+        assertThat(existing.getQuantity()).isEqualTo(8); // αμετάβλητο — όχι σιωπηρή μείωση
+        verify(cartItemRepository, never()).save(any(CartItem.class));
+    }
+
+    @Test
     @DisplayName("reorder: άγνωστο order → ResourceNotFoundException")
     void reorder_orderNotFound_throws() {
         when(orderRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderService.reorder(999L, OWNER_ID))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("reorder: userId ≠ owner του order → AccessDenied, δεν αγγίζει το cart")
+    void reorder_userIdDoesNotMatchOrderOwner_throwsAccessDenied() {
+        Order order = Order.builder().id(1L).user(owner).items(List.of()).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        // Καλείται με userId άλλου χρήστη (admin / impersonation / bug-στο-caller)
+        assertThatThrownBy(() -> orderService.reorder(1L, OTHER_USER_ID))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("does not belong");
+
+        verify(cartItemRepository, never()).save(any());
     }
 
     // ====================================================================

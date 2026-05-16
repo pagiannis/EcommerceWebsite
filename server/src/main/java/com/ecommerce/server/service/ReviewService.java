@@ -11,6 +11,7 @@ import com.ecommerce.server.repository.ReviewRepository;
 import com.ecommerce.server.repository.UserRepository;
 import com.ecommerce.server.security.AuthUser;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -91,13 +92,17 @@ public class ReviewService {
     }
 
     /**
-     * Διαγραφή κριτικής. Ο ownership check γίνεται declarative στο controller
-     * μέσω @PreAuthorize("@reviewService.isReviewOwner(#reviewId)").
+     * Διαγραφή κριτικής. Ο controller έχει @PreAuthorize για ownership, αλλά
+     * κρατάμε και service-level guard ως defense in depth — ίδιο pattern με
+     * το requireCartItemOwner στο CartService. Αν κληθεί από άλλο service
+     * ή scheduler χωρίς bean validation, πάλι αρνούμαστε.
      */
     @Transactional
     public void deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+
+        requireReviewOwner(review);
 
         Long productId = review.getProduct().getId();
         reviewRepository.delete(review);
@@ -105,10 +110,16 @@ public class ReviewService {
         updateProductRating(productId);
     }
 
-    /**
-     * Ownership check για χρήση από @PreAuthorize SpEL:
-     * @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
-     */
+    private void requireReviewOwner(Review review) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)
+                || !review.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
+    }
+
+    // Ownership check για χρήση από @PreAuthorize SpEL:
+    //   @PreAuthorize("@reviewService.isReviewOwner(#reviewId)")
     @Transactional(readOnly = true)
     public boolean isReviewOwner(Long reviewId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -120,21 +131,16 @@ public class ReviewService {
                 .orElse(false);
     }
 
+
     /**
-     * Ενημέρωση μέσου rating προϊόντος
+     * Ξανα-υπολογίζει το rating και reviewCount του product με ένα atomic
+     * UPDATE στη βάση. Αυτό αποφεύγει το race condition του παλιού pattern
+     * (fetch → set → save) όταν 2 χρήστες αφήνουν review ταυτόχρονα: το
+     * row lock σειριοποιεί τα UPDATEs και κάθε ένα βλέπει το committed
+     * insert του προηγούμενου.
      */
     private void updateProductRating(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        Double avgRating = reviewRepository.findAverageRatingByProductId(productId);
-        List<Review> reviews = reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
-
-        product.setRating(avgRating != null ? avgRating : 0.0);
-        product.setReviewCount(reviews.size());
-        product.setUpdatedAt(java.time.LocalDateTime.now());
-
-        productRepository.save(product);
+        productRepository.recalculateRatingAndCount(productId);
     }
 
     // Μετατροπή Review Entity σε ReviewResponse DTO

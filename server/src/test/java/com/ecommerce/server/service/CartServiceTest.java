@@ -313,6 +313,36 @@ class CartServiceTest {
         verify(cartItemRepository, never()).save(any());
     }
 
+    @Test
+    @DisplayName("updateQuantity: quantity == 0 πετάει BadRequestException (service-level guard, όχι μόνο controller)")
+    void updateQuantity_zeroQuantity_throws() {
+        CartItem item = CartItem.builder()
+                .id(50L).user(owner).variant(variant).quantity(1).build();
+        when(cartItemRepository.findById(50L)).thenReturn(Optional.of(item));
+
+        assertThatThrownBy(() -> cartService.updateQuantity(50L, 0))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("greater than 0");
+
+        verify(cartItemRepository, never()).save(any());
+        assertThat(item.getQuantity()).isEqualTo(1); // δεν άλλαξε
+    }
+
+    @Test
+    @DisplayName("updateQuantity: αρνητικό quantity πετάει BadRequestException")
+    void updateQuantity_negativeQuantity_throws() {
+        CartItem item = CartItem.builder()
+                .id(50L).user(owner).variant(variant).quantity(2).build();
+        when(cartItemRepository.findById(50L)).thenReturn(Optional.of(item));
+
+        assertThatThrownBy(() -> cartService.updateQuantity(50L, -3))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("greater than 0");
+
+        verify(cartItemRepository, never()).save(any());
+        assertThat(item.getQuantity()).isEqualTo(2);
+    }
+
     // ====================================================================
     //   removeFromCart
     // ====================================================================

@@ -35,11 +35,25 @@ public class AppReviewService {
     }
 
     /**
-     * Λήψη όλων των εγκεκριμένων reviews
+     * Λήψη όλων των εγκεκριμένων reviews. Bounded από το manual approval
+     * του admin — δεν χρειάζεται pagination σε ρεαλιστικά volumes.
      */
     @Transactional(readOnly = true)
     public List<AppReviewResponse> getApprovedReviews() {
         return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Admin view: ΟΛΕΣ οι κριτικές (και unapproved) ώστε ο admin να μπορεί
+     * να τις εγκρίνει. Διαφέρει από το getApprovedReviews() που είναι για
+     * το public testimonials section του homepage.
+     */
+    @Transactional(readOnly = true)
+    public List<AppReviewResponse> getAllReviews() {
+        return appReviewRepository.findAllWithUser()
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());

@@ -474,6 +474,14 @@ PUT /api/cart/7?quantity=3
 
 Επιστρέφει `200 OK` με το ενημερωμένο cart item.
 
+#### Πιθανά error responses
+
+| Status | Πότε | Body |
+|---|---|---|
+| `400` | `quantity <= 0` ή `quantity > stockQuantity` | `{ "message": "Quantity must be greater than 0" }` ή `{ "message": "Requested quantity exceeds available stock. Available: X" }` |
+| `403` | Το cart item δεν ανήκει στον logged-in user | `{ "message": "Access denied" }` |
+| `404` | Δεν βρέθηκε το cart item | `{ "message": "Cart item not found" }` |
+
 ---
 
 ### 13. 🔒 `DELETE /api/cart/{cartItemId}` — Αφαίρεση από cart
@@ -596,6 +604,13 @@ POST /api/orders/5/reorder?userId=1
 }
 ```
 
+#### Πιθανά error responses
+
+| Status | Πότε | Body |
+|---|---|---|
+| `403` | Η παραγγελία δεν ανήκει στον passed `userId` (service-level guard) | `{ "message": "Order does not belong to user" }` |
+| `404` | Δεν βρέθηκε η παραγγελία | `{ "message": "Order not found" }` |
+
 ---
 
 ## Σφάλματα Validation (400)
@@ -618,3 +633,65 @@ POST /api/orders/5/reorder?userId=1
 - `size < 1` ή `size > 100`
 - `minPrice < 0`
 - `minRating < 1` ή `minRating > 5`
+- `minPrice > maxPrice` → επιστρέφεται απλό 400 με message `"minPrice must be less than or equal to maxPrice"` (αντί για το παλιό confusing "κανένα αποτέλεσμα")
+
+---
+
+## Admin Endpoints (🔑 ADMIN only)
+
+> ⚠️ **Breaking change**: τα list endpoints για admin τώρα είναι paginated.
+> Πριν επέστρεφαν `[...]`. Τώρα επιστρέφουν `Page<T>` με το ίδιο shape που
+> ήδη χρησιμοποιεί το `GET /api/products` (`content[]`, `totalElements`,
+> `totalPages`, `number`, `size`, `first`, `last`).
+
+### Paginated list endpoints
+
+| Endpoint | Default page size |
+|---|---|
+| `GET /api/admin/orders?status=PENDING&page=0&size=20` | 20 |
+| `GET /api/admin/users?page=0&size=20` | 20 |
+| `GET /api/admin/brands?page=0&size=20` | 20 |
+| `GET /api/admin/product-types?page=0&size=20` | 20 |
+
+Όλα αποδέχονται `page` (min 0) και `size` (1–100). Validation 400 αν έξω από όρια.
+
+### Settings — runtime-configurable τιμές (tax, shipping κλπ.)
+
+Τα `tax rate` και `shipping fee` δεν είναι hardcoded — αποθηκεύονται στο `app_settings` table και ο admin μπορεί να τα αλλάξει χωρίς redeploy.
+
+**`GET /api/admin/settings`** — λίστα όλων των settings:
+```json
+[
+  { "key": "order.tax.rate",     "value": "0.10", "description": "VAT rate ...",  "updatedAt": "..." },
+  { "key": "order.shipping.fee", "value": "5.00", "description": "Flat shipping", "updatedAt": "..." }
+]
+```
+
+**`PUT /api/admin/settings/{key}`** — update:
+```json
+{ "value": "0.13", "description": "VAT αυξήθηκε σε 13%" }
+```
+
+Επιστρέφει το ενημερωμένο `SettingResponse`. Το `SettingService` invalidate-άρει το internal cache, οπότε η **επόμενη** παραγγελία βλέπει τη νέα τιμή.
+
+**Fallbacks:** αν για κάποιο λόγο το setting λείπει από τη βάση, το checkout χρησιμοποιεί hardcoded defaults (`0.10` για tax, `5.00` για shipping) — δεν σπάει ποτέ.
+
+### Delete endpoints με dependency check
+
+Τα παρακάτω επιστρέφουν `409 Conflict` (αντί για γενικό 500 από FK violation) αν υπάρχουν associated products:
+
+| Endpoint | Όταν |
+|---|---|
+| `DELETE /api/admin/brands/{id}` | brand χρησιμοποιείται από προϊόντα |
+| `DELETE /api/admin/categories/{id}` | category χρησιμοποιείται από προϊόντα |
+| `DELETE /api/admin/product-types/{id}` | product type χρησιμοποιείται από προϊόντα |
+
+Παράδειγμα body:
+```json
+{
+  "status": 409,
+  "error": "Conflict",
+  "message": "Cannot delete brand: 3 product(s) still use it",
+  "timestamp": "2026-05-15T20:00:00"
+}
+```
