@@ -1,14 +1,5 @@
 import apiClient from "./apiClient";
-
-export interface UserResponse {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  role: "USER" | "ADMIN";
-  createdAt: string;
-}
+import type { UserResponse } from "./accountService";
 
 export interface RegisterPayload {
   email: string;

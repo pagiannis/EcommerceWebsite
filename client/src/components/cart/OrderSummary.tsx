@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PromoCodeIcon from "../ui/PromoCodeIcon";
 
 const DELIVERY_FEE = 15;
@@ -9,6 +10,7 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ subtotal }: OrderSummaryProps) {
+  const navigate = useNavigate();
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoError, setPromoError] = useState(false);
@@ -85,6 +87,7 @@ export default function OrderSummary({ subtotal }: OrderSummaryProps) {
 
       <button
         type="button"
+        onClick={() => navigate("/checkout")}
         className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brand-black py-4 text-sm font-semibold text-white transition hover:bg-gray-800"
       >
         Go to Checkout →

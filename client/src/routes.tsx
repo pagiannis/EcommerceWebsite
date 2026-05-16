@@ -1,11 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 import AccountLayout from "./layouts/AccountLayout";
+import CheckoutLayout from "./layouts/CheckoutLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import AccountPage from "./pages/AccountPage";
 import OrdersPage from "./pages/OrdersPage";
 import WishlistPage from "./pages/WishlistPage";
@@ -24,19 +26,28 @@ const router = createBrowserRouter([
       { path: "shop", element: <ShopPage /> },
       { path: "product/:productId", element: <ProductDetailPage /> },
       { path: "cart", element: <CartPage /> },
-      {
-        path: "account",
-        element: (
-          <ProtectedRoute>
-            <AccountLayout />
-          </ProtectedRoute>
-        ),
-        children: [
-          { index: true, element: <AccountPage /> },
-          { path: "orders", element: <OrdersPage /> },
-          { path: "wishlist", element: <WishlistPage /> },
-        ],
-      },
+    ],
+  },
+  {
+    path: "checkout",
+    element: (
+      <ProtectedRoute>
+        <CheckoutLayout />
+      </ProtectedRoute>
+    ),
+    children: [{ index: true, element: <CheckoutPage /> }],
+  },
+  {
+    path: "account",
+    element: (
+      <ProtectedRoute>
+        <AccountLayout />
+      </ProtectedRoute>
+    ),
+    children: [ 
+      { index: true, element: <AccountPage /> },
+      { path: "orders", element: <OrdersPage /> },
+      { path: "wishlist", element: <WishlistPage /> },
     ],
   },
   { path: "/login", element: <LoginPage /> },

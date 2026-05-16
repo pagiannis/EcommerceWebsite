@@ -7,24 +7,10 @@ import { useRegisterMutation } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 import FormField from "../components/ui/FormField";
 import { Loader2 } from "lucide-react";
+import { profileSchema } from "../schemas/profileSchema";
 
-const schema = z.object({
-  firstName: z
-    .string()
-    .min(1, "First name is required")
-    .max(100, "First name must not exceed 100 characters"),
-  lastName: z
-    .string()
-    .min(1, "Last name is required")
-    .max(100, "Last name must not exceed 100 characters"),
-  email: z.string().email("Enter a valid email"),
+const schema = profileSchema.extend({
   password: z.string().min(8, "Password must be at least 8 characters"),
-  phone: z
-    .string()
-    .refine(
-      (val) => val === "" || /^\+?[0-9]{10,15}$/.test(val),
-      "Phone must be 10–15 digits, optionally starting with +",
-    ),
 });
 
 type FormValues = z.infer<typeof schema>;

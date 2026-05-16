@@ -1,8 +1,14 @@
-import type { Product } from './product';
 import type { Size } from './size';
 
+export interface CartProduct {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+}
+
 export interface CartItem {
-  product: Product;
+  product: CartProduct;
   selectedColor: string;
   selectedSize: Size;
   quantity: number;

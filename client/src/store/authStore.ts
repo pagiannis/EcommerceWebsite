@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { UserResponse, RegisterPayload } from "../services/authService";
+import type { UserResponse } from "../services/accountService";
+import type { RegisterPayload } from "../services/authService";
 import { login as apiLogin, logout as apiLogout, register as apiRegister } from "../services/authService";
 import { useCartStore } from "./cartStore";
 import * as cartService from "../services/cartService";
