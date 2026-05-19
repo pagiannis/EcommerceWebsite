@@ -1,0 +1,71 @@
+import apiClient from './apiClient';
+import type { ProductResponse } from './productsService';
+
+export interface AdminProductPayload {
+  name: string;
+  description?: string;
+  categoryId: number;
+  brandId: number;
+  productTypeId: number;
+  dressStyle: 'CASUAL' | 'FORMAL' | 'PARTY' | 'GYM';
+  price: number;
+  originalPrice?: number;
+  discountPercent?: number;
+}
+
+export interface BrandItem {
+  id: number;
+  name: string;
+  logoUrl?: string;
+}
+
+export interface CategoryItem {
+  id: number;
+  name: string;
+}
+
+export interface ProductTypeItem {
+  id: number;
+  name: string;
+}
+
+interface Page<T> {
+  content: T[];
+}
+
+// ---- Products ----
+
+export async function adminCreateProduct(payload: AdminProductPayload): Promise<ProductResponse> {
+  const { data } = await apiClient.post<ProductResponse>('/admin/products', payload);
+  return data;
+}
+
+export async function adminUpdateProduct(id: number, payload: AdminProductPayload): Promise<ProductResponse> {
+  const { data } = await apiClient.put<ProductResponse>(`/admin/products/${id}`, payload);
+  return data;
+}
+
+export async function adminDeleteProduct(id: number): Promise<void> {
+  await apiClient.delete(`/admin/products/${id}`);
+}
+
+// ---- Lookup lists for form dropdowns ----
+
+export async function fetchAdminBrands(): Promise<BrandItem[]> {
+  const { data } = await apiClient.get<Page<BrandItem>>('/admin/brands', {
+    params: { size: 100 },
+  });
+  return data.content;
+}
+
+export async function fetchAdminProductTypes(): Promise<ProductTypeItem[]> {
+  const { data } = await apiClient.get<Page<ProductTypeItem>>('/admin/product-types', {
+    params: { size: 100 },
+  });
+  return data.content;
+}
+
+export async function fetchAdminCategories(): Promise<CategoryItem[]> {
+  const { data } = await apiClient.get<CategoryItem[]>('/categories');
+  return data;
+}
