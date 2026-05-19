@@ -51,6 +51,8 @@ Base URL: `http://localhost:8080`
 
 **`sort`**: `NEWEST`, `MOST_POPULAR`, `PRICE_ASC`, `PRICE_DESC`
 
+> ℹ️ **Προϊόντα χωρίς variants**: Εμφανίζονται κανονικά στη λίστα (π.χ. νέο product χωρίς ακόμη χρώματα/μεγέθη από admin). Αν όμως οριστεί `colors` ή `filterSizes`, εξαιρούνται μέχρι να έχουν matching variant.
+
 #### Παραδείγματα
 
 ```

@@ -68,7 +68,11 @@ Request body:
   "dressStyle": "CASUAL",
   "price": 80.00,
   "originalPrice": 100.00,
-  "discountPercent": 20
+  "discountPercent": 20,
+  "imageUrls": [
+    "https://cdn.example.com/products/21/main.jpg",
+    "https://cdn.example.com/products/21/back.jpg"
+  ]
 }
 ```
 
@@ -81,12 +85,20 @@ Request body:
 | `price` | ✅ | > 0 |
 | `originalPrice` | ❌ | > 0 — αν `null`, frontend δεν δείχνει discount |
 | `discountPercent` | ❌ | 0–100 |
+| `imageUrls` | ❌ | Λίστα από URLs. Αποθηκεύονται με `displayOrder` κατά τη σειρά του array. Αν `null` ή κενό, το προϊόν δημιουργείται χωρίς εικόνες. |
 
 Επιστρέφει `201 Created` με το πλήρες `ProductResponse` (ίδιο shape με `GET /api/products/{id}`).
 
+> 💡 Το προϊόν εμφανίζεται στη λίστα **χωρίς** να χρειάζεται variants. Variants προστίθενται ξεχωριστά μέσω `POST /api/admin/products/{productId}/variants`. Αν όμως ο πελάτης φιλτράρει με χρώμα/μέγεθος, το προϊόν εξαιρείται μέχρι να έχει αντίστοιχο variant.
+
 ### `PUT /api/admin/products/{id}` — Update product
 
-Ίδιο body με το POST. Όλα τα πεδία είναι **απαιτητά** στο update.
+Ίδιο body με το POST. Όλα τα πεδία (πλην `imageUrls`) είναι **απαιτητά** στο update.
+
+Συμπεριφορά `imageUrls`:
+- **Παραλείψεις/`null`** → οι εικόνες μένουν ως έχουν.
+- **Άδεια λίστα `[]`** → όλες οι εικόνες σβήνονται.
+- **Νέα λίστα** → πλήρης αντικατάσταση (orphanRemoval σβήνει τις παλιές).
 
 Επιστρέφει `200 OK` με `ProductResponse`.
 
@@ -116,6 +128,8 @@ Request:
 - `size`: enum (`XXS, XS, S, M, L, XL, XXL, XXXL, XXXXL`)
 - `stockQuantity` ≥ 0
 - `sku` required, **unique** στη βάση → `409` αν duplicate
+
+> ℹ️ Το variant **δεν** έχει δικιά του εικόνα. Οι εικόνες είναι σε product-level (`imageUrls` στο product POST/PUT) και μοιράζονται σε όλα τα χρώματα/μεγέθη.
 
 Επιστρέφει `201 Created` με `ProductVariantResponse`.
 

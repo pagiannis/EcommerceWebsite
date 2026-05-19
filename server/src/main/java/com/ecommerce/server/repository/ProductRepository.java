@@ -126,16 +126,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("minRating") Double minRating,
             Pageable pageable);
 
+    // Χρησιμοποιεί EXISTS για τα variants (αντί για INNER JOIN) ώστε τα προϊόντα
+    // χωρίς variants να εμφανίζονται κανονικά στη λίστα. Φίλτρα χρωμάτων/μεγεθών
+    // εφαρμόζονται conditionally μέσω :filterByColors / :filterBySizes.
     @Query(value = """
-        SELECT DISTINCT p FROM Product p
-        JOIN p.variants v
+        SELECT p FROM Product p
         JOIN p.brand b
         JOIN p.productType pt
         WHERE (:categoryName IS NULL OR LOWER(p.category.name) = :categoryName)
           AND (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (:filterByColors = false OR v.color IN (:colors))
-          AND (:filterBySizes = false OR v.size IN (:sizes))
+          AND (:filterByColors = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.color IN (:colors)))
+          AND (:filterBySizes = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.size IN (:sizes)))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)
@@ -144,15 +146,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND (:minRating IS NULL OR p.rating >= :minRating)
         """,
         countQuery = """
-        SELECT COUNT(DISTINCT p) FROM Product p
-        JOIN p.variants v
+        SELECT COUNT(p) FROM Product p
         JOIN p.brand b
         JOIN p.productType pt
         WHERE (:categoryName IS NULL OR LOWER(p.category.name) = :categoryName)
           AND (:minPrice IS NULL OR p.price >= :minPrice)
           AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-          AND (:filterByColors = false OR v.color IN (:colors))
-          AND (:filterBySizes = false OR v.size IN (:sizes))
+          AND (:filterByColors = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.color IN (:colors)))
+          AND (:filterBySizes = false OR EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p AND v.size IN (:sizes)))
           AND (:dressStyle IS NULL OR p.dressStyle = :dressStyle)
           AND (:onSale = false OR p.discountPercent > 0)
           AND (:bestSelling = false OR p.reviewCount >= 50)

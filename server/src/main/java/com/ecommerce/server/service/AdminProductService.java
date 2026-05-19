@@ -5,8 +5,10 @@ import com.ecommerce.server.dto.request.ProductVariantRequest;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
+import com.ecommerce.server.models.ProductImage;
 import com.ecommerce.server.models.ProductVariant;
 import java.time.LocalDateTime;
+import java.util.List;
 import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
@@ -44,6 +46,7 @@ public class AdminProductService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        applyImages(product, request.imageUrls());
         return productService.convertToResponse(productRepository.save(product));
     }
 
@@ -64,7 +67,25 @@ public class AdminProductService {
         product.setOriginalPrice(request.originalPrice());
         product.setDiscountPercent(request.discountPercent());
 
+        if (request.imageUrls() != null) {
+            product.getImages().clear();
+            applyImages(product, request.imageUrls());
+        }
+
         return productService.convertToResponse(productRepository.save(product));
+    }
+
+    /** Προσθέτει εικόνες στο product με orphanRemoval cascade. */
+    private void applyImages(Product product, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) return;
+        int order = product.getImages().size();
+        for (String url : imageUrls) {
+            ProductImage img = new ProductImage();
+            img.setProduct(product);
+            img.setImageUrl(url);
+            img.setDisplayOrder(order++);
+            product.getImages().add(img);
+        }
     }
 
     public void deleteProduct(Long id) {

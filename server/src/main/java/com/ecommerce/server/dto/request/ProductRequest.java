@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record ProductRequest(
         @NotBlank(message = "Product name is required")
@@ -39,5 +40,7 @@ public record ProductRequest(
 
         @Min(value = 0, message = "Discount cannot be negative")
         @Max(value = 100, message = "Discount cannot exceed 100")
-        Integer discountPercent
+        Integer discountPercent,
+
+        List<String> imageUrls
 ) {}

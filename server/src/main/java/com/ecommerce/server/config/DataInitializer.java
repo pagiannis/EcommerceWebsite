@@ -71,6 +71,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedDefaultSettings();
+        seedAdminUser();
 
         if (productRepository.count() == 0) {
             System.out.println("🚀 Initializing database with mock data...");
@@ -461,7 +462,8 @@ public class DataInitializer implements CommandLineRunner {
 
         ProductResponse p = adminProductService.createProduct(new ProductRequest(
                 name, description, categoryId, brandId, productTypeId, dressStyle,
-                BigDecimal.valueOf(price), BigDecimal.valueOf(originalPrice), discountPercent
+                BigDecimal.valueOf(price), BigDecimal.valueOf(originalPrice), discountPercent,
+                null
         ));
 
         ProductImage image = new ProductImage();
@@ -480,6 +482,28 @@ public class DataInitializer implements CommandLineRunner {
                         color, size, (int) (Math.random() * 50) + 10, sku
                 ));
             }
+        }
+    }
+
+    /** Δημιουργεί ή προάγει τον admin1234@gmail.com σε ADMIN. */
+    private void seedAdminUser() {
+        String email = "admin1234@gmail.com";
+        User admin = userRepository.findByEmail(email).orElse(null);
+        if (admin == null) {
+            userRepository.save(User.builder()
+                    .firstName("Admin")
+                    .lastName("User")
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode("admin1234"))
+                    .role(Role.ADMIN)
+                    .build());
+            System.out.println("✅ Created admin user " + email);
+        } else if (admin.getRole() != Role.ADMIN) {
+            admin.setRole(Role.ADMIN);
+            userRepository.save(admin);
+            System.out.println("✅ Promoted " + email + " to ADMIN");
+        } else {
+            System.out.println("✅ " + email + " already ADMIN. Skipping.");
         }
     }
 
