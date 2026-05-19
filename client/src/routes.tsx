@@ -2,7 +2,9 @@ import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 import AccountLayout from "./layouts/AccountLayout";
 import CheckoutLayout from "./layouts/CheckoutLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AdminRoute from "./components/auth/AdminRoute";
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -15,6 +17,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LogoutPage from "./pages/LogoutPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +51,17 @@ const router = createBrowserRouter([
       { index: true, element: <AccountPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "wishlist", element: <WishlistPage /> },
+    ],
+  },
+  {
+    path: "admin",
+    element: (
+      <AdminRoute>
+        <AdminLayout />
+      </AdminRoute>
+    ),
+    children: [
+      { index: true, element: <AdminDashboardPage /> },
     ],
   },
   { path: "/login", element: <LoginPage /> },
