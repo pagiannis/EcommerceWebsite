@@ -13,7 +13,7 @@ import { fetchProducts } from '../services/productsService';
 export function useAdminProductList(page: number) {
   return useQuery({
     queryKey: ['admin', 'products', page],
-    queryFn: () => fetchProducts({ page, size: 20 }),
+    queryFn: () => fetchProducts({ page, size: 20, sort: 'NEWEST' }),
   });
 }
 
