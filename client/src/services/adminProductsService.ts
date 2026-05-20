@@ -19,11 +19,6 @@ export interface BrandItem {
   logoUrl?: string;
 }
 
-export interface CategoryItem {
-  id: number;
-  name: string;
-}
-
 export interface ProductTypeItem {
   id: number;
   name: string;
@@ -63,9 +58,4 @@ export async function fetchAdminProductTypes(): Promise<ProductTypeItem[]> {
     params: { size: 100 },
   });
   return data.content;
-}
-
-export async function fetchAdminCategories(): Promise<CategoryItem[]> {
-  const { data } = await apiClient.get<CategoryItem[]>('/categories');
-  return data;
 }

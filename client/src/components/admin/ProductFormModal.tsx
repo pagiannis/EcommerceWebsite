@@ -4,7 +4,8 @@ import { z } from "zod";
 import { Loader2, X } from "lucide-react";
 import { useCreateProduct, useUpdateProduct } from "../../hooks/useAdminProducts";
 import type { ProductResponse } from "../../services/productsService";
-import type { BrandItem, CategoryItem, ProductTypeItem, AdminProductPayload } from "../../services/adminProductsService";
+import type { BrandItem, ProductTypeItem, AdminProductPayload } from "../../services/adminProductsService";
+import type { CategoryItem } from "../../services/adminCategoriesService";
 
 const dressStyleSchema = z.enum(["CASUAL", "FORMAL", "PARTY", "GYM"]);
 const DRESS_STYLES = dressStyleSchema.options;
