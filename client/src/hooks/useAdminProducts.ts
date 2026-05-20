@@ -5,15 +5,15 @@ import {
   adminDeleteProduct,
   fetchAdminBrands,
   fetchAdminProductTypes,
-  fetchAdminCategories,
   type AdminProductPayload,
 } from '../services/adminProductsService';
+import { fetchAdminCategories } from '../services/adminCategoriesService';
 import { fetchProducts } from '../services/productsService';
 
 export function useAdminProductList(page: number) {
   return useQuery({
     queryKey: ['admin', 'products', page],
-    queryFn: () => fetchProducts({ page, size: 20 }),
+    queryFn: () => fetchProducts({ page, size: 20, sort: 'NEWEST' }),
   });
 }
 

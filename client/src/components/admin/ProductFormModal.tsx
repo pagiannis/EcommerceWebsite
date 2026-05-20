@@ -4,7 +4,8 @@ import { z } from "zod";
 import { Loader2, X } from "lucide-react";
 import { useCreateProduct, useUpdateProduct } from "../../hooks/useAdminProducts";
 import type { ProductResponse } from "../../services/productsService";
-import type { BrandItem, CategoryItem, ProductTypeItem, AdminProductPayload } from "../../services/adminProductsService";
+import type { BrandItem, ProductTypeItem, AdminProductPayload } from "../../services/adminProductsService";
+import type { CategoryItem } from "../../services/adminCategoriesService";
 
 const dressStyleSchema = z.enum(["CASUAL", "FORMAL", "PARTY", "GYM"]);
 const DRESS_STYLES = dressStyleSchema.options;
@@ -122,6 +123,11 @@ export default function ProductFormModal({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          {serverError && (
+            <div className="mx-6 mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-brand-red text-sm shrink-0">
+              Something went wrong. Please try again.
+            </div>
+          )}
           <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
@@ -202,9 +208,6 @@ export default function ProductFormModal({
               </div>
             </div>
 
-            {serverError && (
-              <p className="text-brand-red text-sm">Something went wrong. Please try again.</p>
-            )}
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 shrink-0">
