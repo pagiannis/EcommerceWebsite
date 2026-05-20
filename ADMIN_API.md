@@ -4,6 +4,17 @@ Base URL: `http://localhost:8080`
 
 > 🔑 **Όλα τα endpoints κάτω από `/api/admin/*` απαιτούν ADMIN role.** Επιστρέφουν `403 Forbidden` αν ο logged-in user δεν είναι ADMIN, ή `401 Unauthorized` αν δεν υπάρχει session.
 
+## Default credentials
+
+Μετά από fresh seed, ο `DataInitializer` δημιουργεί έναν default admin:
+
+```
+email:    admin@test.com
+password: admin12345
+```
+
+> ⚠️ Άλλαξε αυτά τα credentials πριν το deployment. Σε production τα admin credentials πρέπει να έρχονται από env vars αντί για hardcoded seed.
+
 ## Περιεχόμενα
 
 - [Pagination format](#pagination-format)
@@ -275,8 +286,12 @@ PATCH /api/admin/users/1/role?role=ADMIN
 
 Επιστρέφει `200 OK` με `UserResponse`.
 
+> ⚠️ **Self-demotion guard:** Αν ο logged-in admin προσπαθήσει να υποβαθμίσει τον εαυτό του σε `USER`, επιστρέφεται `400 Bad Request` με μήνυμα `"You cannot demote your own admin account"`. Αυτό αποτρέπει lockout σε σενάριο μόνου admin.
+
 ### `DELETE /api/admin/users/{id}` — Delete user
 
+> ⚠️ **Self-deletion guard:** Αν ο logged-in admin προσπαθήσει να διαγράψει τον εαυτό του, επιστρέφεται `400 Bad Request` με μήνυμα `"You cannot delete your own admin account"`.
+>
 > ⚠️ Αν ο user έχει orders/reviews → FK violation → `409`. Καλύτερα soft-delete αν θες ιστορικότητα.
 
 Επιστρέφει `204 No Content`.

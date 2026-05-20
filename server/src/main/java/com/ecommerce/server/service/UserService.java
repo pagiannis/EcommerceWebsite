@@ -5,6 +5,7 @@ import com.ecommerce.server.dto.request.UserRegistrationRequest;
 import com.ecommerce.server.dto.request.UserRequest;
 import com.ecommerce.server.dto.response.UserResponse;
 import com.ecommerce.server.models.User;
+import com.ecommerce.server.exception.BadRequestException;
 import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.UserRepository;
@@ -108,6 +109,12 @@ public class UserService implements UserDetailsService {
     // --- Admin methods ---
 
     public UserResponse changeUserRole(Long id, Role role) {
+        // Άμυνα ενάντια σε self-demotion: αν ο τρέχων admin υποβαθμίσει
+        // τον εαυτό του σε USER (ειδικά αν είναι ο μόνος), το σύστημα
+        // κλειδώνει χωρίς admin access.
+        if (isCurrentUser(id) && role != Role.ADMIN) {
+            throw new BadRequestException("You cannot demote your own admin account");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setRole(role);
@@ -120,7 +127,17 @@ public class UserService implements UserDetailsService {
     }
 
     public void adminDeleteUser(Long id) {
+        if (isCurrentUser(id)) {
+            throw new BadRequestException("You cannot delete your own admin account");
+        }
         deleteUser(id);
+    }
+
+    private boolean isCurrentUser(Long id) {
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        return auth != null && auth.getPrincipal() instanceof AuthUser current
+                && current.getId().equals(id);
     }
 
     public void deleteUser(Long id) {
