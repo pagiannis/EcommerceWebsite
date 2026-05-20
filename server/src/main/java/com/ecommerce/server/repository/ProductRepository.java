@@ -1,5 +1,6 @@
 package com.ecommerce.server.repository;
 
+import com.ecommerce.server.dto.response.AdminProductResponse;
 import com.ecommerce.server.dto.response.ProductSuggestionResponse;
 import com.ecommerce.server.models.Product;
 import com.ecommerce.server.models.enums.Color;
@@ -72,6 +73,25 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // ΜΟΝΟ για DataInitializer — φέρνει variants eagerly ώστε να μην κλείσει η session πριν τα χρειαστούμε
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants")
     List<Product> findAllWithVariants();
+
+    // Admin list view — επιστρέφει ΟΛΑ τα products (συμπεριλαμβανομένων όσων
+    // δεν έχουν variants). Διαφέρει από το public findByFilters που κάνει
+    // INNER JOIN p.variants και εξαιρεί τα incomplete. Σκοπός: ο admin να
+    // βλέπει την πραγματική κατάσταση της βάσης και να ξέρει ποια χρειάζονται
+    // variants για να γίνουν visible.
+    //
+    // Scalar subquery για variantCount — ένα SQL, χωρίς JOIN multiplication.
+    @Query("""
+        SELECT new com.ecommerce.server.dto.response.AdminProductResponse(
+            p.id, p.name, p.brand.name, p.category.name,
+            p.price, p.originalPrice, p.discountPercent,
+            p.rating, p.reviewCount,
+            (SELECT COUNT(v) FROM ProductVariant v WHERE v.product = p),
+            p.createdAt
+        )
+        FROM Product p
+        """)
+    Page<AdminProductResponse> findAllForAdmin(Pageable pageable);
 
     // topSelling=true: ταξινόμηση βάσει πωλήσεων — χρησιμοποιεί EXISTS για variants ώστε να μην
     // πολλαπλασιαστεί το SUM(quantity) λόγω JOIN

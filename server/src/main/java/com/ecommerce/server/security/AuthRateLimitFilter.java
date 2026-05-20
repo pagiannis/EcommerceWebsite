@@ -8,7 +8,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -36,13 +35,6 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
 
     private static final String LOGIN_PATH = "/api/users/login";
     private static final String REGISTER_PATH = "/api/users/register";
-
-    // Όταν trust=true, διαβάζουμε X-Forwarded-For / X-Real-IP (production
-    // πίσω από Nginx που τα γράφει αξιόπιστα). Όταν false (default), τα
-    // αγνοούμε και χρησιμοποιούμε μόνο request.getRemoteAddr() — αλλιώς
-    // attacker σπέρνει ψεύτικα headers και παρακάμπτει το rate limit.
-    @Value("${app.security.trust-proxy-headers:false}")
-    private boolean trustProxyHeaders;
 
     private final Cache<String, Bucket> loginBuckets = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(15))
@@ -109,28 +101,17 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     /**
      * Επιστρέφει την πραγματική client IP.
      *
-     * Default (`trust-proxy-headers=false`): επιστρέφει μόνο request.getRemoteAddr().
-     * Αν το app τρέχει direct χωρίς proxy, αυτό είναι ασφαλές — οι headers
-     * X-Forwarded-For / X-Real-IP μπορούν να spoof-αρθούν από οποιονδήποτε
-     * client και να παρακάμψουν το rate limit.
+     * Δεν χειριζόμαστε τα X-Forwarded-For headers manually — αυτό το κάνει
+     * ήδη το Spring framework μέσω του ForwardedHeaderFilter που ενεργοποιεί
+     * το `server.forward-headers-strategy=framework` στο application.properties.
+     * Όταν τρέχει πίσω από Nginx, το request.getRemoteAddr() ΗΔΗ επιστρέφει
+     * τη client IP, όχι του proxy.
      *
-     * Production behind Nginx/CloudFront: set `app.security.trust-proxy-headers=true`
-     * στο application.properties. Ο proxy γράφει τα headers αξιόπιστα και
-     * τα overwritάρει σε ό,τι έστειλε ο client.
+     * Αν αλλάξει το deployment ώστε να μη υπάρχει trusted proxy, αρκεί να
+     * αλλάξει το strategy property σε `none` — δεν θέλουμε να κάνουμε custom
+     * spoof-able parsing εδώ.
      */
     private String resolveClientIp(HttpServletRequest request) {
-        if (!trustProxyHeaders) {
-            return request.getRemoteAddr();
-        }
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            int comma = xff.indexOf(',');
-            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
-        }
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
-            return xRealIp.trim();
-        }
         return request.getRemoteAddr();
     }
 }
