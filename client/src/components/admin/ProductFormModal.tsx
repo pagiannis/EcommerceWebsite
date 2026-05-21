@@ -40,7 +40,7 @@ const productSchema = z.object({
 
 type FormValues = z.infer<typeof productSchema>;
 
-export interface ProductFormModalProps {
+interface Props {
   product: ProductResponse | null;
   brands: BrandItem[];
   categories: CategoryItem[];
@@ -54,7 +54,7 @@ export default function ProductFormModal({
   categories,
   productTypes,
   onClose,
-}: ProductFormModalProps) {
+}: Props) {
   const updateProduct = useUpdateProduct();
   const queryClient = useQueryClient();
   const isEdit = product !== null;
