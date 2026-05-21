@@ -1,12 +1,14 @@
 import apiClient from "./apiClient";
 
+export type UserRole = "USER" | "ADMIN";
+
 export interface UserResponse {
   id: number;
   email: string;
   firstName: string;
   lastName: string;
   phone: string;
-  role: "USER" | "ADMIN";
+  role: UserRole;
   createdAt: string;
 }
 
