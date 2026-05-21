@@ -65,8 +65,8 @@ export default function AdminProductsPage() {
         <p className="text-center py-24 text-gray-400">Failed to load products.</p>
       ) : (
         <>
-          <div className="bg-white rounded-xl border overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-xl border overflow-x-auto">
+            <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {["Name", "Category", "Brand", "Type", "Style", "Price", "Rating", ""].map((h) => (

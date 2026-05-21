@@ -61,8 +61,8 @@ export default function AdminOrdersPage() {
         <p className="text-center py-24 text-gray-400">Failed to load orders.</p>
       ) : (
         <>
-          <div className="bg-white rounded-xl border overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-xl border overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {["Order #", "Date", "Items", "Total", "Status", ""].map((h) => (

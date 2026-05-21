@@ -61,8 +61,8 @@ export default function AdminCategoriesPage() {
         </p>
       ) : (
         <>
-          <div className="bg-white rounded-xl border overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-xl border overflow-x-auto">
+            <table className="w-full min-w-[400px] text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {["Name", "Description", "Image URL", ""].map((h) => (

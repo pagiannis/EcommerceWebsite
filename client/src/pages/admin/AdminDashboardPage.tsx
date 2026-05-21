@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-white rounded-xl border overflow-x-auto">
           {orders.isLoading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="animate-spin text-gray-300" size={28} />
@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
               No orders yet.
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[480px] text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {["Order #", "Date", "Items", "Total", "Status"].map((h) => (

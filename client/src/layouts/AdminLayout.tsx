@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Package, Tag, ShoppingBag, Users } from "lucide-react";
+import { LayoutDashboard, Package, Tag, ShoppingBag, Users, Menu, X } from "lucide-react";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -10,11 +11,30 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-[#F7F7F7]">
-      <aside className="w-56 shrink-0 bg-brand-black flex flex-col">
-        <div className="px-6 py-5 border-b border-white/10">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-56 bg-brand-black flex flex-col transition-transform duration-200 md:static md:translate-x-0 md:shrink-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
           <span className="font-display text-white text-base tracking-wide">Admin Panel</span>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="text-white/60 hover:text-white md:hidden"
+          >
+            <X size={18} />
+          </button>
         </div>
         <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5">
           {navItems.map(({ to, label, icon: Icon, end }) => (
@@ -22,6 +42,7 @@ export default function AdminLayout() {
               key={to}
               to={to}
               end={end}
+              onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   isActive
@@ -37,9 +58,21 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
-      <main className="flex-1 p-8 overflow-auto">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center gap-3 md:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-500 hover:text-brand-black transition-colors"
+          >
+            <Menu size={20} />
+          </button>
+          <span className="font-display text-base font-bold">Admin Panel</span>
+        </header>
+
+        <main className="flex-1 p-4 md:p-8 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
