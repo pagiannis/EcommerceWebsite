@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import type { Page } from './apiTypes';
 import type { Product } from '../types/product';
 import type { Category } from '../types/category';
 import type { Brand } from '../types/brand';
@@ -33,15 +34,6 @@ export interface ProductResponse {
   variants: ProductVariantResponse[];
 }
 
-export interface PaginatedProductsResponse {
-  content: ProductResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-  first: boolean;
-  last: boolean;
-}
 
 export interface ProductsParams {
   category?: string;
@@ -204,8 +196,8 @@ export function mapApiProduct(api: ProductResponse): Product {
 
 export async function fetchProducts(
   params: ProductsParams = {},
-): Promise<PaginatedProductsResponse> {
-  const { data } = await apiClient.get<PaginatedProductsResponse>('/products', {
+): Promise<Page<ProductResponse>> {
+  const { data } = await apiClient.get<Page<ProductResponse>>('/products', {
     params,
     paramsSerializer: { indexes: null },
   });
@@ -233,8 +225,8 @@ export interface SearchParams {
 
 export async function fetchSearchResults(
   params: SearchParams,
-): Promise<PaginatedProductsResponse> {
-  const { data } = await apiClient.get<PaginatedProductsResponse>('/products/search', { params });
+): Promise<Page<ProductResponse>> {
+  const { data } = await apiClient.get<Page<ProductResponse>>('/products/search', { params });
   return data;
 }
 

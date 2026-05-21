@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import type { ProductResponse } from './productsService';
+import type { Page } from './apiTypes';
 
 export interface AdminProductPayload {
   name: string;
@@ -24,9 +25,6 @@ export interface ProductTypeItem {
   name: string;
 }
 
-interface Page<T> {
-  content: T[];
-}
 
 // ---- Products ----
 
