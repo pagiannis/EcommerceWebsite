@@ -25,29 +25,29 @@ export default function AdminDashboardPage() {
           label="Total Orders"
           value={orders.data?.totalElements}
           isLoading={orders.isLoading}
-          icon={<ShoppingBag size={18} className="text-sky-600" />}
-          iconBg="bg-sky-50"
+          icon={<ShoppingBag size={18} className="text-gray-600" />}
+          iconBg="bg-gray-50"
         />
         <StatCard
           label="Pending Orders"
           value={pendingOrders.data?.totalElements}
           isLoading={pendingOrders.isLoading}
-          icon={<Clock size={18} className="text-amber-600" />}
-          iconBg="bg-amber-50"
+          icon={<Clock size={18} className="text-gray-600" />}
+          iconBg="bg-gray-50"
         />
         <StatCard
           label="Total Users"
           value={users.data?.totalElements}
           isLoading={users.isLoading}
-          icon={<Users size={18} className="text-emerald-600" />}
-          iconBg="bg-emerald-50"
+          icon={<Users size={18} className="text-gray-600" />}
+          iconBg="bg-gray-50"
         />
         <StatCard
           label="Total Products"
           value={products.data?.totalElements}
           isLoading={products.isLoading}
-          icon={<Package size={18} className="text-purple-600" />}
-          iconBg="bg-purple-50"
+          icon={<Package size={18} className="text-gray-600" />}
+          iconBg="bg-gray-50"
         />
       </div>
 
