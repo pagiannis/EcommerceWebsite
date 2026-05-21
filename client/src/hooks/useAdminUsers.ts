@@ -1,11 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminUsers, adminUpdateUserRole, adminDeleteUser } from '../services/adminUsersService';
+import { fetchAdminUsers, adminUpdateUser, adminUpdateUserRole, adminDeleteUser } from '../services/adminUsersService';
+import type { AdminUpdateUserPayload } from '../services/adminUsersService';
 import type { UserRole } from '../services/accountService';
 
 export function useAdminUserList(page: number) {
   return useQuery({
     queryKey: ['admin', 'users', page],
     queryFn: () => fetchAdminUsers({ page }),
+  });
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: AdminUpdateUserPayload }) =>
+      adminUpdateUser(id, payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 }
 

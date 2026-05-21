@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Pencil, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Shield, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdminUserList, useDeleteUser } from "../../hooks/useAdminUsers";
 import { useAuthStore } from "../../store/authStore";
 import type { UserResponse, UserRole } from "../../services/accountService";
 import UserRoleModal from "../../components/admin/UserRoleModal";
+import UserEditModal from "../../components/admin/UserEditModal";
 
 const ROLE_BADGE: Record<UserRole, string> = {
   ADMIN: "bg-purple-100 text-purple-700",
@@ -12,7 +13,8 @@ const ROLE_BADGE: Record<UserRole, string> = {
 
 export default function AdminUsersPage() {
   const [page, setPage] = useState(0);
-  const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
+  const [editUser, setEditUser] = useState<UserResponse | null>(null);
+  const [roleUser, setRoleUser] = useState<UserResponse | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const { data, isLoading, isError } = useAdminUserList(page);
@@ -91,12 +93,19 @@ export default function AdminUsersPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 justify-end">
                             <button
-                              onClick={() => setTargetUser(user)}
+                              onClick={() => setEditUser(user)}
+                              title="Edit Details"
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-brand-black hover:bg-gray-100 transition-colors"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              onClick={() => setRoleUser(user)}
                               disabled={isSelf}
                               title={isSelf ? "Cannot change your own role" : "Change Role"}
                               className="p-1.5 rounded-lg text-gray-400 hover:text-brand-black hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                              <Pencil size={15} />
+                              <Shield size={15} />
                             </button>
                             <button
                               onClick={() => setDeleteTargetId(user.id)}
@@ -141,11 +150,19 @@ export default function AdminUsersPage() {
         </>
       )}
 
-      {targetUser && (
+      {editUser && (
+        <UserEditModal
+          key={editUser.id}
+          user={editUser}
+          onClose={() => setEditUser(null)}
+        />
+      )}
+
+      {roleUser && (
         <UserRoleModal
-          key={targetUser.id}
-          user={targetUser}
-          onClose={() => setTargetUser(null)}
+          key={roleUser.id}
+          user={roleUser}
+          onClose={() => setRoleUser(null)}
         />
       )}
 
