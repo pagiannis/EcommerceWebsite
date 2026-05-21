@@ -1,16 +1,31 @@
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, X } from "lucide-react";
-import { useCreateProduct, useUpdateProduct } from "../../hooks/useAdminProducts";
+import { Loader2, X, Plus, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUpdateProduct } from "../../hooks/useAdminProducts";
 import type { ProductResponse } from "../../services/productsService";
-import type { BrandItem, ProductTypeItem, AdminProductPayload } from "../../services/adminProductsService";
+import { adminCreateProduct, type BrandItem, type ProductTypeItem, type AdminProductPayload } from "../../services/adminProductsService";
 import type { CategoryItem } from "../../services/adminCategoriesService";
+import { adminCreateVariant, VARIANT_COLORS, VARIANT_SIZES } from "../../services/adminProductVariantsService";
+
+const inputCls =
+  "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-black";
+const variantInputCls =
+  "w-full border rounded px-1.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-black";
 
 const dressStyleSchema = z.enum(["CASUAL", "FORMAL", "PARTY", "GYM"]);
 const DRESS_STYLES = dressStyleSchema.options;
 
-const schema = z.object({
+const variantItemSchema = z.object({
+  color: z.enum(VARIANT_COLORS),
+  size: z.enum(VARIANT_SIZES),
+  stockQuantity: z.string().refine((v) => Number.isInteger(Number(v)) && Number(v) >= 0, "Must be ≥ 0"),
+  sku: z.string().min(1, "Required"),
+});
+
+const productSchema = z.object({
   name: z.string().min(1, "Required").max(255),
   description: z.string().optional(),
   categoryId: z.string().refine((v) => v !== "0", "Required"),
@@ -20,9 +35,10 @@ const schema = z.object({
   price: z.string().refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, "Must be > 0"),
   originalPrice: z.string().optional(),
   discountPercent: z.string().optional(),
+  variants: z.array(variantItemSchema),
 });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<typeof productSchema>;
 
 export interface ProductFormModalProps {
   product: ProductResponse | null;
@@ -39,9 +55,11 @@ export default function ProductFormModal({
   productTypes,
   onClose,
 }: ProductFormModalProps) {
-  const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const queryClient = useQueryClient();
   const isEdit = product !== null;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const defaultCategoryId =
     categories.find((c) => c.name.toLowerCase() === product?.category?.toLowerCase())?.id ?? 0;
@@ -52,9 +70,10 @@ export default function ProductFormModal({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(productSchema),
     defaultValues: isEdit
       ? {
           name: product.name,
@@ -66,6 +85,7 @@ export default function ProductFormModal({
           price: product.price.toString(),
           originalPrice: product.originalPrice?.toString() ?? "",
           discountPercent: product.discountPercent?.toString() ?? "",
+          variants: [],
         }
       : {
           name: "",
@@ -77,10 +97,18 @@ export default function ProductFormModal({
           price: "",
           originalPrice: "",
           discountPercent: "",
+          variants: [{ color: "BLACK", size: "M", stockQuantity: "0", sku: "" }],
         },
   });
 
+  const { fields: variantFields, append, remove } = useFieldArray({ control, name: "variants" });
+
   async function onSubmit(values: FormValues) {
+    if (!isEdit && values.variants.length === 0) {
+      setServerError("Add at least one variant before creating the product.");
+      return;
+    }
+
     const payload: AdminProductPayload = {
       name: values.name,
       description: values.description || undefined,
@@ -93,22 +121,31 @@ export default function ProductFormModal({
       discountPercent: values.discountPercent ? parseInt(values.discountPercent) : undefined,
     };
 
+    setIsSubmitting(true);
+    setServerError(null);
+
     try {
       if (isEdit) {
         await updateProduct.mutateAsync({ id: product.id, payload });
       } else {
-        await createProduct.mutateAsync(payload);
+        const created = await adminCreateProduct(payload);
+        for (const v of values.variants) {
+          await adminCreateVariant(created.id, {
+            color: v.color,
+            size: v.size,
+            stockQuantity: parseInt(v.stockQuantity),
+            sku: v.sku,
+          });
+        }
+        queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       }
       onClose();
     } catch {
-      // error shown below
+      setServerError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
-
-  const isMutating = createProduct.isPending || updateProduct.isPending;
-  const serverError = createProduct.error || updateProduct.error;
-  const inputCls =
-    "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-black";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -125,7 +162,7 @@ export default function ProductFormModal({
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
           {serverError && (
             <div className="mx-6 mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-brand-red text-sm shrink-0">
-              Something went wrong. Please try again.
+              {serverError}
             </div>
           )}
           <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
@@ -208,6 +245,94 @@ export default function ProductFormModal({
               </div>
             </div>
 
+            {!isEdit && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Variants *</label>
+                  <button
+                    type="button"
+                    onClick={() => append({ color: "BLACK", size: "M", stockQuantity: "0", sku: "" })}
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg border hover:bg-gray-100 transition-colors"
+                  >
+                    <Plus size={12} />
+                    Add Variant
+                  </button>
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        {["Color", "Size", "Stock", "SKU", ""].map((h) => (
+                          <th key={h} className="text-left px-2 py-2 font-medium text-gray-500">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {variantFields.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-2 py-4 text-center text-gray-400">
+                            No variants yet — add at least one.
+                          </td>
+                        </tr>
+                      ) : (
+                        variantFields.map((field, idx) => (
+                          <tr key={field.id}>
+                            <td className="px-2 py-1.5">
+                              <select
+                                {...register(`variants.${idx}.color`)}
+                                className={variantInputCls}
+                              >
+                                {VARIANT_COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                {...register(`variants.${idx}.size`)}
+                                className={variantInputCls}
+                              >
+                                {VARIANT_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="number"
+                                min={0}
+                                {...register(`variants.${idx}.stockQuantity`)}
+                                className={variantInputCls}
+                              />
+                              {errors.variants?.[idx]?.stockQuantity && (
+                                <p className="text-brand-red text-[10px]">{errors.variants[idx]!.stockQuantity!.message}</p>
+                              )}
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="text"
+                                {...register(`variants.${idx}.sku`)}
+                                placeholder="SKU-001-BLK-M"
+                                className={variantInputCls}
+                              />
+                              {errors.variants?.[idx]?.sku && (
+                                <p className="text-brand-red text-[10px]">{errors.variants[idx]!.sku!.message}</p>
+                              )}
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <button
+                                type="button"
+                                onClick={() => remove(idx)}
+                                className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 shrink-0">
@@ -220,10 +345,10 @@ export default function ProductFormModal({
             </button>
             <button
               type="submit"
-              disabled={isMutating}
+              disabled={isSubmitting}
               className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-brand-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
-              {isMutating && <Loader2 size={14} className="animate-spin" />}
+              {isSubmitting && <Loader2 size={14} className="animate-spin" />}
               {isEdit ? "Save Changes" : "Create Product"}
             </button>
           </div>

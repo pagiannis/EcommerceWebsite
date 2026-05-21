@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ChevronLeft, ChevronRight, Layers } from "lucide-react";
 import {
   useAdminProductList,
   useAdminBrands,
@@ -9,12 +9,14 @@ import {
 } from "../../hooks/useAdminProducts";
 import type { ProductResponse } from "../../services/productsService";
 import ProductFormModal from "../../components/admin/ProductFormModal";
+import VariantModal from "../../components/admin/VariantModal";
 
 export default function AdminProductsPage() {
   const [page, setPage] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductResponse | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [variantProduct, setVariantProduct] = useState<ProductResponse | null>(null);
 
   const { data, isLoading, isError } = useAdminProductList(page);
   const { data: brands = [] } = useAdminBrands();
@@ -87,6 +89,13 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
                         <button
+                          onClick={() => setVariantProduct(product)}
+                          title="Manage Variants"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-black hover:bg-gray-100 transition-colors"
+                        >
+                          <Layers size={15} />
+                        </button>
+                        <button
                           onClick={() => openEdit(product)}
                           title="Edit"
                           className="p-1.5 rounded-lg text-gray-400 hover:text-brand-black hover:bg-gray-100 transition-colors"
@@ -129,6 +138,14 @@ export default function AdminProductsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {variantProduct && (
+        <VariantModal
+          key={variantProduct.id}
+          product={variantProduct}
+          onClose={() => setVariantProduct(null)}
+        />
       )}
 
       {modalOpen && (
