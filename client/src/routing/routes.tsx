@@ -1,29 +1,29 @@
 import { createBrowserRouter } from "react-router-dom";
-import RootLayout from "./layouts/RootLayout";
-import AccountLayout from "./layouts/AccountLayout";
-import CheckoutLayout from "./layouts/CheckoutLayout";
-import AdminLayout from "./layouts/AdminLayout";
-import ProtectedRoute from "./components/guards/ProtectedRoute";
-import AdminRoute from "./components/guards/AdminRoute";
-import HomePage from "./pages/HomePage";
-import ShopPage from "./pages/ShopPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import AccountPage from "./pages/AccountPage";
-import OrdersPage from "./pages/OrdersPage";
-import WishlistPage from "./pages/WishlistPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import LogoutPage from "./pages/LogoutPage";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import AdminProductsPage from "./pages/admin/AdminProductsPage";
-import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
-import AdminBrandsPage from "./pages/admin/AdminBrandsPage";
-import AdminProductTypesPage from "./pages/admin/AdminProductTypesPage";
-import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
-import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import RootLayout from "../layouts/RootLayout";
+import AccountLayout from "../layouts/AccountLayout";
+import CheckoutLayout from "../layouts/CheckoutLayout";
+import AdminLayout from "../layouts/AdminLayout";
+import ProtectedRoute from "./guards/ProtectedRoute";
+import AdminRoute from "./guards/AdminRoute";
+import HomePage from "../pages/HomePage";
+import ShopPage from "../pages/ShopPage";
+import ProductDetailPage from "../pages/ProductDetailPage";
+import CartPage from "../pages/CartPage";
+import CheckoutPage from "../pages/CheckoutPage";
+import AccountPage from "../pages/AccountPage";
+import OrdersPage from "../pages/OrdersPage";
+import WishlistPage from "../pages/WishlistPage";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import NotFoundPage from "../pages/NotFoundPage";
+import LogoutPage from "../pages/LogoutPage";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
+import AdminProductsPage from "../pages/admin/AdminProductsPage";
+import AdminCategoriesPage from "../pages/admin/AdminCategoriesPage";
+import AdminBrandsPage from "../pages/admin/AdminBrandsPage";
+import AdminProductTypesPage from "../pages/admin/AdminProductTypesPage";
+import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
+import AdminUsersPage from "../pages/admin/AdminUsersPage";
 
 const router = createBrowserRouter([
   {
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
         <AccountLayout />
       </ProtectedRoute>
     ),
-    children: [ 
+    children: [
       { index: true, element: <AccountPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "wishlist", element: <WishlistPage /> },
