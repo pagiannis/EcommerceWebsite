@@ -39,41 +39,44 @@ const router = createBrowserRouter([
   },
   {
     path: "checkout",
-    element: (
-      <ProtectedRoute>
-        <CheckoutLayout />
-      </ProtectedRoute>
-    ),
-    children: [{ index: true, element: <CheckoutPage /> }],
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <CheckoutLayout />,
+        children: [{ index: true, element: <CheckoutPage /> }],
+      },
+    ],
   },
   {
     path: "account",
-    element: (
-      <ProtectedRoute>
-        <AccountLayout />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute />,
     children: [
-      { index: true, element: <AccountPage /> },
-      { path: "orders", element: <OrdersPage /> },
-      { path: "wishlist", element: <WishlistPage /> },
+      {
+        element: <AccountLayout />,
+        children: [
+          { index: true, element: <AccountPage /> },
+          { path: "orders", element: <OrdersPage /> },
+          { path: "wishlist", element: <WishlistPage /> },
+        ],
+      },
     ],
   },
   {
     path: "admin",
-    element: (
-      <AdminRoute>
-        <AdminLayout />
-      </AdminRoute>
-    ),
+    element: <AdminRoute />,
     children: [
-      { index: true, element: <AdminDashboardPage /> },
-      { path: "products", element: <AdminProductsPage /> },
-      { path: "categories", element: <AdminCategoriesPage /> },
-      { path: "brands", element: <AdminBrandsPage /> },
-      { path: "product-types", element: <AdminProductTypesPage /> },
-      { path: "orders", element: <AdminOrdersPage /> },
-      { path: "users", element: <AdminUsersPage /> },
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: "products", element: <AdminProductsPage /> },
+          { path: "categories", element: <AdminCategoriesPage /> },
+          { path: "brands", element: <AdminBrandsPage /> },
+          { path: "product-types", element: <AdminProductTypesPage /> },
+          { path: "orders", element: <AdminOrdersPage /> },
+          { path: "users", element: <AdminUsersPage /> },
+        ],
+      },
     ],
   },
   { path: "/login", element: <LoginPage /> },
