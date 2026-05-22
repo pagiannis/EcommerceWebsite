@@ -5,6 +5,8 @@ import {
   LayoutDashboard,
   Package,
   Tag,
+  Award,
+  Layers,
   ShoppingBag,
   Users,
   Menu,
@@ -15,6 +17,8 @@ const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tag },
+  { to: "/admin/brands", label: "Brands", icon: Award },
+  { to: "/admin/product-types", label: "Product Types", icon: Layers },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/users", label: "Users", icon: Users },
 ];

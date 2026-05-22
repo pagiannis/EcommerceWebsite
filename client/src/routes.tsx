@@ -20,6 +20,8 @@ import LogoutPage from "./pages/LogoutPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminBrandsPage from "./pages/admin/AdminBrandsPage";
+import AdminProductTypesPage from "./pages/admin/AdminProductTypesPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 
@@ -68,6 +70,8 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboardPage /> },
       { path: "products", element: <AdminProductsPage /> },
       { path: "categories", element: <AdminCategoriesPage /> },
+      { path: "brands", element: <AdminBrandsPage /> },
+      { path: "product-types", element: <AdminProductTypesPage /> },
       { path: "orders", element: <AdminOrdersPage /> },
       { path: "users", element: <AdminUsersPage /> },
     ],
