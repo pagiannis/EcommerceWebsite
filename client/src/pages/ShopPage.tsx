@@ -18,7 +18,7 @@ import type { DressStyle } from "../types/dressStyle";
 import type { Brand } from "../types/brand";
 import type { FilterState } from "../types/filterState";
 import type { Size } from "../types/size";
-import FilterSidebar from "../components/home/FilterSidebar";
+import FilterSidebar from "../components/shop/FilterSidebar";
 import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopHeader, { SORT_OPTIONS } from "../components/shop/ShopHeader";
 import ProductGrid from "../components/shop/ProductGrid";
