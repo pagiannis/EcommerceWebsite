@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
-import { useUpdateUserRole } from "../../hooks/useAdminUsers";
+import { useUpdateUserRole } from "../../hooks/admin/useUsers";
 import type { UserResponse, UserRole } from "../../services/accountService";
 
 const USER_ROLES: UserRole[] = ["USER", "ADMIN"];

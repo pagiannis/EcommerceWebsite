@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, X } from "lucide-react";
-import { useCreateBrand, useUpdateBrand } from "../../hooks/useAdminBrands";
+import { useCreateBrand, useUpdateBrand } from "../../hooks/admin/useBrands";
 import type { BrandItem, BrandPayload } from "../../services/adminBrandsService";
 
 const inputCls =

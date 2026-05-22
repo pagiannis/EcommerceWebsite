@@ -4,7 +4,7 @@ import {
   useAddVariant,
   useUpdateVariant,
   useDeleteVariant,
-} from "../../hooks/useAdminProductVariants";
+} from "../../hooks/admin/useProductVariants";
 import {
   VARIANT_COLORS,
   VARIANT_SIZES,

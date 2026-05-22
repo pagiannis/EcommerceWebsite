@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, X, Plus, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateProduct } from "../../hooks/useAdminProducts";
+import { useUpdateProduct } from "../../hooks/admin/useProducts";
 import type { ProductResponse } from "../../services/productsService";
 import { adminCreateProduct, type BrandItem, type ProductTypeItem, type AdminProductPayload } from "../../services/adminProductsService";
 import type { CategoryItem } from "../../services/adminCategoriesService";

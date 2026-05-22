@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
-import { useUpdateOrderStatus } from "../../hooks/useAdminOrders";
+import { useUpdateOrderStatus } from "../../hooks/admin/useOrders";
 import type { OrderResponse, OrderStatus } from "../../services/ordersService";
 
 const ORDER_STATUSES: OrderStatus[] = [

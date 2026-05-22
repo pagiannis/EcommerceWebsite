@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ShoppingBag, Clock, Users, Package, Loader2 } from "lucide-react";
-import { useAdminDashboard } from "../../hooks/useAdminDashboard";
+import { useAdminDashboard } from "../../hooks/admin/useDashboard";
 import type { OrderStatus } from "../../services/ordersService";
 
 const STATUS_BADGE: Record<OrderStatus, string> = {

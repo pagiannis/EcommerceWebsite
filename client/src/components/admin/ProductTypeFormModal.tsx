@@ -5,7 +5,7 @@ import { Loader2, X } from "lucide-react";
 import {
   useCreateProductType,
   useUpdateProductType,
-} from "../../hooks/useAdminProductTypes";
+} from "../../hooks/admin/useProductTypes";
 import type {
   ProductTypeItem,
   ProductTypePayload,

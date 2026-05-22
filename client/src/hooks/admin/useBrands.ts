@@ -6,7 +6,7 @@ import {
   adminUpdateBrand,
   adminDeleteBrand,
   type BrandPayload,
-} from '../services/adminBrandsService';
+} from '../../services/adminBrandsService';
 
 export function useAdminBrandList() {
   return useQuery({

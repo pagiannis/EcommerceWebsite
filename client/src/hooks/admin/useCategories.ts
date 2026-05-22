@@ -6,7 +6,7 @@ import {
   adminUpdateCategory,
   adminDeleteCategory,
   type CategoryPayload,
-} from '../services/adminCategoriesService';
+} from '../../services/adminCategoriesService';
 
 export function useAdminCategoryList() {
   return useQuery({

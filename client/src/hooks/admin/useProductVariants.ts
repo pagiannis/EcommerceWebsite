@@ -5,7 +5,7 @@ import {
   adminUpdateVariant,
   adminDeleteVariant,
   type VariantPayload,
-} from '../services/adminProductVariantsService';
+} from '../../services/adminProductVariantsService';
 
 export function useAddVariant() {
   const qc = useQueryClient();

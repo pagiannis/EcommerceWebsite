@@ -5,7 +5,7 @@ import { Loader2, X } from "lucide-react";
 import {
   useCreateCategory,
   useUpdateCategory,
-} from "../../hooks/useAdminCategories";
+} from "../../hooks/admin/useCategories";
 import type {
   CategoryItem,
   CategoryPayload,

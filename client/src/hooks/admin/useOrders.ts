@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { fetchAdminOrders, adminUpdateOrderStatus } from '../services/adminOrdersService';
-import type { OrderStatus } from '../services/ordersService';
+import { fetchAdminOrders, adminUpdateOrderStatus } from '../../services/adminOrdersService';
+import type { OrderStatus } from '../../services/ordersService';
 
 export function useAdminOrderList(page: number, status?: OrderStatus) {
   return useQuery({

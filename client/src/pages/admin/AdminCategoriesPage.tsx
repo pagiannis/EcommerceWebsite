@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import {
   useAdminCategoryList,
   useDeleteCategory,
-} from "../../hooks/useAdminCategories";
+} from "../../hooks/admin/useCategories";
 import type { CategoryItem } from "../../services/adminCategoriesService";
 import CategoryFormModal from "../../components/admin/CategoryFormModal";
 

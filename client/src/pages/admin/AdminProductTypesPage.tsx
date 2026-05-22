@@ -3,7 +3,7 @@ import { Plus, Trash2, Pencil, Loader2 } from "lucide-react";
 import {
   useAdminProductTypeList,
   useDeleteProductType,
-} from "../../hooks/useAdminProductTypes";
+} from "../../hooks/admin/useProductTypes";
 import type { ProductTypeItem } from "../../services/adminProductTypesService";
 import ProductTypeFormModal from "../../components/admin/ProductTypeFormModal";
 

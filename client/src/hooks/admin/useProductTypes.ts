@@ -6,7 +6,7 @@ import {
   adminUpdateProductType,
   adminDeleteProductType,
   type ProductTypePayload,
-} from '../services/adminProductTypesService';
+} from '../../services/adminProductTypesService';
 
 export function useAdminProductTypeList() {
   return useQuery({

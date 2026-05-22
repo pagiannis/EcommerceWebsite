@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pencil, Shield, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAdminUserList, useDeleteUser } from "../../hooks/useAdminUsers";
+import { useAdminUserList, useDeleteUser } from "../../hooks/admin/useUsers";
 import { useAuthStore } from "../../store/authStore";
 import type { UserResponse, UserRole } from "../../services/accountService";
 import UserRoleModal from "../../components/admin/UserRoleModal";

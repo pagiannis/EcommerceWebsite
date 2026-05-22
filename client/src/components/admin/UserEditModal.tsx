@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X, Loader2 } from "lucide-react";
-import { useUpdateUser } from "../../hooks/useAdminUsers";
+import { useUpdateUser } from "../../hooks/admin/useUsers";
 import type { UserResponse } from "../../services/accountService";
 
 const inputCls =

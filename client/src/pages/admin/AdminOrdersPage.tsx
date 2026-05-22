@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pencil, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAdminOrderList } from "../../hooks/useAdminOrders";
+import { useAdminOrderList } from "../../hooks/admin/useOrders";
 import type { OrderResponse, OrderStatus } from "../../services/ordersService";
 import OrderStatusModal from "../../components/admin/OrderStatusModal";
 

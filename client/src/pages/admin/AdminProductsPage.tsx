@@ -6,7 +6,7 @@ import {
   useAdminProductTypes,
   useAdminCategories,
   useDeleteProduct,
-} from "../../hooks/useAdminProducts";
+} from "../../hooks/admin/useProducts";
 import type { ProductResponse } from "../../services/productsService";
 import ProductFormModal from "../../components/admin/ProductFormModal";
 import VariantModal from "../../components/admin/VariantModal";

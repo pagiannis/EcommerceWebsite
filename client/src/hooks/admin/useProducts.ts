@@ -7,9 +7,9 @@ import {
   fetchAdminBrands,
   fetchAdminProductTypes,
   type AdminProductPayload,
-} from '../services/adminProductsService';
-import { fetchAdminCategories } from '../services/adminCategoriesService';
-import { fetchProducts } from '../services/productsService';
+} from '../../services/adminProductsService';
+import { fetchAdminCategories } from '../../services/adminCategoriesService';
+import { fetchProducts } from '../../services/productsService';
 
 export function useAdminProductList(page: number) {
   return useQuery({
