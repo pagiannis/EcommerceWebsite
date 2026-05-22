@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { fetchAdminOrders, adminUpdateOrderStatus } from '../services/adminOrdersService';
 import type { OrderStatus } from '../services/ordersService';
 
@@ -14,6 +15,9 @@ export function useUpdateOrderStatus() {
   return useMutation({
     mutationFn: ({ id, status }: { id: number; status: OrderStatus }) =>
       adminUpdateOrderStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'orders'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'orders'] });
+      toast.success('Order status updated');
+    },
   });
 }

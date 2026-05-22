@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
   adminCreateProduct,
   adminUpdateProduct,
@@ -42,7 +43,10 @@ export function useCreateProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: adminCreateProduct,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'products'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      toast.success('Product created');
+    },
   });
 }
 
@@ -51,7 +55,10 @@ export function useUpdateProduct() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: AdminProductPayload }) =>
       adminUpdateProduct(id, payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'products'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      toast.success('Product updated');
+    },
   });
 }
 
@@ -59,6 +66,9 @@ export function useDeleteProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: adminDeleteProduct,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'products'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      toast.success('Product deleted');
+    },
   });
 }

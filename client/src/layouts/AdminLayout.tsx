@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Package, Tag, ShoppingBag, Users, Menu, X } from "lucide-react";
+import { Toaster } from "react-hot-toast";
+import {
+  LayoutDashboard,
+  Package,
+  Tag,
+  ShoppingBag,
+  Users,
+  Menu,
+  X,
+} from "lucide-react";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -28,7 +37,9 @@ export default function AdminLayout() {
         }`}
       >
         <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-          <span className="font-display text-white text-base tracking-wide">Admin Panel</span>
+          <span className="font-display text-white text-base tracking-wide">
+            Admin Panel
+          </span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="text-white/60 hover:text-white md:hidden"
@@ -73,6 +84,11 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Toaster
+        position="top-center"
+        toastOptions={{ duration: 3000, style: { fontSize: "0.875rem" } }}
+      />
     </div>
   );
 }
