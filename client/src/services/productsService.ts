@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import type { Page } from './apiTypes';
+import type { Page } from '../types/api';
 import type { Product } from '../types/product';
 import type { Category } from '../types/category';
 import type { Brand } from '../types/brand';

@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import type { UserResponse, UserRole } from './accountService';
-import type { Page } from './apiTypes';
+import type { Page } from '../types/api';
 
 export interface AdminUpdateUserPayload {
   email?: string;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchSearchResults, type SearchParams, type ProductResponse } from '../services/productsService';
-import type { Page } from '../services/apiTypes';
+import type { Page } from '../types/api';
 
 export function useSearch(params: SearchParams, options: { enabled?: boolean } = {}) {
   return useQuery<Page<ProductResponse>>({
