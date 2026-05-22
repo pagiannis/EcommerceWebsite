@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Trash2, Pencil, Loader2 } from "lucide-react";
 import { useAdminBrandList, useDeleteBrand } from "../../hooks/admin/useBrands";
-import type { BrandItem } from "../../services/adminBrandsService";
+import type { BrandItem } from "../../services/admin/brandsService";
 import BrandFormModal from "../../components/admin/BrandFormModal";
 
 export default function AdminBrandsPage() {

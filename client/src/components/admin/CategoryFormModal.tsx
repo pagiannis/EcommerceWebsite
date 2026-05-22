@@ -9,7 +9,7 @@ import {
 import type {
   CategoryItem,
   CategoryPayload,
-} from "../../services/adminCategoriesService";
+} from "../../services/admin/categoriesService";
 
 const inputCls =
   "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-black";

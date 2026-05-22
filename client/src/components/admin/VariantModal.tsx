@@ -10,7 +10,7 @@ import {
   VARIANT_SIZES,
   type AdminVariantResponse,
   type VariantPayload,
-} from "../../services/adminProductVariantsService";
+} from "../../services/admin/productVariantsService";
 import type { ProductResponse } from "../../services/productsService";
 
 type VariantForm = {

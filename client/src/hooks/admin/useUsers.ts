@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { fetchAdminUsers, adminUpdateUser, adminUpdateUserRole, adminDeleteUser } from '../../services/adminUsersService';
-import type { AdminUpdateUserPayload } from '../../services/adminUsersService';
+import { fetchAdminUsers, adminUpdateUser, adminUpdateUserRole, adminDeleteUser } from '../../services/admin/usersService';
+import type { AdminUpdateUserPayload } from '../../services/admin/usersService';
 import type { UserRole } from '../../services/accountService';
 
 export function useAdminUserList(page: number) {

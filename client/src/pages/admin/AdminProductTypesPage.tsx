@@ -4,7 +4,7 @@ import {
   useAdminProductTypeList,
   useDeleteProductType,
 } from "../../hooks/admin/useProductTypes";
-import type { ProductTypeItem } from "../../services/adminProductTypesService";
+import type { ProductTypeItem } from "../../services/admin/productTypesService";
 import ProductTypeFormModal from "../../components/admin/ProductTypeFormModal";
 
 export default function AdminProductTypesPage() {

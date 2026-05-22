@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from '../apiClient';
 
 export const VARIANT_COLORS = ['RED', 'BLUE', 'BLACK', 'WHITE', 'GREEN', 'YELLOW', 'PINK', 'GRAY', 'BROWN', 'PURPLE', 'ORANGE', 'NAVY'] as const;
 export const VARIANT_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL'] as const;

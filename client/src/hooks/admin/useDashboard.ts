@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminOrders } from '../../services/adminOrdersService';
-import { fetchAdminUsers } from '../../services/adminUsersService';
+import { fetchAdminOrders } from '../../services/admin/ordersService';
+import { fetchAdminUsers } from '../../services/admin/usersService';
 import { fetchProducts } from '../../services/productsService';
 
 export function useAdminDashboard() {

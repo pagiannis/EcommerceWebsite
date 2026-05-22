@@ -1,6 +1,6 @@
-import apiClient from './apiClient';
-import type { ProductResponse } from './productsService';
-import type { Page } from '../types/api';
+import apiClient from '../apiClient';
+import type { ProductResponse } from '../productsService';
+import type { Page } from '../../types/api';
 
 export interface AdminProductPayload {
   name: string;

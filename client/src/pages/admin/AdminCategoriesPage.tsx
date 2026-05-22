@@ -5,7 +5,7 @@ import {
   useAdminCategoryList,
   useDeleteCategory,
 } from "../../hooks/admin/useCategories";
-import type { CategoryItem } from "../../services/adminCategoriesService";
+import type { CategoryItem } from "../../services/admin/categoriesService";
 import CategoryFormModal from "../../components/admin/CategoryFormModal";
 
 export default function AdminCategoriesPage() {

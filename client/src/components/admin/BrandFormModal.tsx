@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, X } from "lucide-react";
 import { useCreateBrand, useUpdateBrand } from "../../hooks/admin/useBrands";
-import type { BrandItem, BrandPayload } from "../../services/adminBrandsService";
+import type { BrandItem, BrandPayload } from "../../services/admin/brandsService";
 
 const inputCls =
   "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-black";

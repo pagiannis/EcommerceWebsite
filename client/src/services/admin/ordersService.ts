@@ -1,6 +1,6 @@
-import apiClient from './apiClient';
-import type { OrderResponse, OrderStatus } from './ordersService';
-import type { Page } from '../types/api';
+import apiClient from '../apiClient';
+import type { OrderResponse, OrderStatus } from '../ordersService';
+import type { Page } from '../../types/api';
 
 export async function fetchAdminOrders(params: {
   page: number;

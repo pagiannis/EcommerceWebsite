@@ -6,9 +6,9 @@ import { Loader2, X, Plus, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateProduct } from "../../hooks/admin/useProducts";
 import type { ProductResponse } from "../../services/productsService";
-import { adminCreateProduct, type BrandItem, type ProductTypeItem, type AdminProductPayload } from "../../services/adminProductsService";
-import type { CategoryItem } from "../../services/adminCategoriesService";
-import { adminCreateVariant, VARIANT_COLORS, VARIANT_SIZES } from "../../services/adminProductVariantsService";
+import { adminCreateProduct, type BrandItem, type ProductTypeItem, type AdminProductPayload } from "../../services/admin/productsService";
+import type { CategoryItem } from "../../services/admin/categoriesService";
+import { adminCreateVariant, VARIANT_COLORS, VARIANT_SIZES } from "../../services/admin/productVariantsService";
 
 const inputCls =
   "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-black";
