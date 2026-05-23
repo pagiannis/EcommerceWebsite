@@ -19,7 +19,7 @@ export default function WishlistCard({ item }: WishlistCardProps) {
           <img
             src={item.imageUrl}
             alt={item.productName}
-            className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
         <div className="mt-3 space-y-1">
