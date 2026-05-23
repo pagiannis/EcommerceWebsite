@@ -136,7 +136,7 @@ export default function VariantModal({ product, onClose }: Props) {
       setVariants((prev) => [...prev, created]);
       setAddForm(DEFAULT_FORM);
     } catch {
-      setAddError("Failed to add — SKU may already be in use.");
+      setAddError("Something went wrong.");
     }
   }
 
