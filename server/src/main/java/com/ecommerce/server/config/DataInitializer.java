@@ -71,6 +71,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedDefaultSettings();
+        seedDefaultAdmin();
 
         if (productRepository.count() == 0) {
             System.out.println("🚀 Initializing database with mock data...");
@@ -480,6 +481,28 @@ public class DataInitializer implements CommandLineRunner {
                         color, size, (int) (Math.random() * 50) + 10, sku
                 ));
             }
+        }
+    }
+
+    /**
+     * Σπέρνει default admin account ώστε να μπορεί κάποιος να συνδεθεί στο
+     * admin panel αμέσως μετά από fresh deploy. Idempotent — δεν επαναφέρει
+     * τον κωδικό αν ο admin έχει ήδη δημιουργηθεί.
+     *
+     * Σε production credentials θα έπρεπε να έρχονται από env vars αντί
+     * για hardcoded — για MVP / dev seed αρκεί.
+     */
+    private void seedDefaultAdmin() {
+        final String adminEmail = "admin@test.com";
+        if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            userRepository.save(User.builder()
+                    .email(adminEmail)
+                    .passwordHash(passwordEncoder.encode("admin12345"))
+                    .firstName("Admin")
+                    .lastName("User")
+                    .role(Role.ADMIN)
+                    .build());
+            System.out.println("🔑 Default admin created: " + adminEmail + " / admin12345");
         }
     }
 

@@ -21,7 +21,10 @@ export default function LoginPage() {
   const { mutate: login, isPending, error } = useLoginMutation();
 
   useEffect(() => {
-    if (isLoggedIn()) navigate("/", { replace: true });
+    if (isLoggedIn()) {
+      const role = useAuthStore.getState().user?.role;
+      navigate(role === "ADMIN" ? "/admin" : "/", { replace: true });
+    }
   }, [isLoggedIn, navigate]);
 
   const {
@@ -31,7 +34,12 @@ export default function LoginPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   function onSubmit(values: FormValues) {
-    login(values, { onSuccess: () => navigate("/") });
+    login(values, {
+      onSuccess: () => {
+        const role = useAuthStore.getState().user?.role;
+        navigate(role === "ADMIN" ? "/admin" : "/");
+      },
+    });
   }
 
   return (

@@ -2,6 +2,7 @@ package com.ecommerce.server.service;
 
 import com.ecommerce.server.dto.request.ProductRequest;
 import com.ecommerce.server.dto.request.ProductVariantRequest;
+import com.ecommerce.server.dto.response.AdminProductResponse;
 import com.ecommerce.server.dto.response.ProductResponse;
 import com.ecommerce.server.dto.response.ProductVariantResponse;
 import com.ecommerce.server.models.Product;
@@ -11,6 +12,8 @@ import com.ecommerce.server.exception.ConflictException;
 import com.ecommerce.server.exception.ResourceNotFoundException;
 import com.ecommerce.server.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,11 @@ public class AdminProductService {
     private final ProductVariantRepository productVariantRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductService productService;
+
+    @Transactional(readOnly = true)
+    public Page<AdminProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAllForAdmin(pageable);
+    }
 
     public ProductResponse createProduct(ProductRequest request) {
         Product product = Product.builder()

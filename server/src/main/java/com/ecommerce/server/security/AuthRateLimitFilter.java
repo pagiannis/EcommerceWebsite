@@ -99,29 +99,19 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Επιστρέφει την πραγματική client IP. Πίσω από reverse proxy / load
-     * balancer, το request.getRemoteAddr() γυρίζει την IP του proxy —
-     * αυτό θα έκανε όλους τους users να μοιράζονται το ίδιο bucket.
+     * Επιστρέφει την πραγματική client IP.
      *
-     * Διαβάζουμε X-Forwarded-For (comma-separated chain από proxies)
-     * και κρατάμε το πρώτο entry, που είναι η original client IP.
-     * Fallback σε X-Real-IP (που στέλνει το Nginx) και τέλος σε
-     * getRemoteAddr() για local dev χωρίς proxy.
+     * Δεν χειριζόμαστε τα X-Forwarded-For headers manually — αυτό το κάνει
+     * ήδη το Spring framework μέσω του ForwardedHeaderFilter που ενεργοποιεί
+     * το `server.forward-headers-strategy=framework` στο application.properties.
+     * Όταν τρέχει πίσω από Nginx, το request.getRemoteAddr() ΗΔΗ επιστρέφει
+     * τη client IP, όχι του proxy.
      *
-     * Σημ.: αυτά τα headers μπορούν να γίνουν spoofed από κακόβουλο
-     * client αν δεν υπάρχει proxy να τα ξανα-γράφει. Σε production
-     * πρέπει ο proxy (Nginx/CloudFront) να τα setάρει αξιόπιστα.
+     * Αν αλλάξει το deployment ώστε να μη υπάρχει trusted proxy, αρκεί να
+     * αλλάξει το strategy property σε `none` — δεν θέλουμε να κάνουμε custom
+     * spoof-able parsing εδώ.
      */
     private String resolveClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            int comma = xff.indexOf(',');
-            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
-        }
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
-            return xRealIp.trim();
-        }
         return request.getRemoteAddr();
     }
 }
