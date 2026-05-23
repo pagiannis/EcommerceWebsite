@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import {
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
   Users,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -25,6 +26,7 @@ const navItems = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-[#F7F7F7]">
@@ -71,6 +73,15 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+        <div className="px-3 py-4 border-t border-white/10">
+          <button
+            onClick={() => { setSidebarOpen(false); navigate("/logout"); }}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
