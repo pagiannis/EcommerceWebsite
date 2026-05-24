@@ -9,6 +9,7 @@ import {
   Layers,
   ShoppingBag,
   Users,
+  Settings,
   Menu,
   X,
   LogOut,
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/admin/product-types", label: "Product Types", icon: Layers },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminLayout() {
