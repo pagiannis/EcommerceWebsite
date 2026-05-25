@@ -1,6 +1,6 @@
 # E-Shop Web Application
 
-A full-stack, enterprise-grade e-commerce platform built with **React 19** and **Spring Boot (Java 25)**. This project implements a modern shopping experience with a robust admin management system, secure authentication, and a responsive UI/UX inspired by professional Figma designs.
+A full-stack, enterprise-grade e-commerce platform built with **React.ts** and **Spring Boot (Java 25)**. This project implements a modern shopping experience with a robust admin management system, secure authentication, and a pixel-perfect UI/UX implementation of [this Figma design](https://www.figma.com/design/CUg7MBcDIyMI102Ve2eq3z/E-commerce-Website-Template--Freebie---Community-?node-id=0-1&p=f&t=FVfaRlPS1cf0kvaL-0).
 
 ---
 
@@ -10,6 +10,35 @@ This repository contains a complete e-commerce solution consisting of a dynamic 
 
 ### App Screenshots:
 
+#### Home
+<table><tr>
+  <td><img src="docs/screenshots/HomePageDesktop.png" width="600"/></td>
+  <td><img src="docs/screenshots/HomePageMobile.png" width="180"/></td>
+</tr></table>
+
+#### Shop
+<table><tr>
+  <td><img src="docs/screenshots/ShopPageDesktop.png" width="600"/></td>
+  <td><img src="docs/screenshots/ShopPageMobile.png" width="180"/></td>
+</tr></table>
+
+#### Product Detail
+<img src="docs/screenshots/ProductDetailPageDesktop.png" width="700"/>
+<img src="docs/screenshots/ProductDetailPageDesktop2.png" width="700"/>
+
+#### Cart & Checkout
+<img src="docs/screenshots/CartPageDesktop.png" width="700"/>
+<img src="docs/screenshots/CheckoutPageDesktop.png" width="700"/>
+<img src="docs/screenshots/CheckoutPageDesktop2.png" width="700"/>
+
+#### Auth
+<img src="docs/screenshots/LoginPageDesktop.png" width="700"/>
+
+#### Account
+<img src="docs/screenshots/OrdersPageDesktop.png" width="700"/>
+
+#### Admin
+<img src="docs/screenshots/AdminPanelDesktop.png" width="700"/>
 
 ---
 
