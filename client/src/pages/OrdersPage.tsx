@@ -1,6 +1,6 @@
-import { ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useOrders } from "../hooks/useOrders";
+import { Loader2, ShoppingBag } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useOrders, useReorder } from "../hooks/useOrders";
 import type { OrderStatus } from "../services/ordersService";
 import OrdersSkeleton from "../components/orders/OrdersSkeleton";
 import { COLOR_ENUM_TO_HEX } from "../services/productsService";
@@ -24,6 +24,8 @@ const STATUS_CLASS: Record<OrderStatus, string> = {
 
 export default function OrdersPage() {
   const { data: orders, isLoading, isError } = useOrders();
+  const navigate = useNavigate();
+  const { mutate: reorder, isPending: isReordering, variables: reorderingOrderId } = useReorder();
 
   if (isError) {
     return (
@@ -111,13 +113,27 @@ export default function OrdersPage() {
                 })}
               </ul>
 
-              <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
                 <p className="text-xs text-gray-400">
                   Subtotal ${order.subtotal.toFixed(2)} · Tax ${order.tax.toFixed(2)} · Shipping ${order.shippingFee.toFixed(2)}
                 </p>
-                <p className="text-sm font-semibold text-gray-900">
-                  Total: ${order.total.toFixed(2)}
-                </p>
+                <div className="flex items-center gap-4">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Total: ${order.total.toFixed(2)}
+                  </p>
+                  <button
+                    onClick={() =>
+                      reorder(order.id, { onSuccess: () => navigate("/cart") })
+                    }
+                    disabled={isReordering}
+                    className="rounded-full bg-brand-black px-5 py-2 text-xs font-semibold text-white hover:bg-gray-800 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {isReordering && reorderingOrderId === order.id ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : null}
+                    Reorder
+                  </button>
+                </div>
               </div>
             </div>
           ))}

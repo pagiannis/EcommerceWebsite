@@ -2,10 +2,11 @@ interface QuantityStepperProps {
   value: number;
   onChange: (n: number) => void;
   min?: number;
+  max?: number;
   disabled?: boolean;
 }
 
-export default function QuantityStepper({ value, onChange, min = 1, disabled = false }: QuantityStepperProps) {
+export default function QuantityStepper({ value, onChange, min = 1, max, disabled = false }: QuantityStepperProps) {
   return (
     <div className={`flex items-center gap-3 rounded-full bg-brand-gray px-4 py-2 ${disabled ? 'opacity-50' : ''}`}>
       <button
@@ -20,7 +21,7 @@ export default function QuantityStepper({ value, onChange, min = 1, disabled = f
       <button
         type="button"
         onClick={() => onChange(value + 1)}
-        disabled={disabled}
+        disabled={disabled || (max !== undefined && value >= max)}
         className="text-lg font-medium disabled:opacity-30"
       >
         +

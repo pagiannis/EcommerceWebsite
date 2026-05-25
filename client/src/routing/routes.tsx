@@ -24,6 +24,7 @@ import AdminBrandsPage from "../pages/admin/AdminBrandsPage";
 import AdminProductTypesPage from "../pages/admin/AdminProductTypesPage";
 import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
 import AdminUsersPage from "../pages/admin/AdminUsersPage";
+import AdminSettingsPage from "../pages/admin/AdminSettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
           { path: "product-types", element: <AdminProductTypesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },
           { path: "users", element: <AdminUsersPage /> },
+          { path: "settings", element: <AdminSettingsPage /> },
         ],
       },
     ],

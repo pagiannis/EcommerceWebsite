@@ -7,7 +7,7 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   subtotal: number;
-  addItem: (product: CartProduct, color: string, size: Size, variantId: number, qty?: number) => void;
+  addItem: (product: CartProduct, color: string, size: Size, variantId: number, qty?: number, stockQuantity?: number) => void;
   removeItem: (productId: string, color: string, size: Size) => void;
   updateQuantity: (productId: string, color: string, size: Size, qty: number) => void;
   setCartItemId: (variantId: number, cartItemId: number) => void;
@@ -33,7 +33,7 @@ export const useCartStore = create<CartState>()(
       totalItems: 0,
       subtotal: 0,
 
-      addItem(product, color, size, variantId, qty = 1) {
+      addItem(product, color, size, variantId, qty = 1, stockQuantity) {
         set((state) => {
           const key = cartItemKey(product.id, color, size);
           const exists = state.items.some(
@@ -45,7 +45,7 @@ export const useCartStore = create<CartState>()(
                   ? { ...i, quantity: i.quantity + qty }
                   : i
               )
-            : [...state.items, { product, selectedColor: color, selectedSize: size, quantity: qty, variantId }];
+            : [...state.items, { product, selectedColor: color, selectedSize: size, quantity: qty, variantId, stockQuantity }];
           return { items, ...deriveAggregates(items) };
         });
       },

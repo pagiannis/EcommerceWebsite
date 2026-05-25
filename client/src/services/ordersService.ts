@@ -39,3 +39,17 @@ export async function createOrder(
   );
   return data;
 }
+
+export interface ReorderResponse {
+  message: string;
+  skipped: string[];
+}
+
+export async function reorderFromOrder(orderId: number, userId: number): Promise<ReorderResponse> {
+  const { data } = await apiClient.post<ReorderResponse>(
+    `/orders/${orderId}/reorder`,
+    null,
+    { params: { userId } }
+  );
+  return data;
+}
