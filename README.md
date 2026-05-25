@@ -119,4 +119,4 @@ EcommerceWebsite/
 
 ## License
 
-This project was developed as part of the Deloitte Web Application Project.
+This project is licensed under the [MIT License](LICENSE).
