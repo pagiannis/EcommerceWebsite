@@ -4,6 +4,7 @@ import type { Product } from '../../types/product';
 import type { Size } from '../../types/size';
 import { useAddToCart } from '../../hooks/useCart';
 import { useAuthStore } from '../../store/authStore';
+import { useCartStore } from '../../store/cartStore';
 import { useToggleWishlist } from '../../hooks/useWishlist';
 import StarRating from '../ui/StarRating';
 import Badge from '../ui/Badge';
@@ -17,6 +18,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
   const isLoggedIn = useAuthStore((s) => s.user !== null);
   const { isWishlisted, toggle: toggleWishlist, isPending: togglingWishlist } = useToggleWishlist(product.id);
+  const cartItems = useCartStore((s) => s.items);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -33,12 +35,31 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     ? product.variants.find((v) => v.colorHex === selectedColor && v.size === selectedSize)
     : undefined;
 
-  const isOutOfStock = !!selectedVariant && selectedVariant.stockQuantity === 0;
+  const cartQty = selectedVariant
+    ? (cartItems.find((i) => i.variantId === selectedVariant.id)?.quantity ?? 0)
+    : 0;
+  const remainingStock = selectedVariant
+    ? Math.max(0, selectedVariant.stockQuantity - cartQty)
+    : undefined;
+  const isOutOfStock = !!selectedVariant && remainingStock === 0;
 
   function handleColorSelect(color: string) {
     setSelectedColor(color);
-    if (selectedSize && !availableSizes.has(selectedSize)) {
+    const newAvailableSizes = new Set(
+      product.variants
+        .filter((v) => v.colorHex === color && v.stockQuantity > 0)
+        .map((v) => v.size)
+    );
+    if (selectedSize && !newAvailableSizes.has(selectedSize)) {
       setSelectedSize(null);
+      setQuantity(1);
+    } else if (selectedSize) {
+      const newVariant = product.variants.find((v) => v.colorHex === color && v.size === selectedSize);
+      if (newVariant) {
+        const inCart = cartItems.find((i) => i.variantId === newVariant.id)?.quantity ?? 0;
+        const remaining = Math.max(1, newVariant.stockQuantity - inCart);
+        setQuantity((q) => Math.min(q, remaining));
+      }
     }
   }
 
@@ -112,7 +133,16 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 key={size}
                 type="button"
                 disabled={!available}
-                onClick={() => { setSelectedSize(size); setSizeError(false); }}
+                onClick={() => {
+                  setSelectedSize(size);
+                  setSizeError(false);
+                  const variant = product.variants.find((v) => v.colorHex === selectedColor && v.size === size);
+                  if (variant) {
+                    const inCart = cartItems.find((i) => i.variantId === variant.id)?.quantity ?? 0;
+                    const remaining = Math.max(1, variant.stockQuantity - inCart);
+                    setQuantity((q) => Math.min(q, remaining));
+                  }
+                }}
                 className={`rounded-full px-5 py-2 text-sm font-medium transition ${
                   !available
                     ? 'cursor-not-allowed bg-gray-100 text-gray-400 line-through'
@@ -134,7 +164,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <hr className="my-5 border-gray-200" />
 
       <div className="flex items-center gap-4">
-        <QuantityStepper value={quantity} onChange={setQuantity} disabled={addingToCart} />
+        <QuantityStepper value={quantity} onChange={setQuantity} max={remainingStock} disabled={addingToCart || !selectedSize} />
         <button
           type="button"
           onClick={handleAddToCart}

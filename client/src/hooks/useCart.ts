@@ -49,7 +49,8 @@ export function useAddToCart() {
 
   return useMutation({
     mutationFn: async ({ product, color, size, variantId, qty = 1 }: AddToCartArgs) => {
-      useCartStore.getState().addItem(product, color, size, variantId, qty);
+      const stockQuantity = product.variants.find((v) => v.id === variantId)?.stockQuantity;
+      useCartStore.getState().addItem(product, color, size, variantId, qty, stockQuantity);
 
       const { user } = useAuthStore.getState();
       if (user) {

@@ -67,6 +67,7 @@ export default function CartItem({ item }: CartItemProps) {
             }
             disabled={updating}
             min={0}
+            max={item.stockQuantity}
           />
         </div>
       </div>

@@ -14,4 +14,5 @@ export interface CartItem {
   quantity: number;
   variantId: number;
   cartItemId?: number;
+  stockQuantity?: number;
 }
