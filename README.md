@@ -1,10 +1,10 @@
-# 🛒 E-Shop Web Application
+# E-Shop Web Application
 
 A full-stack, enterprise-grade e-commerce platform built with **React 19** and **Spring Boot (Java 25)**. This project implements a modern shopping experience with a robust admin management system, secure authentication, and a responsive UI/UX inspired by professional Figma designs.
 
 ---
 
-## 🚀 Overview
+## Overview
 
 This repository contains a complete e-commerce solution consisting of a dynamic React frontend and a high-performance Spring Boot backend. It handles the entire lifecycle of a digital store—from product discovery and filtering to secure checkout and order management.
 
@@ -17,9 +17,9 @@ This repository contains a complete e-commerce solution consisting of a dynamic 
 
 ---
 
-## 🛠️ Technical Stack
+## Technical Stack
 
-### Frontend (`/client`)
+### Frontend (/client)
 - **Framework:** [React 19](https://react.dev/) (Vite)
 - **Language:** TypeScript
 - **State Management:** [Zustand](https://zustand-demo.pmnd.rs/)
@@ -28,7 +28,7 @@ This repository contains a complete e-commerce solution consisting of a dynamic 
 - **Forms:** React Hook Form + Zod
 - **Icons:** Lucide React
 
-### Backend (`/server`)
+### Backend (/server)
 - **Framework:** [Spring Boot](https://spring.io/projects/spring-boot)
 - **Language:** Java 25
 - **Database:** PostgreSQL (Production) / H2 (Development/Testing)
@@ -39,7 +39,7 @@ This repository contains a complete e-commerce solution consisting of a dynamic 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 EcommerceWebsite/
@@ -67,9 +67,9 @@ EcommerceWebsite/
 
 ---
 
-## ✨ Features
+## Features
 
-### 🛍️ Customer Experience
+### Customer Experience
 - **Smart Catalog:** Filter products by category, price, color, size, and style.
 - **Search:** Instant search with autocomplete suggestions.
 - **Product Details:** High-quality image carousels, detailed specs, and customer reviews.
@@ -77,13 +77,13 @@ EcommerceWebsite/
 - **Checkout:** Multi-step checkout with address management and multiple payment methods (Card, PayPal, COD).
 - **Reviews:** Rate products and leave testimonials for the shop.
 
-### 🔐 Security & Integrity
-- **Rate Limiting:** Protects `/login` and `/register` endpoints against brute-force attacks.
+### Security & Integrity
+- **Rate Limiting:** Protects /login and /register endpoints against brute-force attacks.
 - **Session Persistence:** Sessions survive server restarts via JDBC storage.
 - **Hardened Cookies:** `HttpOnly` and `SameSite=Strict` protection against XSS and CSRF.
 - **Snapshotted Orders:** Orders lock in the price and product name at the time of purchase to maintain historical accuracy.
 
-### ⚙️ Administration
+### Administration
 - **Inventory Management:** CRUD for Products, Variants, Brands, and Categories.
 - **Order Processing:** Monitor and update order statuses (Processing, Shipped, Delivered, etc.).
 - **User Management:** View and manage registered users.
@@ -91,7 +91,7 @@ EcommerceWebsite/
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Java 25+
@@ -99,16 +99,16 @@ EcommerceWebsite/
 - PostgreSQL (optional, defaults to H2)
 
 ### Backend Setup
-1. Navigate to `/server`.
-2. Configure `src/main/resources/application.properties` (if using PostgreSQL).
+1. Navigate to /server.
+2. Configure src/main/resources/application.properties (if using PostgreSQL).
 3. Run with Maven:
    ```bash
    ./mvnw spring-boot:run
    ```
-4. Access Swagger UI at: `http://localhost:8080/swagger-ui.html`
+4. Access Swagger UI at: http://localhost:8080/swagger-ui.html
 
 ### Frontend Setup
-1. Navigate to `/client`.
+1. Navigate to /client.
 2. Install dependencies:
    ```bash
    npm install
@@ -117,17 +117,17 @@ EcommerceWebsite/
    ```bash
    npm run dev
    ```
-4. Open `http://localhost:5173` in your browser.
+4. Open http://localhost:5173 in your browser.
 
 ---
 
-## 📖 API Documentation
+## API Documentation
 
-- 🛒 [Public Products API](./docs/PRODUCTS_API.md)
-- 🔑 [Admin Management API](./docs/ADMIN_API.md)
+- [Public Products API](./docs/PRODUCTS_API.md)
+- [Admin Management API](./docs/ADMIN_API.md)
 
 ---
 
-## 📄 License
+## License
 
 This project was developed as part of the Deloitte Web Application Project.
