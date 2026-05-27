@@ -49,7 +49,7 @@ public class ReviewService {
 
         return reviewRepository.findByProductIdAndRatingGreaterThanEqual(productId, effectiveMin, jpaSort)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +60,7 @@ public class ReviewService {
     public List<ReviewResponse> getUserReviews(Long userId) {
         return reviewRepository.findByUserId(userId)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -88,7 +88,7 @@ public class ReviewService {
         // Ενημέρωση product rating και review count
         updateProductRating(product.getId());
 
-        return convertToResponse(savedReview);
+        return toResponse(savedReview);
     }
 
     /**
@@ -144,7 +144,7 @@ public class ReviewService {
     }
 
     // Μετατροπή Review Entity σε ReviewResponse DTO
-    private ReviewResponse convertToResponse(Review review) {
+    private ReviewResponse toResponse(Review review) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String createdAt = review.getCreatedAt().format(formatter);
 

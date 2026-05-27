@@ -44,7 +44,7 @@ public class WishlistService {
     public List<WishlistItemResponse> getUserWishlist(Long userId) {
         return wishlistItemRepository.findByUserId(userId)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -69,7 +69,7 @@ public class WishlistService {
                 .product(product)
                 .build();
 
-        return convertToResponse(wishlistItemRepository.save(wishlistItem));
+        return toResponse(wishlistItemRepository.save(wishlistItem));
     }
 
     /**
@@ -119,7 +119,7 @@ public class WishlistService {
     }
 
     // Μετατροπή WishlistItem Entity σε WishlistItemResponse DTO
-    private WishlistItemResponse convertToResponse(WishlistItem item) {
+    private WishlistItemResponse toResponse(WishlistItem item) {
         Product product = item.getProduct();
         String imageUrl = product.getImages().isEmpty() 
                 ? null 

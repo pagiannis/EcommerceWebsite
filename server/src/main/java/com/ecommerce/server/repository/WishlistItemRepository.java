@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long> {
 
-    // Lista wishlist ενός user. Το convertToResponse του service καλεί
+    // Lista wishlist ενός user. Το toResponse του service καλεί
     // product.getName(), product.getPrice() και product.getBrand().getName() —
     // χωρίς JOIN FETCH θα είχαμε N+1 (1 query items + 1 query/item για product
     // + 1 query/item για brand). Με fetch, ένα SQL.

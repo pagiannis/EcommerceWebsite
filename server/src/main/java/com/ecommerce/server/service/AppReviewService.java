@@ -30,7 +30,7 @@ public class AppReviewService {
     public List<AppReviewResponse> getFeaturedReviews() {
         return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +42,7 @@ public class AppReviewService {
     public List<AppReviewResponse> getApprovedReviews() {
         return appReviewRepository.findByApprovedOrderByCreatedAtDesc(true)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -55,7 +55,7 @@ public class AppReviewService {
     public List<AppReviewResponse> getAllReviews() {
         return appReviewRepository.findAllWithUser()
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -66,7 +66,7 @@ public class AppReviewService {
     public List<AppReviewResponse> getUserReviews(Long userId) {
         return appReviewRepository.findByUserId(userId)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -85,7 +85,7 @@ public class AppReviewService {
                 .approved(false)
                 .build();
 
-        return convertToResponse(appReviewRepository.save(appReview));
+        return toResponse(appReviewRepository.save(appReview));
     }
 
     /**
@@ -97,7 +97,7 @@ public class AppReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
         appReview.setApproved(true);
-        return convertToResponse(appReviewRepository.save(appReview));
+        return toResponse(appReviewRepository.save(appReview));
     }
 
     /**
@@ -111,7 +111,7 @@ public class AppReviewService {
     }
 
     // Μετατροπή AppReview Entity σε AppReviewResponse DTO
-    private AppReviewResponse convertToResponse(AppReview appReview) {
+    private AppReviewResponse toResponse(AppReview appReview) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String createdAt = appReview.getCreatedAt().format(formatter);
 

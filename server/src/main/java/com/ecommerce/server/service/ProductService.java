@@ -62,7 +62,7 @@ public class ProductService {
                     onSale      != null && onSale,
                     bestSelling != null && bestSelling,
                     normalizedBrand, normalizedProductType, minRating, pageable
-            ).map(this::convertToResponse);
+            ).map(this::toResponse);
         }
 
         if (sort != null) {
@@ -84,12 +84,12 @@ public class ProductService {
                 onSale      != null && onSale,
                 bestSelling != null && bestSelling,
                 normalizedBrand, normalizedProductType, minRating, pageable
-        ).map(this::convertToResponse);
+        ).map(this::toResponse);
     }
 
     public Page<ProductResponse> searchProducts(String query, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(query, pageable)
-                .map(this::convertToResponse);
+                .map(this::toResponse);
     }
 
     public List<ProductSuggestionResponse> autocomplete(String query) {
@@ -101,7 +101,7 @@ public class ProductService {
     public ProductResponse getProductDetail(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return convertToResponse(product);
+        return toResponse(product);
     }
 
     public List<ProductVariantResponse> getProductVariants(Long productId) {
@@ -112,7 +112,7 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductResponse convertToResponse(Product product) {
+    public ProductResponse toResponse(Product product) {
         List<String> imageUrls = product.getImages().stream()
                 .map(ProductImage::getImageUrl)
                 .toList();

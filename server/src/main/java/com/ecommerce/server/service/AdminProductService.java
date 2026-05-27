@@ -52,7 +52,7 @@ public class AdminProductService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return productService.convertToResponse(productRepository.save(product));
+        return productService.toResponse(productRepository.save(product));
     }
 
     public ProductResponse updateProduct(Long id, ProductRequest request) {
@@ -72,7 +72,7 @@ public class AdminProductService {
         product.setOriginalPrice(request.originalPrice());
         product.setDiscountPercent(request.discountPercent());
 
-        return productService.convertToResponse(productRepository.save(product));
+        return productService.toResponse(productRepository.save(product));
     }
 
     public void deleteProduct(Long id) {

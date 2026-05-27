@@ -62,7 +62,7 @@ public class OrderService {
     public List<OrderResponse> getUserOrders(Long userId) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -73,12 +73,12 @@ public class OrderService {
     public OrderResponse getOrderDetail(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        return convertToResponse(order);
+        return toResponse(order);
     }
 
     /**
      * Δημιουργία νέας παραγγελίας (CHECKOUT)
-     * ⭐ CRITICAL: Snapshot pattern - αποθηκεύουμε τα δεδομένα που ήταν τότε
+     * Snapshot pattern - αποθηκεύουμε τα δεδομένα που ήταν τότε
      */
     @Transactional
     public OrderResponse createOrder(Long userId, Long shippingAddressId, PaymentMethod paymentMethod) {
@@ -181,7 +181,7 @@ public class OrderService {
 
         savedOrder.setItems(orderItems);
 
-        return convertToResponse(savedOrder);
+        return toResponse(savedOrder);
     }
 
     /**
@@ -267,7 +267,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         order.setStatus(newStatus);
-        return convertToResponse(orderRepository.save(order));
+        return toResponse(orderRepository.save(order));
     }
 
     /**
@@ -277,16 +277,16 @@ public class OrderService {
     public List<OrderResponse> getOrdersByStatus(OrderStatus status) {
         return orderRepository.findByStatus(status)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     /**
      * Μετατροπή Order Entity σε OrderResponse DTO
      */
-    private OrderResponse convertToResponse(Order order) {
+    private OrderResponse toResponse(Order order) {
         List<OrderItemResponse> items = order.getItems().stream()
-                .map(this::convertOrderItemToResponse)
+                .map(this::toOrderItemResponse)
                 .collect(Collectors.toList());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -306,7 +306,7 @@ public class OrderService {
     }
 
     // Μετατροπή OrderItem σε OrderItemResponse
-    private OrderItemResponse convertOrderItemToResponse(OrderItem item) {
+    private OrderItemResponse toOrderItemResponse(OrderItem item) {
         return new OrderItemResponse(
                 item.getId(),
                 item.getProductName(),
