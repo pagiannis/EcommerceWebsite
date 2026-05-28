@@ -4,12 +4,6 @@ A full-stack, enterprise-grade e-commerce platform built with **React.ts** and *
 
 ---
 
-## Overview
-
-This repository contains a complete e-commerce solution consisting of a dynamic React frontend and a high-performance Spring Boot backend. It handles the entire lifecycle of a digital store—from product discovery and filtering to secure checkout and order management.
-
----
-
 ## Getting Started
 
 ### Option A — Docker (recommended, zero setup)
