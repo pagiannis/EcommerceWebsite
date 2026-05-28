@@ -13,12 +13,12 @@ Thumbs.db
 
 # Spring Boot / Maven
 server/target/
-server/.mvn/
-server/mvnw
-server/mvnw.cmd
 server/*.jar
 server/*.war
 server/.m2/
+# Note: server/mvnw, server/mvnw.cmd and server/.mvn/ are intentionally
+# committed — the Maven wrapper must ship with the repo so contributors can
+# build without a pre-installed Maven.
 
 # React / Node
 client/node_modules/
