@@ -4,9 +4,80 @@ A full-stack, enterprise-grade e-commerce platform built with **React.ts** and *
 
 ---
 
-## Overview
+## Getting Started
 
-This repository contains a complete e-commerce solution consisting of a dynamic React frontend and a high-performance Spring Boot backend. It handles the entire lifecycle of a digital store—from product discovery and filtering to secure checkout and order management.
+### Option A — Docker (recommended, zero setup)
+
+The only prerequisite is [Docker](https://docs.docker.com/get-docker/). No need
+to install Java, Node, or PostgreSQL.
+
+```bash
+git clone https://github.com/pagiannis/EcommerceWebsite.git
+cd EcommerceWebsite
+cp .env.example .env   # fill in your values
+docker compose up --build
+```
+
+This starts three containers:
+
+| Service | URL |
+|---------|-----|
+| Frontend (React) | http://localhost:5173 |
+| Backend (Spring Boot) | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| PostgreSQL | internal (port 5432) |
+
+Database credentials live in [`.env`](.env) (local-only defaults). On first run,
+`DataInitializer` seeds products, reviews, and a default admin:
+
+```
+Email:    admin@test.com
+Password: admin12345
+```
+
+To stop: `docker compose down` (add `-v` to also wipe the database volume).
+
+---
+
+### Option B — Local development (IntelliJ + Node)
+
+For working on the code directly.
+
+**Prerequisites:** JDK **25** (required by Spring Boot 4.0.5), Node.js 20+,
+PostgreSQL 14+.
+
+> **This is a monorepo** — the Maven `pom.xml` is inside `/server`, **not** at the
+> repository root. If you open the root in IntelliJ, it will **not** be detected
+> as a Spring Boot project.
+
+**Open the backend in IntelliJ:**
+
+1. `File → Open…` → select **`server/pom.xml`** → **"Open as Project"**
+2. `File → Project Structure → Project` → set **SDK** to JDK 25 (download via
+   `SDKs → + → Download JDK → 25` if needed) and **Language level** to 25.
+
+**Run the backend:**
+
+```bash
+# set DB connection (or use Run Configuration → Environment variables in IntelliJ)
+export DB_URL=jdbc:postgresql://localhost:5432/eshop
+export DB_USERNAME=postgres
+export DB_PASSWORD=your_password
+
+cd server
+./mvnw spring-boot:run          # macOS / Linux
+mvnw.cmd spring-boot:run        # Windows
+```
+
+**Run the frontend:**
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+---
 
 ### App Screenshots:
 
@@ -112,7 +183,6 @@ EcommerceWebsite/
 │   └── src/resources/     # SQL schemas & application properties
 └── docs/                  # Project documentation & API references
 ```
-
 
 ---
 

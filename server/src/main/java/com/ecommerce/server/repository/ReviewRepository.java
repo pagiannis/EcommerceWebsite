@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    // Reviews ενός product, φιλτραρισμένα κατά rating. Το convertToResponse
+    // Reviews ενός product, φιλτραρισμένα κατά rating. Το toResponse
     // του service καλεί review.getUser().getFirstName() — χωρίς JOIN FETCH θα
     // είχαμε N+1 (1 query reviews + 1 query/review για user). Με fetch, ένα SQL.
     @Query("""
@@ -25,7 +25,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("minRating") Integer minRating,
             Sort sort);
 
-    // Reviews ενός user σε όλα τα products. Το convertToResponse καλεί
+    // Reviews ενός user σε όλα τα products. Το toResponse καλεί
     // review.getProduct().getId() — εδώ τα products διαφέρουν ανά review,
     // οπότε JOIN FETCH product για αποφυγή N+1.
     @Query("""

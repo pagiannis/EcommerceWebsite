@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    // Hot path — καλείται σε κάθε cart page load. Το convertToResponse του
+    // Hot path — καλείται σε κάθε cart page load. Το toResponse του
     // service αγγίζει variant.getProduct().getName()/getPrice(), color, size.
     // Χωρίς JOIN FETCH θα είχαμε N+1 (1 για cart_items + 1/item για variant
     // + 1/item για product). Με fetch, ένα SQL για όλο το cart.

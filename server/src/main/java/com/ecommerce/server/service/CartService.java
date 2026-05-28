@@ -35,7 +35,7 @@ public class CartService {
     public List<CartItemResponse> getUserCart(Long userId) {
         return cartItemRepository.findByUserId(userId)
                 .stream()
-                .map(this::convertToResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -68,7 +68,7 @@ public class CartService {
                  throw new BadRequestException("Total quantity exceeds available stock. Available: " + variant.getStockQuantity());
              }
              existingItem.setQuantity(newQuantity);
-             return convertToResponse(cartItemRepository.save(existingItem));
+             return toResponse(cartItemRepository.save(existingItem));
          }
 
          // Δημιουργία νέου cart item
@@ -78,7 +78,7 @@ public class CartService {
                  .quantity(request.quantity())
                  .build();
 
-         return convertToResponse(cartItemRepository.save(cartItem));
+         return toResponse(cartItemRepository.save(cartItem));
      }
 
      // Παρότι ο controller επιβάλλει @Min(1), κρατάμε
@@ -101,7 +101,7 @@ public class CartService {
          }
 
          cartItem.setQuantity(quantity);
-         return convertToResponse(cartItemRepository.save(cartItem));
+         return toResponse(cartItemRepository.save(cartItem));
      }
 
     // Αφαίρεση προϊόντος από καλάθι
@@ -144,7 +144,7 @@ public class CartService {
     }
 
     // Μετατροπή CartItem Entity σε CartItemResponse DTO
-    private CartItemResponse convertToResponse(CartItem item) {
+    private CartItemResponse toResponse(CartItem item) {
         ProductVariant variant = item.getVariant();
         return new CartItemResponse(
                 item.getId(),

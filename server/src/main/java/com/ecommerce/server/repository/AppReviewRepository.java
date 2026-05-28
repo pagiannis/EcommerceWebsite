@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface AppReviewRepository extends JpaRepository<AppReview, Long> {
 
-    // convertToResponse του service αγγίζει user.getFirstName()/getLastName() —
+    // toResponse του service αγγίζει user.getFirstName()/getLastName() —
     // χωρίς JOIN FETCH θα είχαμε N+1 ανά κριτική. Το homepage testimonials
     // section εμφανίζεται σε κάθε visit, οπότε η βελτιστοποίηση αξίζει.
     @Query("""
